@@ -43,6 +43,7 @@ For help, please visit [#cas] on [public team chat].
 - [extended-oc](https://github.com/bcgov/esm-server/blob/dev/openshift/templates/lib/extended-oc.sh)
 - [mds/pipeline](https://github.com/bcgov/mds/tree/develop/pipeline)
 - [tfrs/readme](https://github.com/bcgov/tfrs/blob/master/openshift/templates/components/README.md)
+- [gwells/scripts](https://github.com/bcgov/gwells/tree/release/openshift/scripts)
 
 [Pathfinder]:https://developer.gov.bc.ca/What-is-Pathfinder
 [OCP]:https://www.openshift.com/products/container-platform
