@@ -1,0 +1,36 @@
+version: 2.1
+
+orbs:
+  shellcheck: circleci/shellcheck@1.3.14
+  orb-tools: circleci/orb-tools@8.27.4
+
+executors:
+  default:
+    docker:
+      - image: 'circleci/node:lts'
+  shellcheck:
+    docker:
+      - image: 'koalaman/shellcheck-alpine:v0.7.0'
+
+jobs:
+  bats-test:
+    executor: default
+    steps:
+      - orb-tools/install-bats
+      - run:
+          command: |
+            git config --global user.email "test@circleci.com"
+            git config --global user.name "CircleCI Test Runner"
+          name: Configure git
+      - checkout
+      - run:
+          command: make test
+          name: Run the test suite via make
+
+workflows:
+  test:
+    jobs:
+      - shellcheck/check:
+          pattern: '*.bats'
+          executor: 'shellcheck'
+      - bats-test

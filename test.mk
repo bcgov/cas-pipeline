@@ -1,0 +1,1 @@
+TEST=$(shell which test)
