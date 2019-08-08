@@ -38,7 +38,7 @@ define oc_lint
 endef
 
 define oc_apply
-	$(OC) process -f $(1) $(2) \
+	$(OC) process --ignore-unknown-parameters=true -f $(1) $(2) \
 		| $(OC) -n "$(3)" apply --wait --overwrite --validate -f-
 endef
 
