@@ -25,7 +25,7 @@ define oc_project
 endef
 
 define oc_validate
-	$(OC) process -f $(1) --local $(2) \
+	$(OC) process --ignore-unknown-parameters=true -f $(1) --local $(2) \
 		| $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null \
 		&& echo ✓ $(1) is valid \
 		|| (echo ✘ $(1) is invalid && exit 1)
