@@ -95,3 +95,15 @@ define oc_create
 	fi;
 	@@echo "✓ oc create $(2)/$(3)"
 endef
+
+define oc_rsync
+	@@echo "✓ oc pod $(1)-debug starting"; \
+		oc debug dc/$(1) -- /usr/bin/env bash -c 'sleep infinity' >/dev/null 2>&1 & \
+		while [ "`oc get pod/$(1)-debug -o template --template '{{ eq .status.phase "Running" }}' 2>/dev/null`" != 'true' ]; do \
+			sleep 1; \
+		done; \
+		echo "✓ oc pod $(1)-debug running"; \
+		oc rsync pod/$(1)-debug:$(2) $(3); \
+		kill -SIGINT %1; \
+		echo "✓ oc pod $(1)-debug stopping";
+endef
