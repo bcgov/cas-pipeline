@@ -50,9 +50,9 @@ endef
 
 define oc_build
 	@@echo ✓ building $(1)
-	@@$(OC) start-build $(1) --follow
+	@@$(OC) -n $(OC_PROJECT) start-build $(1) --follow
 	@@echo ✓ tagging $(1):$(GIT_SHA1) to $(1):$(GIT_BRANCH_NORM)
-	@@$(OC) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM)
+	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM)
 endef
 
 define oc_promote
