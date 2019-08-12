@@ -50,7 +50,7 @@ endef
 
 define oc_build
 	@@echo ✓ building $(1)
-	@@$(OC) -n $(OC_PROJECT) start-build $(1) --follow
+	@@$(OC) -n $(OC_PROJECT) start-build $(1) --wait --follow
 	@@echo ✓ tagging $(1):$(GIT_SHA1) to $(1):$(GIT_BRANCH_NORM)
 	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM)
 endef
