@@ -52,26 +52,24 @@ define oc_build
 	@@echo ✓ building $(1)
 	@@$(OC) -n $(OC_PROJECT) start-build $(1) --follow
 
-	@@$(eval HAS_SHA1_TAG = $(shell $(OC) -n $(OC_PROJECT) get is/$(1) -o=go-template='{{range .status.tags}}{{if eq .tag "$(GIT_SHA1)"}}{{"true"}}{{break}}{{end}}{{end}}'))
-
-	ifeq ($(HAS_SHA1_TAG),'true')
-		@@echo ✓ tagging $(1):$(GIT_SHA1) to $(1):$(GIT_BRANCH_NORM)
-		@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM)
-	else
-		@@$(eval IMAGE_ID = $(shell $(OC) -n $(OC_PROJECT) get istag/$(1):$(GIT_BRANCH_NORM) -o=go-template='\
+	@@if [ "$$($(OC) -n $(OC_PROJECT) get is/$(1) -o=go-template='{{range .status.tags}}{{if eq .tag "$(GIT_SHA1)"}}{{"true"}}{{end}}{{end}}')" == "true" ]; then \
+		echo "✓ tagging $(1):$(GIT_SHA1) to $(1):$(GIT_BRANCH_NORM)"; \
+		$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM); \
+	else \
+		IMAGE_ID=$(OC) -n $(OC_PROJECT) get istag/$(1):$(GIT_BRANCH_NORM) -o=go-template='\
 {{$$commitId := index .image.dockerImageMetadata.Config.Labels "io.openshift.build.commit.id"}}\
 {{if eq $$commitId "$(GIT_SHA1)"}}\
 {{.image.dockerImageMetadata.Id}}\
-{{end}}'))
-		ifeq ($(IMAGE_ID),'')
-			@@echo ✘ Image stream $(1):$(GIT_BRANCH_NORM) for commit $(GIT_SHA1) was not found.
-			@@echo This is likely due to the fact that $(1):$(GIT_BRANCH_NORM) was overwritten by a parallel build
-			@@exit 1
-		else
-			@@echo ✓ tagging $(1)@$(IMAGE_ID) to $(1):$(GIT_SHA1)
-			@@$(OC) -n $(OC_PROJECT) tag $(1)@$(IMAGE_ID) $(1):$(GIT_SHA1)
-		endif
-	endif
+{{end}}'; \
+		if [[ ! -z $$IMAGE_ID ]]; then \
+			echo "✓ tagging $(1)@$(IMAGE_ID) to $(1):$(GIT_SHA1)"; \
+			$(OC) -n $(OC_PROJECT) tag $(1)@$$IMAGE_ID $(1):$(GIT_SHA1); \
+		else \
+			echo "✘ Image stream $(1):$(GIT_BRANCH_NORM) for commit $(GIT_SHA1) was not found."; \
+			echo "This is likely due to the fact that $(1):$(GIT_BRANCH_NORM) was overwritten by a parallel build"; \
+			exit 1; \
+		fi; \
+	fi;
 endef
 
 define oc_promote
