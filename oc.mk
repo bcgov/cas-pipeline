@@ -7,7 +7,7 @@ OC_CONSOLE=https://console.pathfinder.gov.bc.ca:8443/console/projects
 OC_REGISTRY=docker-registry.default.svc:5000
 OC_REGISTRY_EXT=docker-registry.pathfinder.gov.bc.ca
 OC_PROJECT=$(shell echo "$${ENVIRONMENT:-$${OC_PROJECT}}")
-OC_TEMPLATE_VARS=PREFIX=$(PROJECT_PREFIX) GIT_SHA1=$(GIT_SHA1)
+OC_TEMPLATE_VARS=PREFIX=$(PROJECT_PREFIX) GIT_SHA1=$(GIT_SHA1) GIT_BRANCH_NORM=$(GIT_BRANCH_NORM)
 
 define oc_whoami
 	@@WHOAMI="$(shell $(OC) whoami)"; \
@@ -51,8 +51,21 @@ endef
 define oc_build
 	@@echo ✓ building $(1)
 	@@$(OC) -n $(OC_PROJECT) start-build $(1) --follow
-	@@echo ✓ tagging $(1):$(GIT_SHA1) to $(1):$(GIT_BRANCH_NORM)
-	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM)
+
+	IMAGE_ID = @@$(OC) -n $(OC_PROJECT) get istag/$(1):$(GIT_BRANCH_NORM) -o=go-template='\
+{{$$commitId := index .image.dockerImageMetadata.Config.Labels "io.openshift.build.commit.id"}}\
+{{if eq $$commitId "$(GIT_SHA1)"}}\
+{{.image.dockerImageMetadata.Id}}\
+{{end}}'
+
+	ifeq ($(IMAGE_ID),'')
+		@@echo ✘ Image stream $(1):$(GIT_BRANCH_NORM) for commit $(GIT_SHA1) could not be found.
+		@@echo This is likely due to the fact that $(1):$(GIT_BRANCH_NORM) was overwritten by a parallel build
+		@@exit 1
+	else
+		@@echo ✓ tagging $(1)@$(IMAGE_ID) to $(1):$(GIT_SHA1)
+		@@$(OC) -n $(OC_PROJECT) tag $(1)@$(IMAGE_ID) $(1):$(GIT_SHA1)
+	endif
 endef
 
 define oc_promote
