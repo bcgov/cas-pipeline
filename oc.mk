@@ -57,13 +57,15 @@ define oc_build
 		$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM); \
 	else \
 		BUILD_VERSION=$$($(OC) -n $(OC_PROJECT) get bc/$(1) -o=go-template='{{.status.lastVersion}}'); \
-		IMAGE_ID=$$($(OC) -n $(OC_PROJECT) get build/$(1)-$$BUILD_VERSION -o=go-template='{{if (index .metadata.labels "git_sha1")}}{{if eq (index .metadata.labels "git_sha1") "$(GIT_SHA1)"}}{{.status.output.to.imageDigest}}{{end}}{{end}}'); \
-		if [[ ! -z $$IMAGE_ID ]]; then \
+		while [ -z $$IMAGE_ID ]; do \
+			IMAGE_ID=$$($(OC) -n $(OC_PROJECT) get build/$(1)-$$BUILD_VERSION -o=go-template='{{if (index .metadata.labels "git_sha1")}}{{if eq (index .metadata.labels "git_sha1") "$(GIT_SHA1)"}}{{.status.output.to.imageDigest}}{{end}}{{end}}'); \
+			BUILD_VERSION=$$[$$BUILD_VERSION - 1]; \
+		done; \
+		if [[ $$IMAGE_ID == sha256* ]]; then \
 			echo "✓ tagging $(1)@$$IMAGE_ID to $(1):$(GIT_SHA1)"; \
 			$(OC) -n $(OC_PROJECT) tag $(1)@$$IMAGE_ID $(1):$(GIT_SHA1); \
 		else \
 			echo "✘ Image stream $(1):$(GIT_BRANCH_NORM) for commit $(GIT_SHA1) was not found."; \
-			echo "This is likely due to the fact that $(1):$(GIT_BRANCH_NORM) was overwritten by a parallel build"; \
 			exit 1; \
 		fi; \
 	fi;
