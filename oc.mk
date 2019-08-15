@@ -39,6 +39,7 @@ endef
 
 define oc_apply
 	$(OC) process --ignore-unknown-parameters=true -f $(1) $(2) \
+		| jq '.items[0].metadata.labels=(.items[0].metadata.labels + { "cas-pipeline/source-location":"$(GIT_ORIGIN_URL)", "cas-pipeline/commit.id":"$(GIT_SHA1)","cas-pipeline/commit.ref":"$(GIT_BRANCH)" })' \
 		| $(OC) -n "$(3)" apply --wait --overwrite --validate -f-
 endef
 
@@ -49,26 +50,7 @@ define oc_configure
 endef
 
 define oc_build
-	@@echo ✓ building $(1)
-	@@$(OC) -n $(OC_PROJECT) start-build $(1) --follow
-
-	@@if [ "$$($(OC) -n $(OC_PROJECT) get is/$(1) -o=go-template='{{range .status.tags}}{{if eq .tag "$(GIT_SHA1)"}}{{"true"}}{{end}}{{end}}')" == "true" ]; then \
-		echo "✓ tagging $(1):$(GIT_SHA1) to $(1):$(GIT_BRANCH_NORM)"; \
-		$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM); \
-	else \
-		BUILD_VERSION=$$($(OC) -n $(OC_PROJECT) get bc/$(1) -o=go-template='{{.status.lastVersion}}'); \
-		while [ -z $$IMAGE_ID ]; do \
-			IMAGE_ID=$$($(OC) -n $(OC_PROJECT) get build/$(1)-$$BUILD_VERSION -o=go-template='{{if (index .metadata.labels "git_sha1")}}{{if eq (index .metadata.labels "git_sha1") "$(GIT_SHA1)"}}{{.status.output.to.imageDigest}}{{end}}{{end}}'); \
-			BUILD_VERSION=$$[$$BUILD_VERSION - 1]; \
-		done; \
-		if [[ $$IMAGE_ID == sha256* ]]; then \
-			echo "✓ tagging $(1)@$$IMAGE_ID to $(1):$(GIT_SHA1)"; \
-			$(OC) -n $(OC_PROJECT) tag $(1)@$$IMAGE_ID $(1):$(GIT_SHA1); \
-		else \
-			echo "✘ Image stream $(1):$(GIT_BRANCH_NORM) for commit $(GIT_SHA1) was not found."; \
-			exit 1; \
-		fi; \
-	fi;
+	@@./lib/oc_build.sh $(OC) $(OC_PROJECT) $(1) $(GIT_BRANCH_NORM) $(GIT_SHA1)
 endef
 
 define oc_promote
