@@ -26,7 +26,8 @@ endef
 
 define oc_validate
 	$(OC) process --ignore-unknown-parameters=true -f $(1) --local $(2) \
-		| $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null \
+		| jq '.items[0].metadata.labels=(.items[0].metadata.labels + { "cas-pipeline/commit.id":"$(GIT_SHA1)","cas-pipeline/commit.ref":"$(GIT_BRANCH)" })' \
+		|  $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null \
 		&& echo ✓ $(1) is valid \
 		|| (echo ✘ $(1) is invalid && exit 1)
 endef
@@ -39,7 +40,7 @@ endef
 
 define oc_apply
 	$(OC) process --ignore-unknown-parameters=true -f $(1) $(2) \
-		| jq '.items[0].metadata.labels=(.items[0].metadata.labels + { "cas-pipeline/source-location":"$(GIT_ORIGIN_URL)", "cas-pipeline/commit.id":"$(GIT_SHA1)","cas-pipeline/commit.ref":"$(GIT_BRANCH)" })' \
+		| jq '.items[0].metadata.labels=(.items[0].metadata.labels + { "cas-pipeline/commit.id":"$(GIT_SHA1)","cas-pipeline/commit.ref":"$(GIT_BRANCH)" })' \
 		| $(OC) -n "$(3)" apply --wait --overwrite --validate -f-
 endef
 
