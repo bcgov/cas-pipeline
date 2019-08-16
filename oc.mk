@@ -52,7 +52,7 @@ define oc_configure
 endef
 
 define oc_build
-	@@${THIS_FOLDER}/lib/oc_build.sh $(OC) $(OC_PROJECT) $(1) $(GIT_BRANCH_NORM) $(GIT_SHA1)
+	@@${THIS_FOLDER}/lib/oc_build.sh $(OC) $(OC_PROJECT) $(1) $(GIT_BRANCH_NORM) $(GIT_SHA1) "$(OC_TEMPLATE_VARS)"
 endef
 
 define oc_promote
