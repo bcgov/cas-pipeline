@@ -9,7 +9,7 @@ GIT_SHA1=$5
 echo "✓ building $BUILD_CONFIG"
 $OC -n $OC_PROJECT start-build $BUILD_CONFIG --follow
 
-if [ "`$OC -n $OC_PROJECT get is/$BUILD_CONFIG -o=go-template='{{range .status.tags}}{{if eq .tag "$GIT_SHA1"}}{{"true"}}{{end}}{{end}}'`" == "true" ]; then
+if [ "`$OC -n $OC_PROJECT get is/$BUILD_CONFIG -o=go-template='{{range .status.tags}}{{if eq .tag "'$GIT_SHA1'"}}{{"true"}}{{end}}{{end}}'`" == "true" ]; then
     echo "✓ tagging $BUILD_CONFIG:$GIT_SHA1 to $BUILD_CONFIG:$GIT_BRANCH_NORM"
     $OC -n $OC_PROJECT tag $BUILD_CONFIG:$GIT_SHA1 $BUILD_CONFIG:$GIT_BRANCH_NORM
 else
