@@ -5,6 +5,16 @@ OC_PROJECT=$2
 BUILD_CONFIG=$3
 GIT_BRANCH_NORM=$4
 GIT_SHA1=$5
+OC_TEMPLATE_VARS=$6
+
+
+# Find the build config for this build and run `oc apply` for it
+for FILE in `find openshift/build/buildconfig -name \*.yml -print`; do
+    BUILD_CONFIG_STRING=$($OC process --ignore-unknown-parameters=true -f $FILE $OC_TEMPLATE_VARS | jq 'if .items[].metadata.name == "'$BUILD_CONFIG'" then .items[].metadata.labels=(.items[].metadata.labels + { "cas-pipeline/commit.id":"'$GIT_SHA1'" }) else empty end')
+    if [[ ! -z "$BUILD_CONFIG_STRING" ]]; then
+	    echo $BUILD_CONFIG_STRING | $OC -n "$OC_PROJECT" apply --wait --overwrite --validate -f-
+    fi
+done
 
 echo "✓ building $BUILD_CONFIG"
 $OC -n $OC_PROJECT start-build $BUILD_CONFIG --follow
