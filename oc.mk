@@ -8,6 +8,7 @@ OC_REGISTRY=docker-registry.default.svc:5000
 OC_REGISTRY_EXT=docker-registry.pathfinder.gov.bc.ca
 OC_PROJECT=$(shell echo "$${ENVIRONMENT:-$${OC_PROJECT}}")
 OC_TEMPLATE_VARS=PREFIX=$(PROJECT_PREFIX) GIT_SHA1=$(GIT_SHA1) GIT_BRANCH_NORM=$(GIT_BRANCH_NORM)
+THIS_FOLDER := $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../)
 
 define oc_whoami
 	@@WHOAMI="$(shell $(OC) whoami)"; \
@@ -51,7 +52,7 @@ define oc_configure
 endef
 
 define oc_build
-	@@./lib/oc_build.sh $(OC) $(OC_PROJECT) $(1) $(GIT_BRANCH_NORM) $(GIT_SHA1)
+	@@${THIS_FOLDER}/lib/oc_build.sh $(OC) $(OC_PROJECT) $(1) $(GIT_BRANCH_NORM) $(GIT_SHA1)
 endef
 
 define oc_promote
