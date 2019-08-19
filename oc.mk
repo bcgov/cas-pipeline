@@ -13,7 +13,7 @@ OC_CONSOLE=https://console.pathfinder.gov.bc.ca:8443/console/projects
 OC_REGISTRY=docker-registry.default.svc:5000
 OC_REGISTRY_EXT=docker-registry.pathfinder.gov.bc.ca
 OC_PROJECT=$(shell echo "$${ENVIRONMENT:-$${OC_PROJECT}}")
-OC_TEMPLATE_VARS=PREFIX=$(PROJECT_PREFIX) GIT_SHA1=$(GIT_SHA1) GIT_BRANCH_NORM=$(GIT_BRANCH_NORM)
+OC_TEMPLATE_VARS=PREFIX=$(PROJECT_PREFIX) GIT_SHA1=$(GIT_SHA1) GIT_BRANCH_NORM=$(GIT_BRANCH_NORM) OC_REGISTRY=$(OC_REGISTRY) OC_PROJECT=$(OC_PROJECT)
 
 define oc_whoami
 	@@WHOAMI="$(shell $(OC) whoami)"; \
@@ -51,11 +51,16 @@ define oc_apply
 		| $(OC) -n "$(3)" apply --wait --overwrite --validate -f-
 endef
 
+define oc_apply_dir
+	@@if [ -d "$(1)" ]; then \
+		for FILE in $$($(FIND) $(1) -name \*.yml -print); \
+			do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
+		done; \
+	fi;
+endef
+
 define oc_configure
-	@@shopt -s globstar nullglob; \
-		for FILE in openshift/build/**/*.yml; do \
-			$(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
-		done
+	$(call oc_apply_dir,openshift/build)
 endef
 
 define oc_build
@@ -102,4 +107,11 @@ define oc_create
 		$(OC) -n "$(1)" create $(2) $(3) >/dev/null; \
 	fi;
 	@@echo "✓ oc create $(2)/$(3)"
+endef
+
+define oc_deploy
+	$(call oc_apply_dir,openshift/deploy/persistentvolumeclaim)
+	$(call oc_apply_dir,openshift/deploy/deploymentconfig)
+	$(call oc_apply_dir,openshift/deploy/service)
+	$(call oc_apply_dir,openshift/deploy/route)
 endef
