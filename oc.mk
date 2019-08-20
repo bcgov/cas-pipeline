@@ -31,7 +31,7 @@ define oc_project
 endef
 
 define oc_validate
-	$(OC) process -n "$(OC_PROJECT)" --ignore-unknown-parameters=true -f $(1) --local $(2) \
+	$(OC) process --ignore-unknown-parameters=true -f $(1) --local $(2) \
 		| jq '.items[].metadata.labels=(.items[].metadata.labels + { "cas-pipeline/commit.id":"$(GIT_SHA1)" })' \
 		|  $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null \
 		&& echo ✓ $(1) is valid \
@@ -46,7 +46,7 @@ define oc_lint
 endef
 
 define oc_apply
-	$(OC) process -n "$(3)" --ignore-unknown-parameters=true -f $(1) $(2) \
+	$(OC) process --ignore-unknown-parameters=true -f $(1) --local $(2) \
 		| jq '.items[].metadata.labels=(.items[].metadata.labels + { "cas-pipeline/commit.id":"$(GIT_SHA1)" })' \
 		| $(OC) -n "$(3)" apply --wait --overwrite --validate -f-
 endef
