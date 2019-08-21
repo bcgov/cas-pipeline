@@ -52,11 +52,10 @@ define oc_apply
 endef
 
 define oc_apply_dir
-	@@if [ -d "$(1)" ]; then \
-		for FILE in $$($(FIND) $(1) -name \*.yml -print); \
-			do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
-		done; \
-	fi;
+	@@shopt -s globstar nullglob; \
+		for FILE in $(1)/**/*.yml; do \
+			$(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
+		done
 endef
 
 define oc_configure
@@ -72,6 +71,7 @@ define oc_promote
 	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):latest --reference-policy=local
 endef
 
+# DEPRECATED BY oc_deploy
 define oc_provision
 	@@shopt -s globstar nullglob; \
 		for FILE in openshift/deploy/**/*.yml; do \
