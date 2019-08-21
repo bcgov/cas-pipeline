@@ -2,6 +2,7 @@
 
 # cas-pipeline
 A collection of make functions used to compose pipelines
+Examples of [standard targets] and usage to be added shortly.
 
 ## background
 [Pathfinder] projects follow specific patterns when deploying to [OCP]
@@ -42,7 +43,10 @@ For help, please visit [#cas] on [public team chat].
 - [bcdk](https://github.com/BCDevOps/bcdk/tree/release/0.0.1)
 - [extended-oc](https://github.com/bcgov/esm-server/blob/dev/openshift/templates/lib/extended-oc.sh)
 - [mds/pipeline](https://github.com/bcgov/mds/tree/develop/pipeline)
+- [tfrs/readme](https://github.com/bcgov/tfrs/blob/master/openshift/templates/components/README.md)
+- [gwells/scripts](https://github.com/bcgov/gwells/tree/release/openshift/scripts)
 
+[standard targets]:https://www.gnu.org/software/make/manual/html_node/Standard-Targets.html
 [Pathfinder]:https://developer.gov.bc.ca/What-is-Pathfinder
 [OCP]:https://www.openshift.com/products/container-platform
 [k8s namespaces]:https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
