@@ -1,3 +1,9 @@
+THIS_FOLDER := $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../)
+include $(THIS_FOLDER)/git.mk
+include $(THIS_FOLDER)/jq.mk
+include $(THIS_FOLDER)/red_hat.mk
+include $(THIS_FOLDER)/test.mk
+
 OC=$(shell which oc)
 OC_TOOLS_PROJECT=$(PATHFINDER_PREFIX)-tools
 OC_DEV_PROJECT=$(PATHFINDER_PREFIX)-dev
@@ -7,7 +13,7 @@ OC_CONSOLE=https://console.pathfinder.gov.bc.ca:8443/console/projects
 OC_REGISTRY=docker-registry.default.svc:5000
 OC_REGISTRY_EXT=docker-registry.pathfinder.gov.bc.ca
 OC_PROJECT=$(shell echo "$${ENVIRONMENT:-$${OC_PROJECT}}")
-OC_TEMPLATE_VARS=PREFIX=$(PROJECT_PREFIX) GIT_SHA1=$(GIT_SHA1)
+OC_TEMPLATE_VARS=PREFIX=$(PROJECT_PREFIX) GIT_SHA1=$(GIT_SHA1) GIT_BRANCH_NORM=$(GIT_BRANCH_NORM) OC_REGISTRY=$(OC_REGISTRY) OC_PROJECT=$(OC_PROJECT)
 
 define oc_whoami
 	@@WHOAMI="$(shell $(OC) whoami)"; \
@@ -26,33 +32,38 @@ endef
 
 define oc_validate
 	$(OC) process --ignore-unknown-parameters=true -f $(1) --local $(2) \
-		| $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null \
+		| jq '.items[].metadata.labels=(.items[].metadata.labels + { "cas-pipeline/commit.id":"$(GIT_SHA1)" })' \
+		|  $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null \
 		&& echo ✓ $(1) is valid \
 		|| (echo ✘ $(1) is invalid && exit 1)
 endef
 
 define oc_lint
-	@@for FILE in $(shell $(FIND) openshift -name \*.yml -print); \
-		do $(call oc_validate,$$FILE,$(OC_TEMPLATE_VARS)); \
-	done
+	@@shopt -s globstar nullglob; \
+		for FILE in openshift/**/*.yml; do \
+			$(call oc_validate,$$FILE,$(OC_TEMPLATE_VARS)); \
+		done
 endef
 
 define oc_apply
-	$(OC) process --ignore-unknown-parameters=true -f $(1) $(2) \
+	$(OC) process --ignore-unknown-parameters=true -f $(1) --local $(2) \
+		| jq '.items[].metadata.labels=(.items[].metadata.labels + { "cas-pipeline/commit.id":"$(GIT_SHA1)" })' \
 		| $(OC) -n "$(3)" apply --wait --overwrite --validate -f-
 endef
 
+define oc_apply_dir
+	@@shopt -s globstar nullglob; \
+		for FILE in $(1)/**/*.yml; do \
+			$(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
+		done
+endef
+
 define oc_configure
-	@@for FILE in $(shell $(FIND) openshift/build -name \*.yml -print); \
-		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
-	done
+	$(call oc_apply_dir,openshift/build)
 endef
 
 define oc_build
-	@@echo ✓ building $(1)
-	@@$(OC) -n $(OC_PROJECT) start-build $(1) --follow
-	@@echo ✓ tagging $(1):$(GIT_SHA1) to $(1):$(GIT_BRANCH_NORM)
-	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM)
+	@@${THIS_FOLDER}/lib/oc_build.sh $(OC) $(OC_PROJECT) $(1) $(GIT_BRANCH_NORM) $(GIT_SHA1) "$(OC_TEMPLATE_VARS)" "$(JQ)"
 endef
 
 define oc_promote
@@ -60,10 +71,12 @@ define oc_promote
 	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):latest --reference-policy=local
 endef
 
+# DEPRECATED BY oc_deploy
 define oc_provision
-	@@for FILE in $(shell $(FIND) openshift/deploy -name \*.yml -print); \
-		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
-	done
+	@@shopt -s globstar nullglob; \
+		for FILE in openshift/deploy/**/*.yml; do \
+			$(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
+		done
 endef
 
 # @see https://access.redhat.com/RegistryAuthentication#allowing-pods-to-reference-images-from-other-secured-registries-9
@@ -94,4 +107,11 @@ define oc_create
 		$(OC) -n "$(1)" create $(2) $(3) >/dev/null; \
 	fi;
 	@@echo "✓ oc create $(2)/$(3)"
+endef
+
+define oc_deploy
+	$(call oc_apply_dir,openshift/deploy/persistentvolumeclaim)
+	$(call oc_apply_dir,openshift/deploy/deploymentconfig)
+	$(call oc_apply_dir,openshift/deploy/service)
+	$(call oc_apply_dir,openshift/deploy/route)
 endef
