@@ -115,3 +115,7 @@ define oc_deploy
 	$(call oc_apply_dir,openshift/deploy/service)
 	$(call oc_apply_dir,openshift/deploy/route)
 endef
+
+define oc_run_job
+	@@${THIS_FOLDER}/lib/oc_run_job.sh $(OC) $(OC_REGISTRY) $(OC_PROJECT) $(1) $(GIT_BRANCH_NORM) $(GIT_SHA1) "$(PROJECT_PREFIX)" "$(JQ)"
+endef
