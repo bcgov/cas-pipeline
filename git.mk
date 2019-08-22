@@ -4,5 +4,5 @@ GIT_BRANCH=$(strip $(shell $(GIT) rev-parse --abbrev-ref HEAD))
 GIT_BRANCH_NORM=$(subst /,-,$(GIT_BRANCH)) # openshift doesn't like slashes
 
 ifeq ($(GIT),)
-	$(error 'git' not found in $$PATH)
+$(error 'git' not found in $$PATH)
 endif
