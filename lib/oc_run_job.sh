@@ -1,14 +1,17 @@
 #!/bin/bash
 
 OC=$1
-OC_REGISTRY=$2
-OC_PROJECT=$3
-JOB_NAME=$4
-GIT_BRANCH_NORM=$5
-GIT_SHA1=$6
-PROJECT_PREFIX=$7
-JQ=$8
+OC_PROJECT=$2
+JOB_NAME=$3
+JQ=$4
+read -ra OC_TEMPLATE_VARS <<< "$5"
+read -ra OC_TEMPLATE_VARS_OVERRIDE <<< "$6"
 
+for i in "${OC_TEMPLATE_VARS_OVERRIDE[@]}"
+do
+    IFS='=' read -ra TEMPLATE_VAR <<< "${OC_TEMPLATE_VARS_OVERRIDE[i]}"
+    OC_TEMPLATE_VARS=("${OC_TEMPLATE_VARS[@]/#${TEMPLATE_VAR[0]}=*/${OC_TEMPLATE_VARS_OVERRIDE[i]}}")
+done
 
 get_job_phase() {
     $OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].status.phase"
@@ -25,7 +28,7 @@ $OC -n "$OC_PROJECT" delete job "$JOB_NAME"
 # Find the job config for this job and run `oc apply` for it
 shopt -s globstar nullglob
 for FILE in openshift/deploy/job/**/*.yml; do
-    JOB_CONFIG_STRING=$($OC process --ignore-unknown-parameters=true -f "$FILE" PREFIX="$PROJECT_PREFIX" GIT_SHA1="$GIT_SHA1" GIT_BRANCH_NORM="$GIT_BRANCH_NORM" OC_REGISTRY="$OC_REGISTRY" OC_PROJECT="$OC_PROJECT" \
+    JOB_CONFIG_STRING=$($OC process --ignore-unknown-parameters=true -f "$FILE" "${OC_TEMPLATE_VARS[@]}" \
     | $JQ "if .items[].metadata.name == \"$JOB_NAME\" then .items[].metadata.labels=(.items[].metadata.labels + { \"cas-pipeline/commit.id\":\"$GIT_SHA1\" }) else empty end")
     if [[ -n "$JOB_CONFIG_STRING" ]]; then
         echo "$JOB_CONFIG_STRING" | "$OC" -n "$OC_PROJECT" apply --wait --overwrite --validate -f-

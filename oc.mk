@@ -117,5 +117,5 @@ define oc_deploy
 endef
 
 define oc_run_job
-	@@${THIS_FOLDER}/lib/oc_run_job.sh $(OC) $(OC_REGISTRY) $(OC_PROJECT) $(1) $(GIT_BRANCH_NORM) $(GIT_SHA1) "$(PROJECT_PREFIX)" "$(JQ)"
+	@@${THIS_FOLDER}/lib/oc_run_job.sh $(OC) $(OC_PROJECT) $(1) "$(JQ)" "$(OC_TEMPLATE_VARS)" "$(2)"
 endef
