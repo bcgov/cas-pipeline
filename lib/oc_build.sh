@@ -5,7 +5,8 @@ OC_PROJECT=$2
 BUILD_CONFIG=$3
 GIT_BRANCH_NORM=$4
 GIT_SHA1=$5
-read -ra OC_TEMPLATE_VARS <<< "$6"
+#TODO: test how we handle escaped values in OC_TEMPLATE_VARS
+IFS=' ' read -ra OC_TEMPLATE_VARS <<< "$6"
 JQ=$7
 
 # Find the build config for this build and run `oc apply` for it

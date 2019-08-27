@@ -4,8 +4,8 @@ OC=$1
 OC_PROJECT=$2
 JOB_NAME=$3
 JQ=$4
-read -ra OC_TEMPLATE_VARS <<< "$5"
-read -ra OC_TEMPLATE_VARS_OVERRIDE <<< "$6"
+IFS=' ' read -ra OC_TEMPLATE_VARS <<< "$5"
+IFS=' ' read -ra OC_TEMPLATE_VARS_OVERRIDE <<< "$6"
 
 for i in "${OC_TEMPLATE_VARS_OVERRIDE[@]}"
 do
@@ -14,6 +14,7 @@ do
 done
 
 get_job_phase() {
+    # We select the last job as previous failed jobs would still be returned by this selector
     $OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].status.phase"
 }
 
