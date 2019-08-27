@@ -1,6 +1,5 @@
 JQ := $(shell command -v jq)
 
 ifeq ($(JQ),)
-	$(error 'jq' not found in $$PATH)
+$(error 'jq' not found in $$PATH)
 endif
-

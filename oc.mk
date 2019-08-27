@@ -115,3 +115,17 @@ define oc_deploy
 	$(call oc_apply_dir,openshift/deploy/service)
 	$(call oc_apply_dir,openshift/deploy/route)
 endef
+
+define oc_wait_for_job
+	@@${THIS_FOLDER}/lib/oc_wait_for_job.sh "$(OC)" "$(OC_PROJECT)" "$(1)"
+endef
+
+define oc_wait_for_deploy_ready
+	@@${THIS_FOLDER}/lib/oc_wait_for_deploy_ready.sh "$(OC)" "$(OC_PROJECT)" "$(1)" "$(JQ)"
+endef
+
+define oc_run_job
+	$(call oc_wait_for_job,$(1))
+	@@${THIS_FOLDER}/lib/oc_run_job.sh "$(OC)" "$(OC_PROJECT)" "$(1)" "$(JQ)" "$(OC_TEMPLATE_VARS)" "$(2)"
+endef
+
