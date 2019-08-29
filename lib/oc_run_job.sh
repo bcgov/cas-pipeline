@@ -7,10 +7,18 @@ JQ=$4
 IFS=' ' read -ra OC_TEMPLATE_VARS <<< "$5"
 IFS=' ' read -ra OC_TEMPLATE_VARS_OVERRIDE <<< "$6"
 
-for i in "${OC_TEMPLATE_VARS_OVERRIDE[@]}"
+for i in "${!OC_TEMPLATE_VARS_OVERRIDE[@]}"
 do
     IFS='=' read -ra TEMPLATE_VAR <<< "${OC_TEMPLATE_VARS_OVERRIDE[i]}"
     OC_TEMPLATE_VARS=("${OC_TEMPLATE_VARS[@]/#${TEMPLATE_VAR[0]}=*/${OC_TEMPLATE_VARS_OVERRIDE[i]}}")
+done
+
+for i in "${!OC_TEMPLATE_VARS[@]}"
+do
+    IFS='=' read -ra TEMPLATE_VAR <<< "${OC_TEMPLATE_VARS[i]}"
+    if [ "${TEMPLATE_VAR[0]}" == 'GIT_SHA1' ]; then
+        GIT_SHA1="${TEMPLATE_VAR[1]}"
+    fi
 done
 
 get_job_phase() {
