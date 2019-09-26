@@ -1,3 +1,0 @@
-kubeletArguments:
-  feature-gates:
-    - PersistentLocalVolumes=true

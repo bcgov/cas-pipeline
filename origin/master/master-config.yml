@@ -1,7 +1,0 @@
-apiServerArguments:
-  feature-gates:
-    - PersistentLocalVolumes=true
-
-controllerArguments:
-  feature-gates:
-    - PersistentLocalVolumes=true
