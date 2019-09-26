@@ -22,20 +22,19 @@ if [ "$#" -lt "$num_required_params" ]; then
     usage
 fi
 
-if [[ ! -d  "$PROJECT_PATH/openshift.local.clusterup" ]]; then
+set -e
+
+oc=$1
+shift
+project=$1
+shift
+storage_classes=("$@")
+project_path=$(pwd)
+if [[ ! -d  "$project_path/openshift.local.clusterup" ]]; then
   echo "Could not find the \'openshift.local.clusterup\' directory in the current working directory."
   echo "This script should be executed in the same working directory as \`oc cluster up\`."
   exit 1
 fi
-
-set -e
-
-OC=$1
-shift
-PROJECT=$1
-shift
-STORAGECLASSES=("$@")
-PROJECT_PATH=$(pwd)
 
 cat >> /tmp/local-volume-config.yml <<EOL
 apiVersion: v1
@@ -45,7 +44,7 @@ metadata:
 data:
 EOL
 
-for sc in "${STORAGECLASSES[@]}"; do
+for sc in "${storage_classes[@]}"; do
     cat >> "/tmp/storage-$sc.yml" <<EOF
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -54,10 +53,10 @@ metadata:
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 EOF
-    $OC -n "$PROJECT" create -f "/tmp/storage-$sc.yml"
+    $oc -n "$project" create -f "/tmp/storage-$sc.yml"
 
     for pv_num in {1..100}; do
-      mkdir -p "$PROJECT_PATH/openshift.local.clusterup/openshift.local.pv/$sc-$pv_num";
+      mkdir -p "$project_path/openshift.local.clusterup/openshift.local.pv/$sc-$pv_num";
       cat >> "/tmp/pv-$sc-$pv_num.yml" <<EOL
 apiVersion: v1
 kind: PersistentVolume
@@ -71,7 +70,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: $sc
   local:
-    path: $PROJECT_PATH/openshift.local.clusterup/openshift.local.pv/$sc-$pv_num
+    path: $project_path/openshift.local.clusterup/openshift.local.pv/$sc-$pv_num
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -81,6 +80,6 @@ spec:
           values:
           - localhost
 EOL
-      $OC -n "$PROJECT" create -f "/tmp/pv-$sc-$pv_num.yml"
+      $oc -n "$project" create -f "/tmp/pv-$sc-$pv_num.yml"
     done
 done
