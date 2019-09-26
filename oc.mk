@@ -143,3 +143,11 @@ define oc_run_job
 	@@${THIS_FOLDER}/lib/oc_run_job.sh "$(OC)" "$(OC_PROJECT)" "$(1)" "$(JQ)" "$(OC_TEMPLATE_VARS)" "$(2)"
 endef
 
+define oc_exec_all_pods
+	@@set -e; \
+		PODS="$$($(OC) -n "$(OC_PROJECT)" get pod --selector deploymentconfig=$(1) --field-selector status.phase=Running -o name | cut -d '/' -f 2 | tr '\n' ' ')"; \
+		PODS+=" $$($(OC) -n "$(OC_PROJECT)" get pod --selector app=$(1) --field-selector status.phase=Running -o name | cut -d '/' -f 2 | tr '\n' ' ')"; \
+		for POD in $$PODS; do \
+			$(OC) -n "$(OC_PROJECT)" exec $$POD -- /usr/bin/env bash -c $$'$(2)'; \
+		done
+endef
