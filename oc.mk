@@ -39,8 +39,8 @@ define oc_validate
 endef
 
 define oc_lint
-	@@shopt -s globstar nullglob; \
-		for FILE in openshift/**/*.yml; do \
+	@@shopt -s nullglob extglob; \
+		for FILE in $$(ls openshift/*/!(secret)/*.yml); do \
 			$(call oc_validate,$$FILE,$(OC_TEMPLATE_VARS)); \
 		done
 endef
@@ -71,12 +71,20 @@ define oc_promote
 	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):latest --reference-policy=local
 endef
 
-# DEPRECATED BY oc_deploy
-define oc_provision
-	@@shopt -s globstar nullglob; \
-		for FILE in openshift/deploy/**/*.yml; do \
-			$(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
-		done
+define oc_create_secrets
+    @@set -e; shopt -s nullglob; \
+    for FILE in openshift/deploy/secret/*.yml; do \
+        JSON="$$($(OC) process --ignore-unknown-parameters -f $$FILE $(OC_TEMPLATE_VARS))"; \
+        if echo $$JSON | jq -e '.items[].kind == "Secret"' >/dev/null; then \
+            NAME="$$(echo $$JSON | jq -r '.items[].metadata.name')"; \
+            if ! $(OC) -n "$(OC_PROJECT)" get secret/$$NAME >/dev/null 2>&1; then \
+                echo $$JSON | $(OC) -n "$(OC_PROJECT)" create --validate -f- >/dev/null; \
+                echo "✓ Created secret/$$NAME"; \
+            else \
+                echo "- Ignored secret/$$NAME because it already exists"; \
+            fi; \
+        fi; \
+    done
 endef
 
 # @see https://access.redhat.com/RegistryAuthentication#allowing-pods-to-reference-images-from-other-secured-registries-9
