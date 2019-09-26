@@ -102,6 +102,11 @@ define oc_new_project
 	@@echo "✓ oc project $(1) exists"
 endef
 
+define oc_mock_storageclass
+	$(call oc_new_project,local-storage)
+	@@${THIS_FOLDER}/lib/oc_mock_storageclass.sh "$(OC)" local-storage $(1)
+endef
+
 define oc_create
 	@@if ! $(OC) -n "$(1)" get $(2)/$(3) 2>&1 >/dev/null; then \
 		$(OC) -n "$(1)" create $(2) $(3) >/dev/null; \
