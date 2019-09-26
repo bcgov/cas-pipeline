@@ -17,8 +17,8 @@ EOF
 }
 
 num_required_params=3
-if [ "$#" -ne "$num_required_params" ]; then
-    echo "Passed $# parameters. Expected $num_required_params."
+if [ "$#" -lt "$num_required_params" ]; then
+    echo "Passed $# parameters. Expected at least $num_required_params."
     usage
 fi
 
