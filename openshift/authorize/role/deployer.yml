@@ -47,8 +47,10 @@ objects:
           - replicationcontrollers
           - persistentvolumeclaims
           - services
+          - secrets
           - configmaps
           - pods
+          - pods/exec
         verbs:
           - list
           - get
@@ -60,6 +62,16 @@ objects:
         attributeRestrictions: null
         resources:
           - deploymentconfigs
+        verbs:
+          - get
+          - create
+          - update
+          - patch
+      - apiGroups:
+          - apps
+        attributeRestrictions: null
+        resources:
+          - statefulsets
         verbs:
           - get
           - create
