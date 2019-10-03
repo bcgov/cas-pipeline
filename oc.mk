@@ -131,6 +131,10 @@ define oc_deploy
 	$(call oc_apply_dir,openshift/deploy/cronjob)
 endef
 
+define oc_clean_tools_istags
+	@@${THIS_FOLDER}/lib/oc_clean_istags.sh "$(OC)" "$(OC_TOOLS_PROJECT)" "$(1)" "$(GIT)"
+endef
+
 define oc_wait_for_job
 	@@${THIS_FOLDER}/lib/oc_wait_for_job.sh "$(OC)" "$(OC_PROJECT)" "$(1)"
 endef
