@@ -128,6 +128,7 @@ define oc_deploy
 	$(call oc_apply_dir,openshift/deploy/service)
 	$(call oc_apply_dir,openshift/deploy/route)
 	$(call oc_apply_dir,openshift/deploy/statefulset)
+	$(call oc_apply_dir,openshift/deploy/cronjob)
 endef
 
 define oc_wait_for_job

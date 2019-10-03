@@ -14,6 +14,17 @@ shopt -s globstar nullglob
 for FILE in openshift/build/buildconfig/**/*.yml; do
     BUILD_CONFIG_STRING=$("$OC" process --ignore-unknown-parameters=true -f "$FILE" "${OC_TEMPLATE_VARS[@]}" | "$JQ" "if .items[].metadata.name == \"$BUILD_CONFIG\" then .items[].metadata.labels=(.items[].metadata.labels + { \"cas-pipeline/commit.id\":\"$GIT_SHA1\" }) else empty end")
     if [[ -n "$BUILD_CONFIG_STRING" ]]; then
+        # oc apply will not overwrite environment variables, so we delete all of them first
+        mapfile -t env_variables <<< "$($OC -n "$OC_PROJECT" set env bc/"$BUILD_CONFIG" --list)"
+        for env_var in "${env_variables[@]}"
+        do
+            # When listing env variables, oc prints the name of the build config. We ignore that line by using the "--only-delimited" option
+            var_name=$(echo "$env_var" | cut -d '=' -f1 --only-delimited)
+            if [ -n "$var_name" ]; then
+                # unset the env variable (see https://docs.openshift.com/container-platform/3.11/dev_guide/environment_variables.html#unset-environment-variables)
+                $OC -n "$OC_PROJECT" set env bc/"$BUILD_CONFIG" "$var_name"-
+            fi
+        done
         echo "$BUILD_CONFIG_STRING" | "$OC" -n "$OC_PROJECT" apply --wait --overwrite --validate -f-
     fi
 done
