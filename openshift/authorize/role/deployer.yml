@@ -33,6 +33,12 @@ objects:
           - watch
           - update
       - apiGroups:
+          - image.openshift.io
+        resources:
+          - imagestreamtags
+        verbs:
+          - delete
+      - apiGroups:
           - project.openshift.io
           - ""
         attributeRestrictions: null
