@@ -45,11 +45,16 @@ git=$4
 
 IFS=' ' read -ra istags <<< "$($oc get  -n "$oc_project" is/"$image_stream" -o go-template='{{ range .spec.tags }}{{.name}} {{end}}')"
 $git fetch --tags
+
+# strip 'origin/' and replace '/' by '-' in branch names
+mapfile -t normalized_branches <<< "$(git branch -r | sed 's/origin\///g' | tr '/' '-' | tr -d ' ')"
+
 for istag in "${istags[@]}"
 do
     if [ -z "$($git tag --points-at "$istag")" ]; then # never delete imagestream tag if there is a git tag pointing at it
-        if [ "$($git cat-file -t "$istag" 2>/dev/null)" != "commit" ]; then # both commits and branches return the type "commit"
+        if [[ "$($git cat-file -t "$istag" 2>/dev/null)" != "commit" || ! ${normalized_branches[*]} =~ $istag ]]; then
             # Delete tags pointing to objects that do not exist anymore
+            # both commits and branches return the type "commit"
             $oc -n "$oc_project" delete istag/"$image_stream":"$istag"
         elif $git branch --contains "$istag" | grep -q -E '(develop|master)'; then
             # The tag is on develop or master
