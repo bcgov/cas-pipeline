@@ -44,6 +44,7 @@ metadata:
 data:
 EOL
 
+pids=""
 for sc in "${storage_classes[@]}"; do
     cat >> "/tmp/storage-$sc.yml" <<EOF
 apiVersion: storage.k8s.io/v1
@@ -81,6 +82,10 @@ spec:
           values:
           - localhost
 EOL
-      $oc -n "$project" create -f "/tmp/pv-$sc-$pv_num.yml"
+      $oc -n "$project" create -f "/tmp/pv-$sc-$pv_num.yml" &
+      pids="$pids $!"
     done
+done
+for pid in $pids; do
+  wait "$pid"
 done
