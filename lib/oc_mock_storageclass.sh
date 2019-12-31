@@ -67,6 +67,7 @@ spec:
     storage: 50Gi
   accessModes:
   - ReadWriteOnce
+  - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   storageClassName: $sc
   local:
