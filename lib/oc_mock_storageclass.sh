@@ -52,7 +52,7 @@ kind: StorageClass
 metadata:
  name: $sc
 provisioner: kubernetes.io/no-provisioner
-volumeBindingMode: WaitForFirstConsumer
+volumeBindingMode: Immediate
 EOF
     $oc -n "$project" create -f "/tmp/storage-$sc.yml"
 
