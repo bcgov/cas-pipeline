@@ -57,6 +57,7 @@ objects:
           - configmaps
           - pods
           - pods/exec
+          - pods/log
         verbs:
           - list
           - get
