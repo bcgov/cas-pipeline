@@ -41,13 +41,22 @@ for FILE in openshift/deploy/job/**/*.yml; do
 done
 
 echo -n "Waiting for job to complete"
-while [[ $(get_job_phase) == '"Pending"' || $(get_job_phase) == '"Unknown"' || $(get_job_phase) == '"Running"' ]]; do
+while [[ $(get_job_phase) == '"Pending"' || $(get_job_phase) == '"Unknown"' ]]; do
     echo -n "."
     sleep 5
 done
+echo ""
 
-echo "✓ completed job/$JOB_NAME"
-"$OC" -n "$OC_PROJECT" logs "job/$JOB_NAME"
+while [[ $(get_job_phase) == '"Running"' ]]; do
+    # This loop makes the script attempt to read the logs again in case of an unexpected EOF
+    pod_name="$($OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].metadata.name")"
+    pod_name="${pod_name#\"}" # remove prefix double quote from pod_name
+    pod_name="${pod_name%\"}" # remove suffix double quote from pod_name
+    echo "✓ running job $JOB_NAME in $pod_name"
+    "$OC" -n "$OC_PROJECT" logs $pod_name --follow
+    sleep 5
+done
+echo ""
 
 if [[ $(get_job_phase) == '"Succeeded"' ]]; then
     echo "✓ Job succeeded."
