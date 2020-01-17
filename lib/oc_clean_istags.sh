@@ -51,17 +51,17 @@ mapfile -t normalized_branches <<< "$(git branch -r | sed 's/origin\///g' | tr '
 
 for istag in "${istags[@]}"
 do
-    if [ -z "$($git tag --points-at "$istag" 2>/dev/null)" ]; then # never delete imagestream tag if there is a git tag pointing at it
-        if [[ "$($git cat-file -t "$istag" 2>/dev/null)" != "commit" && ! ${normalized_branches[*]} =~ $istag ]]; then
-            # Delete tags pointing to objects that do not exist anymore
-            # both commits and branches return the type "commit"
-            $oc -n "$oc_project" delete istag/"$image_stream":"$istag"
-        elif $git branch --contains "$istag" | grep -q -E '(develop|master)'; then
-            # The tag is on develop or master
-            if [ "$($git log --pretty=%P -n 1 "$istag" | wc -w)" -eq 1 ]; then
-                # the tag is now in develop or master but is not a merge commit
+    if [[ "$($git cat-file -t "$istag" 2>/dev/null)" != "commit" && ! "${normalized_branches[*]}" =~ (^| )"${istag}"( |$) ]]; then
+        # Delete tags pointing to objects that do not exist anymore
+        # both commits and branches return the type "commit"
+        $oc -n "$oc_project" delete istag/"$image_stream":"$istag"
+    elif $git branch --contains "$istag" | grep -q -E '(develop|master)'; then
+        # The tag is on develop or master
+        if [ "$($git log --pretty=%P -n 1 "$istag" | wc -w)" -eq 1 ]; then
+            # the tag is now in develop or master but is not a merge commit
+            if [ -z "$($git tag --points-at "$istag" 2>/dev/null)" ]; then # never delete imagestream tag if there is a git tag pointing at it
                 $oc -n "$oc_project" delete istag/"$image_stream":"$istag"
-            fi
+            fi;
         fi
     fi
 done
