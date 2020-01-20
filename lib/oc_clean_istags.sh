@@ -49,6 +49,8 @@ $git fetch --tags
 # strip 'origin/' and replace '/' by '-' in branch names
 mapfile -t normalized_branches <<< "$(git branch -r | sed 's/origin\///g' | tr '/' '-' | tr -d ' ')"
 
+kept_istags=$(mktemp)
+
 for istag in "${istags[@]}"
 do
     if [[ "$($git cat-file -t "$istag" 2>/dev/null)" != "commit" && ! "${normalized_branches[*]}" =~ (^| )"${istag}"( |$) ]]; then
@@ -62,6 +64,22 @@ do
             if [ -z "$($git tag --points-at "$istag" 2>/dev/null)" ]; then # never delete imagestream tag if there is a git tag pointing at it
                 $oc -n "$oc_project" delete istag/"$image_stream":"$istag"
             fi;
+        fi
+        if [[ ! "${normalized_branches[*]}" =~ (^| )"${istag}"( |$) ]]; then
+            # The tag is not a branch. Candidate for deletion based on age
+            echo "${istag}" >> "$kept_istags"
+        fi
+    fi
+done
+
+counter=0
+git rev-list master | while read -r sha1; do
+    if grep -q "$sha1" "$kept_istags"; then
+        _=$((counter++))
+        if [ $counter -le 20 ]; then
+            echo "keeping $sha1"
+        else
+            $oc -n "$oc_project" delete istag/"$image_stream":"$sha1"
         fi
     fi
 done
