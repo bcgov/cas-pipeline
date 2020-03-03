@@ -40,31 +40,33 @@ for FILE in openshift/deploy/job/**/*.yml; do
     fi
 done
 
-echo -n "Waiting for job to complete"
-while [[ $(get_job_phase) == '"Pending"' || $(get_job_phase) == '"Unknown"' ]]; do
-    echo -n "."
-    sleep 5
-done
-echo ""
+echo -n "Waiting for job to start"
 
-while [[ $(get_job_phase) == '"Running"' ]]; do
-    # This loop makes the script attempt to read the logs again in case of an unexpected EOF
-    pod_name="$($OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].metadata.name")"
-    pod_name="${pod_name#\"}" # remove prefix double quote from pod_name
-    pod_name="${pod_name%\"}" # remove suffix double quote from pod_name
-    echo "✓ running job $JOB_NAME in $pod_name"
-    "$OC" -n "$OC_PROJECT" logs $pod_name --follow
-    sleep 5
+while true; do
+    case $(get_job_phase) in
+        Pending | Unknown )
+            echo -n "."
+            sleep 5
+            ;;
+        Running )
+            echo ""
+            # This loop makes the script attempt to read the logs again in case of an unexpected EOF
+            pod_name="$($OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].metadata.name")"
+            pod_name="${pod_name#\"}" # remove prefix double quote from pod_name
+            pod_name="${pod_name%\"}" # remove suffix double quote from pod_name
+            echo "✓ running job $JOB_NAME in $pod_name"
+            "$OC" -n "$OC_PROJECT" logs "$pod_name" --follow
+            sleep 5
+            ;;
+        Succeeded )
+            echo ""
+            echo "✓ Job succeeded."
+            exit 0
+            ;;
+        Failed )
+            echo ""
+            echo "✘ Job failed."
+            exit 1
+            ;;
+    esac
 done
-echo ""
-
-if [[ $(get_job_phase) == '"Succeeded"' ]]; then
-    echo "✓ Job succeeded."
-    exit 0
-elif [[ $(get_job_phase) == '"Failed"' ]]; then
-    echo "✘ Job failed."
-    exit 1
-else
-    echo "✘ Job failed with status '$(get_job_phase)'."
-    exit 1
-fi
