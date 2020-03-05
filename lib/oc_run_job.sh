@@ -23,7 +23,7 @@ done
 
 get_job_phase() {
     # We select the last job as previous failed jobs would still be returned by this selector
-    $OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].status.phase"
+    $OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].status.phase" | tr -d '"'
 }
 
 echo "✓ removing old config for $JOB_NAME"
