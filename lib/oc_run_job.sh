@@ -23,7 +23,7 @@ done
 
 get_job_phase() {
     # We select the last job as previous failed jobs would still be returned by this selector
-    $OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].status.phase" | tr -d '"'
+    $OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq -r ".items[-1].status.phase"
 }
 
 echo "✓ removing old config for $JOB_NAME"
@@ -51,9 +51,7 @@ while true; do
         Running )
             echo ""
             # This loop makes the script attempt to read the logs again in case of an unexpected EOF
-            pod_name="$($OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq ".items[-1].metadata.name")"
-            pod_name="${pod_name#\"}" # remove prefix double quote from pod_name
-            pod_name="${pod_name%\"}" # remove suffix double quote from pod_name
+            pod_name="$($OC -n "$OC_PROJECT" get pods --selector job-name="$JOB_NAME" --sort-by='{.metadata.resourceVersion}' -o json | jq -r ".items[-1].metadata.name")"
             echo "✓ running job $JOB_NAME in $pod_name"
             "$OC" -n "$OC_PROJECT" logs "$pod_name" --follow
             sleep 5
