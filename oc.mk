@@ -2,6 +2,7 @@ THIS_FOLDER := $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../)
 include $(THIS_FOLDER)/git.mk
 include $(THIS_FOLDER)/jq.mk
 include $(THIS_FOLDER)/red_hat.mk
+include $(THIS_FOLDER)/git_hub.mk
 include $(THIS_FOLDER)/test.mk
 
 OC=$(shell which oc)
@@ -89,16 +90,24 @@ endef
 
 # @see https://access.redhat.com/RegistryAuthentication#allowing-pods-to-reference-images-from-other-secured-registries-9
 define oc_configure_credentials
-	@@if ! $(OC) -n "$(1)" get secret io-redhat-registry  >/dev/null; then \
-		$(OC) -n "$(1)" create secret docker-registry io-redhat-registry \
-			--docker-server="$(RED_HAT_DOCKER_SERVER)" \
-			--docker-username="$(RED_HAT_DOCKER_USERNAME)" \
-			--docker-password="$(RED_HAT_DOCKER_PASSWORD)" \
-			--docker-email="$(RED_HAT_DOCKER_EMAIL)" \
+	@@if ! $(OC) -n "$(1)" get secret "$(2)"  >/dev/null; then \
+		$(OC) -n "$(1)" create secret docker-registry "$(2)" \
+			--docker-server="$(3)" \
+			--docker-username="$(4)" \
+			--docker-password="$(5)" \
+			--docker-email="$(6)" \
 			>/dev/null; \
-		$(OC) -n "$(1)" secret link default io-redhat-registry --for=pull; \
-		$(OC) -n "$(1)" secret link builder io-redhat-registry; \
+		$(OC) -n "$(1)" secret link default "$(2)" --for=pull; \
+		$(OC) -n "$(1)" secret link builder "$(2)"; \
 	fi
+endef
+
+define oc_configure_redhat_credentials
+	$(call oc_configure_credentials,$(1),io-redhat-registry,$(RED_HAT_DOCKER_SERVER),$(RED_HAT_DOCKER_USERNAME),$(RED_HAT_DOCKER_PASSWORD),$(RED_HAT_DOCKER_EMAIL))
+endef
+
+define oc_configure_github_credentials
+	$(call oc_configure_credentials,$(1),github-registry,$(GITHUB_DOCKER_SERVER),$(GITHUB_DOCKER_USERNAME),$(GITHUB_DOCKER_TOKEN))
 endef
 
 define oc_new_project
@@ -106,7 +115,8 @@ define oc_new_project
 		$(OC) new-project $(1) >/dev/null \
 		&& echo "✓ oc new-project $(1)"; \
 	fi
-	$(call oc_configure_credentials,$(1))
+	$(call oc_configure_redhat_credentials,$(1))
+	$(call oc_configure_github_credentials,$(1))
 	@@echo "✓ oc project $(1) exists"
 endef
 
