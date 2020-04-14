@@ -102,14 +102,6 @@ define oc_configure_credentials
 	fi
 endef
 
-define oc_configure_redhat_credentials
-	$(call oc_configure_credentials,$(1),io-redhat-registry,$(RED_HAT_DOCKER_SERVER),$(RED_HAT_DOCKER_USERNAME),$(RED_HAT_DOCKER_PASSWORD),$(RED_HAT_DOCKER_EMAIL))
-endef
-
-define oc_configure_github_credentials
-	$(call oc_configure_credentials,$(1),github-registry,$(GITHUB_DOCKER_SERVER),$(GITHUB_DOCKER_USERNAME),$(GITHUB_DOCKER_TOKEN))
-endef
-
 define oc_new_project
 	@@if ! $(OC) get project $(1) >/dev/null; then \
 		$(OC) new-project $(1) >/dev/null \
