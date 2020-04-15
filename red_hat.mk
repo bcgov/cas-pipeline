@@ -2,3 +2,8 @@ RED_HAT_DOCKER_SERVER=$(shell echo "$$RED_HAT_DOCKER_SERVER")
 RED_HAT_DOCKER_USERNAME=$(shell echo "$$RED_HAT_DOCKER_USERNAME")
 RED_HAT_DOCKER_PASSWORD=$(shell echo "$$RED_HAT_DOCKER_PASSWORD")
 RED_HAT_DOCKER_EMAIL=$(shell echo "$$RED_HAT_DOCKER_EMAIL")
+RED_HAT_SECRET_NAME=io-redhat-registry
+
+define oc_configure_redhat_credentials
+	$(call oc_configure_credentials,$(1),$(RED_HAT_SECRET_NAME),$(RED_HAT_DOCKER_SERVER),$(RED_HAT_DOCKER_USERNAME),$(RED_HAT_DOCKER_PASSWORD),$(RED_HAT_DOCKER_EMAIL))
+endef
