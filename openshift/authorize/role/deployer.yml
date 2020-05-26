@@ -59,11 +59,13 @@ objects:
           - pods/exec
           - pods/log
         verbs:
+          - watch
           - list
           - get
           - create
           - update
           - patch
+          - delete
       - apiGroups:
           - apps.openshift.io
         attributeRestrictions: null
@@ -128,3 +130,50 @@ objects:
           - create
           - delete
           - get
+      - apiGroups:
+          - policy
+        resources:
+          - poddisruptionbudgets
+        verbs:
+          - get
+          - create
+          - update
+          - patch
+          - delete
+      - apiGroups:
+          - ""
+        resources:
+          - serviceaccounts
+        verbs:
+          - get
+          - list
+          - create
+          - update
+          - patch
+          - delete
+      - apiGroups:
+          - "rbac.authorization.k8s.io"
+          - "authorization.openshift.io"
+        resources:
+          - roles
+          - rolebindings
+        verbs:
+          - get
+          - list
+          - create
+          - update
+          - patch
+          - delete
+      - apiGroups:
+          - extensions
+          - apps
+        resources:
+          - deployments
+          - replicasets
+        verbs:
+          - get
+          - list
+          - create
+          - update
+          - patch
+          - delete
