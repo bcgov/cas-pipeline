@@ -126,10 +126,13 @@ objects:
         attributeRestrictions: null
         resources:
           - jobs
+          - cronjobs
         verbs:
-          - create
-          - delete
           - get
+          - create
+          - update
+          - patch
+          - delete
       - apiGroups:
           - policy
         resources:
