@@ -133,6 +133,8 @@ objects:
           - update
           - patch
           - delete
+          - watch
+          - list
       - apiGroups:
           - policy
         resources:
