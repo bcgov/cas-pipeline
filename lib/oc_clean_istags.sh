@@ -73,7 +73,8 @@ do
                 $oc -n "$oc_project" delete istag/"$image_stream":"$istag"
                 echo "$istag is not a merge commit"
             else
-                echo "Keeping $image_stream:$istag because a Git tag points at it"
+                echo "Keeping $image_stream:$istag because the following git tags point at it"
+                $git tag --points-at "$istag"
             fi;
         elif [[ ! "${normalized_branches[*]}" =~ (^| )"${istag}"( |$) ]]; then
             # The tag is not a branch. Candidate for deletion based on age
@@ -89,10 +90,10 @@ git rev-list master | while read -r sha1; do
         if [ $counter -le 20 ]; then
             echo "keeping $sha1"
         else
-            if [ -z "$($git tag --points-at "$istag" 2>/dev/null)" ]; then
+            if [ -z "$($git tag --points-at "$sha1" 2>/dev/null)" ]; then
                 $oc -n "$oc_project" delete istag/"$image_stream":"$sha1"
             else
-                echo "Keeping $image_stream:$istag because a Git tag points at it"
+                echo "Keeping $image_stream:$sha1 because a Git tag points at it"
             fi;
         fi
     fi
