@@ -67,6 +67,15 @@ objects:
           - patch
           - delete
       - apiGroups:
+          - ""
+        attributeRestrictions: null
+        resources:
+          - pods/status
+        verbs:
+          - watch
+          - list
+          - get
+      - apiGroups:
           - apps.openshift.io
         attributeRestrictions: null
         resources:
