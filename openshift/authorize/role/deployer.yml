@@ -55,6 +55,7 @@ objects:
           - services
           - secrets
           - configmaps
+          - endpoints
           - pods
           - pods/exec
           - pods/log
@@ -66,6 +67,16 @@ objects:
           - update
           - patch
           - delete
+          - deletecollection
+      - apiGroups:
+          - ""
+        attributeRestrictions: null
+        resources:
+          - pods/status
+        verbs:
+          - watch
+          - list
+          - get
       - apiGroups:
           - apps.openshift.io
         attributeRestrictions: null
@@ -84,6 +95,7 @@ objects:
         verbs:
           - get
           - create
+          - delete
           - update
           - patch
       - apiGroups:
@@ -96,6 +108,7 @@ objects:
           - create
           - update
           - patch
+          - delete
       - apiGroups:
           - template.openshift.io
         attributeRestrictions: null
@@ -133,6 +146,8 @@ objects:
           - update
           - patch
           - delete
+          - watch
+          - list
       - apiGroups:
           - policy
         resources:
