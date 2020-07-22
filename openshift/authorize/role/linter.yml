@@ -822,6 +822,7 @@ objects:
     - rbac.authorization.k8s.io
     attributeRestrictions: null
     resources:
+    - rolebindings
     - roles
     verbs:
     - get
