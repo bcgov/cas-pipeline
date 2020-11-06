@@ -1,0 +1,27 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+
+parameters:
+  - description: GitHub Login of the user to add to the namespace
+    displayName: GitHub Login
+    name: GH_LOGIN
+    required: true
+  - description: namespace
+    displayName: namespace
+    name: NAMESPACE
+    required: true
+
+objects:
+  - kind: RoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: ${GH_LOGIN}@github-admin
+      namespace: ${NAMESPACE}
+    subjects:
+      - kind: User
+        apiGroup: rbac.authorization.k8s.io
+        name: ${GH_LOGIN}@github
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: admin
