@@ -82,7 +82,7 @@ for login in $(curl --silent -H "Authorization: token $token" https://api.github
       namespace=$prefix-$suffix
       echo "Binding GitHub user $login to role $role in $namespace"
       if ! $dry_run; then
-        oc process -f "$__dirname"/../openshift/authorize/rolebinding/admin.yml GH_LOGIN="$login" NAMESPACE="$namespace" ROLE="$role" | \
+        oc process -f "$__dirname"/../openshift/authorize/rolebinding/clusterRoleBinding.yml GH_LOGIN="$login" NAMESPACE="$namespace" ROLE="$role" | \
         oc apply --wait --overwrite --validate -f-
       fi
     done
