@@ -8,6 +8,11 @@ $0 [OPTIONS]
 Retrieves the list of users from a GitHub team 
 and adds a RoleBinding for each user in the provided namespace sets
 
+The list of namespaces affected by the script is defined by the 
+"--project-prefixes" and "--project-suffixes" options (see below).
+For instance, "--project-prefixes abc123,456qwe --project-suffixes tools,dev" 
+would affect the following namespaces: abc123-tools, abc123-dev, 456qwe-tools and 456qwe-dev
+
 Maintainer: Matthieu Foucault <matthieu@button.is>
 
 Options:
