@@ -6,6 +6,10 @@ parameters:
     displayName: GitHub Login
     name: GH_LOGIN
     required: true
+  - description: GitHub Team of the user to add to the namespace
+    displayName: GitHub Team
+    name: GH_TEAM
+    required: true
   - description: namespace
     displayName: namespace
     name: NAMESPACE
@@ -20,6 +24,9 @@ objects:
     metadata:
       name: ${GH_LOGIN}@github-${ROLE}
       namespace: ${NAMESPACE}
+      labels:
+        created-by: cas-pipeline
+        gh-team: ${GH_TEAM}
     subjects:
       - kind: User
         apiGroup: rbac.authorization.k8s.io

@@ -76,14 +76,19 @@ __dirname="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo "Retriving members of $org/$team"
 
-for login in $(curl --silent -H "Authorization: token $token" https://api.github.com/orgs/"$org"/teams/"$team"/members | jq -r '.[] | .login | ascii_downcase'); do
-  for prefix in "${prefixes[@]}"; do
-    for suffix in "${suffixes[@]}"; do
-      namespace=$prefix-$suffix
+team_members=$(curl --silent -H "Authorization: token $token" https://api.github.com/orgs/"$org"/teams/"$team"/members | jq -r '.[] | .login | ascii_downcase')
+
+for prefix in "${prefixes[@]}"; do
+  for suffix in "${suffixes[@]}"; do
+    namespace=$prefix-$suffix
+    if ! $dry_run; then
+      oc -n "$namespace" delete rolebinding -l created-by=cas-pipeline,gh-team="${org}_$team"
+    fi
+    for login in $team_members; do
       echo "Binding GitHub user $login to role $role in $namespace"
       if ! $dry_run; then
-        oc process -f "$__dirname"/../openshift/authorize/rolebinding/clusterRoleBinding.yml GH_LOGIN="$login" NAMESPACE="$namespace" ROLE="$role" | \
-        oc apply --wait --overwrite --validate -f-
+        oc process -f "$__dirname"/../openshift/authorize/rolebinding/clusterRoleBinding.yml GH_LOGIN="$login" GH_TEAM="${org}_$team" NAMESPACE="$namespace" ROLE="$role" | \
+        oc -n "$namespace" apply --wait --overwrite --validate -f-
       fi
     done
   done
