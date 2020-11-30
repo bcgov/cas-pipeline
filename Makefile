@@ -30,6 +30,8 @@ authorize:
 	# Synchronize rolebindings with GitHub teams
 	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_ADMINS_TEAM -pp $$OC_PROJECT_PREFIXES -r admin
 	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_DEVELOPERS_TEAM -pp $$OC_PROJECT_PREFIXES -r view
+	# Create cas-namespaces secret in all dev-test-prod namespaces
+	@@source .env; ./lib/oc_create_namespace_secret.sh -pp $$OC_PROJECT_PREFIXES -ap $$AIRFLOW_PREFIX -gp $$GGIRCS_PREFIX -cp $$CIIP_PREFIX
 
 
 .PHONY: authorize_pathfinder
