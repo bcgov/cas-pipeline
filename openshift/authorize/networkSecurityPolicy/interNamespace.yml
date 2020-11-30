@@ -19,7 +19,7 @@ objects:
   - kind: NetworkSecurityPolicy
     apiVersion: secops.pathfinder.gov.bc.ca/v1alpha1
     metadata:
-    name: custom-dev-namespace-inter-communication
+    name: custom-${suffix}-namespace-inter-communication
     label:
       created-by: cas-pipline
   spec:
