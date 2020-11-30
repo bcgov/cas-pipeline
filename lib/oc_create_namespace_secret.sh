@@ -79,7 +79,12 @@ for prefix in "${prefixes[@]}"; do
     ggircs_namespace=$ggircs_prefix-$suffix
     ciip_namespace=$ciip_prefix-$suffix
     if ! $dry_run; then
-      oc -n "$namespace" create -f "$__dirname"/../openshift/authorize/secret/namespaceSecret.yml
+      oc process -f "$__dirname"/../openshift/authorize/secret/namespaceSecret.yml \
+      NAMESPACE=$namespace \
+      AIRFLOW_NAMESPACE=$airflow_namespace \
+      GGIRCS_NAMESPACE=$ggircs_namespace \
+      CIIP_NAMESPACE=$ciip_namespace \
+      | oc -n "$namespace" apply -f -
     fi
   done
 done
