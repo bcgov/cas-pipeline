@@ -9,8 +9,8 @@ Creates a 'cas-namespaces' secret in all namespaces that contains the namespaces
 
 The list of namespaces affected by the script is defined by the
 "--project-prefixes" and "--project-suffixes" options (see below).
-For instance, "--project-prefixes abc123,456qwe --project-suffixes tools,dev"
-would affect the following namespaces: abc123-tools, abc123-dev, 456qwe-tools and 456qwe-dev
+For instance, "--project-prefixes abc123,456qwe --project-suffixes dev,test"
+would affect the following namespaces: abc123-dev, abc123-test, 456qwe-dev and 456qwe-test
 
 Maintainer: Dylan Leard <dylan@button.is>
 
@@ -19,7 +19,7 @@ Options:
   -pp, --project-prefixes
     The comma-separated project prefixes where the secret will be added. e.g. "abc123,456qwe"
   -ps, --project-suffixes
-    The comma-separated project suffixes where the secret will be added. Defaults to "tools,dev,test,prod"
+    The comma-separated project suffixes where the secret will be added. Defaults to "dev,test,prod"
   -ap, --airflow-prefix
     The namespace prefix that airflow is deployed to
   -gp, --ggircs-prefix
