@@ -1,0 +1,35 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+
+parameters:
+  - description: airflow_namespace
+    displayName: airflow_namespace
+    name: AIRFLOW_NAMESPACE
+    required: true
+  - description: ggircs_namespace
+    displayName: ggircs_namespace
+    name: GGIRCS_NAMESPACE
+    required: true
+  - description: ciip_namespace
+    displayName: ciip_namespace
+    name: CIIP_NAMESPACE
+    required: true
+
+objects:
+  - kind: NetworkSecurityPolicy
+    apiVersion: secops.pathfinder.gov.bc.ca/v1alpha1
+    metadata:
+    name: custom-dev-namespace-inter-communication
+    label:
+      created-by: cas-pipline
+  spec:
+    description: |
+      Allow all pods in dev namespaces to communicate
+    source:
+      - - $namespace=${AIRFLOW_NAMESPACE}
+      - - $namespace=${GGIRCS_NAMESPACE}
+      - - $namespace=${CIIP_NAMESPACE}
+    destination:
+      - - $namespace=${AIRFLOW_NAMESPACE}
+      - - $namespace=${GGIRCS_NAMESPACE}
+      - - $namespace=${CIIP_NAMESPACE}
