@@ -35,7 +35,7 @@ EOF
 }
 
 # default options
-dry_run=false
+dry_run=none
 declare -a suffixes=("dev" "test" "prod")
 
 while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
@@ -60,7 +60,7 @@ while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     ciip_prefix=$1
     ;;
   --dry-run )
-    dry_run=true
+    dry_run=client
     ;;
   -h | --help )
     usage
@@ -84,7 +84,7 @@ for prefix in "${prefixes[@]}"; do
       AIRFLOW_NAMESPACE=$airflow_namespace \
       GGIRCS_NAMESPACE=$ggircs_namespace \
       CIIP_NAMESPACE=$ciip_namespace \
-      | oc -n "$namespace" apply --wait --overwrite --validate -f -
+      | oc -n "$namespace" apply --wait --overwrite --validate --dry-run="$dry_run" -f -
     fi
   done
 done
