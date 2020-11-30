@@ -25,8 +25,16 @@ PROJECT_PREFIX := cas-
 endif
 
 .PHONY: authorize
-authorize: OC_PROJECT=$(OC_TOOLS_PROJECT)
 authorize:
+	$(call oc_whoami)
+	# Synchronize rolebindings with GitHub teams
+	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_ADMINS_TEAM -pp $$OC_PROJECT_PREFIXES -r admin
+	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_DEVELOPERS_TEAM -pp $$OC_PROJECT_PREFIXES -r view
+
+
+.PHONY: authorize_pathfinder
+authorize_pathfinder: OC_PROJECT=$(OC_TOOLS_PROJECT)
+authorize_pathfinder:
 	@@shopt -s nullglob; \
 		echo "Create the roles in all projects"; \
 		for FILE in openshift/authorize/role/*.yml; do \
