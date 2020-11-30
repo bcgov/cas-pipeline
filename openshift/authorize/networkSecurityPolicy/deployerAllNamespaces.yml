@@ -19,7 +19,7 @@ objects:
   - kind: NetworkSecurityPolicy
     apiVersion: secops.pathfinder.gov.bc.ca/v1alpha1
     metadata:
-    name: custom-deployer-all-namespace-communication
+    name: custom-deployer-all-namespaces-communication
     label:
       created-by: cas-pipline
   spec:

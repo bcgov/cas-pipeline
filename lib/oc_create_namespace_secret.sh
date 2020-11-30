@@ -27,7 +27,7 @@ Options:
   -cp, --ciip-prefix
     The namespace prefix that ciip is deployed to
   --dry-run
-    Prints the list of roles bindings that would be created without applying the changes
+    Prints the secret template that would be created without applying the changes
   -h, --help
     Prints this message
 
