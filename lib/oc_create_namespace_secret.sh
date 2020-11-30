@@ -84,7 +84,7 @@ for prefix in "${prefixes[@]}"; do
       AIRFLOW_NAMESPACE=$airflow_namespace \
       GGIRCS_NAMESPACE=$ggircs_namespace \
       CIIP_NAMESPACE=$ciip_namespace \
-      | oc -n "$namespace" apply -f -
+      | oc -n "$namespace" apply --wait --overwrite --validate -f -
     fi
   done
 done
