@@ -28,7 +28,7 @@ EOF
 }
 
 # default options
-dry_run=none
+dry_run="none"
 declare -a suffixes=("dev" "test" "prod")
 
 while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
@@ -49,7 +49,7 @@ while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     ciip_prefix=$1
     ;;
   --dry-run )
-    dry_run=client
+    dry_run="client"
     ;;
   -h | --help )
     usage
@@ -61,34 +61,30 @@ __dirname="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo "Creating basic NetworkSecurityPolicies"
 
-if ! $dry_run; then
-  # Ship-it(deployer) to all namespaces
-  oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/deployerAllNamespaces.yml \
-  AIRFLOW_PREFIX=$airflow_prefix \
-  GGIRCS_PREFIX=$ggircs_prefix \
-  CIIP_PREFIX=$ciip_prefix \
-  | oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
+# Ship-it(deployer) to all namespaces
+oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/deployerAllNamespaces.yml \
+AIRFLOW_PREFIX="$airflow_prefix" \
+GGIRCS_PREFIX="$ggircs_prefix" \
+CIIP_PREFIX="$ciip_prefix" \
+| oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
 
-  # All namespaces to K8s
-  oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/allNamespacesK8s.yml \
-  AIRFLOW_PREFIX=$airflow_prefix \
-  GGIRCS_PREFIX=$ggircs_prefix \
-  CIIP_PREFIX=$ciip_prefix \
-  | oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
+# All namespaces to K8s
+oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/allNamespacesK8s.yml \
+AIRFLOW_PREFIX="$airflow_prefix" \
+GGIRCS_PREFIX="$ggircs_prefix" \
+CIIP_PREFIX="$ciip_prefix" \
+| oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
 
-  # Inter-namespace (dev->dev, test->test, prod->prod)
-  for suffix in "${suffixes[@]}"; do
-    suffix=$suffix
-    airflow_namespace=$airflow_prefix-$suffix
-    ggircs_namespace=$ggircs_prefix-$suffix
-    ciip_namespace=$ciip_prefix-$suffix
-    if ! $dry_run; then
-      oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/interNamespace.yml \
-      NAMESPACE=$namespace \
-      AIRFLOW_NAMESPACE=$airflow_namespace \
-      GGIRCS_NAMESPACE=$ggircs_namespace \
-      CIIP_NAMESPACE=$ciip_namespace \
-      | oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
-    fi
-  done
-fi
+# Inter-namespace (dev->dev, test->test, prod->prod)
+for suffix in "${suffixes[@]}"; do
+  suffix=$suffix
+  airflow_namespace=$airflow_prefix-$suffix
+  ggircs_namespace=$ggircs_prefix-$suffix
+  ciip_namespace=$ciip_prefix-$suffix
+
+  oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/interNamespace.yml \
+  AIRFLOW_NAMESPACE="$airflow_namespace" \
+  GGIRCS_NAMESPACE="$ggircs_namespace" \
+  CIIP_NAMESPACE="$ciip_namespace" \
+  | oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
+done
