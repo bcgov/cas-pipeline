@@ -17,10 +17,10 @@ parameters:
 
 objects:
   - kind: NetworkSecurityPolicy
-    apiVersion: secops.pathfinder.gov.bc.ca/v1alpha1
+    apiVersion: security.devops.gov.bc.ca/v1alpha1
     metadata:
     name: custom-all-namespaces-k8s-api-communication
-    label:
+    labels:
       created-by: cas-pipline
   spec:
     description: |

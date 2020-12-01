@@ -17,23 +17,23 @@ parameters:
 
 objects:
   - kind: NetworkSecurityPolicy
-    apiVersion: secops.pathfinder.gov.bc.ca/v1alpha1
+    apiVersion: security.devops.gov.bc.ca/v1alpha1
     metadata:
-    name: custom-deployer-all-namespaces-communication
-    label:
-      created-by: cas-pipline
-  spec:
-    description: |
-      Allow deployer role (ship-it) to communicate with all namespaces
-    source:
-      - - role=deployer
-    destination:
-      - - $namespace=${AIRFLOW_PREFIX}-dev
-      - - $namespace=${GGIRCS_PREFIX}-dev
-      - - $namespace=${CIIP_PREFIX}-dev
-      - - $namespace=${AIRFLOW_PREFIX}-test
-      - - $namespace=${GGIRCS_PREFIX}-test
-      - - $namespace=${CIIP_PREFIX}-test
-      - - $namespace=${AIRFLOW_PREFIX}-prod
-      - - $namespace=${GGIRCS_PREFIX}-prod
-      - - $namespace=${CIIP_PREFIX}-prod
+      name: custom-deployer-all-namespaces-communication
+      labels:
+        created-by: cas-pipline
+    spec:
+      description: |
+        Allow deployer role (ship-it) to communicate with all namespaces
+      source:
+        - - role=deployer
+      destination:
+        - - $namespace=${AIRFLOW_PREFIX}-dev
+        - - $namespace=${GGIRCS_PREFIX}-dev
+        - - $namespace=${CIIP_PREFIX}-dev
+        - - $namespace=${AIRFLOW_PREFIX}-test
+        - - $namespace=${GGIRCS_PREFIX}-test
+        - - $namespace=${CIIP_PREFIX}-test
+        - - $namespace=${AIRFLOW_PREFIX}-prod
+        - - $namespace=${GGIRCS_PREFIX}-prod
+        - - $namespace=${CIIP_PREFIX}-prod
