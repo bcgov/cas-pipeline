@@ -32,7 +32,8 @@ authorize:
 	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_DEVELOPERS_TEAM -pp $$OC_PROJECT_PREFIXES -r view
 	# Create cas-namespaces secret in all dev-test-prod namespaces
 	@@source .env; ./lib/oc_create_namespace_secret.sh -pp $$OC_PROJECT_PREFIXES -ap $$AIRFLOW_PREFIX -gp $$GGIRCS_PREFIX -cp $$CIIP_PREFIX
-
+	# Create dockerhub-registry secret in all dev-test-prod -tools? namespaces
+	@@source .env; ./lib/oc_create_dockerhub_secret.sh --project-prefixes $$OC_PROJECT_PREFIXES --project-suffixes dev,test,prod,tools --docker-username $$DOCKER_USERNAME --docker-password $$DOCKER_PASSWORD 
 
 .PHONY: authorize_pathfinder
 authorize_pathfinder: OC_PROJECT=$(OC_TOOLS_PROJECT)

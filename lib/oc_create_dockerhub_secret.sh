@@ -27,7 +27,7 @@ Options:
   -p, --docker-password
     The password to use for the docker registry
   -e, --docker-email
-    The email to use for the docker registry
+    The email to use for the docker registry (optional and inconsequential)
   --dry-run
     Prints the list affected things
   -h, --help
