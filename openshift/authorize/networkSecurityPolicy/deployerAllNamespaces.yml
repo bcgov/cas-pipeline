@@ -13,7 +13,7 @@ objects:
     metadata:
       name: custom-deployer-namespace-communication
       labels:
-        created-by: cas-pipline
+        created-by: cas-pipeline
     spec:
       description: |
         Allow deployer role (ship-it) to communicate with namespace

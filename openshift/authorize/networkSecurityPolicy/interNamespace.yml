@@ -25,7 +25,7 @@ objects:
     metadata:
       name: custom-${SUFFIX}-namespace-inter-communication
       labels:
-        created-by: cas-pipline
+        created-by: cas-pipeline
     spec:
       description: |
         Allow all pods in ${SUFFIX} namespaces to communicate

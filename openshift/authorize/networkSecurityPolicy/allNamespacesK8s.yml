@@ -13,7 +13,7 @@ objects:
     metadata:
       name: custom-namespace-k8s-api-communication
       labels:
-        created-by: cas-pipline
+        created-by: cas-pipeline
     spec:
       description: |
         Allow all pods in namespace to communicate with the k8s api
