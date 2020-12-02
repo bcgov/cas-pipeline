@@ -2,41 +2,22 @@ apiVersion: template.openshift.io/v1
 kind: Template
 
 parameters:
-  - description: airflow_prefix
-    displayName: airflow_prefix
-    name: AIRFLOW_PREFIX
-    required: true
-  - description: ggircs_prefix
-    displayName: ggircs_prefix
-    name: GGIRCS_PREFIX
-    required: true
-  - description: ciip_prefix
-    displayName: ciip_prefix
-    name: CIIP_PREFIX
+  - description: namespace
+    displayName: namespace
+    name: NAMESPACE
     required: true
 
 objects:
   - kind: NetworkSecurityPolicy
     apiVersion: security.devops.gov.bc.ca/v1alpha1
     metadata:
-      name: custom-all-namespaces-k8s-api-communication
+      name: custom-namespace-k8s-api-communication
       labels:
         created-by: cas-pipline
     spec:
       description: |
-        Allow all namespaces to communicate with the k8s api
+        Allow all pods in namespace to communicate with the k8s api
       source:
-        - - $namespace=${AIRFLOW_PREFIX}-dev
-        - - $namespace=${GGIRCS_PREFIX}-dev
-        - - $namespace=${CIIP_PREFIX}-dev
-        - - $namespace=${AIRFLOW_PREFIX}-test
-        - - $namespace=${GGIRCS_PREFIX}-test
-        - - $namespace=${CIIP_PREFIX}-test
-        - - $namespace=${AIRFLOW_PREFIX}-prod
-        - - $namespace=${GGIRCS_PREFIX}-prod
-        - - $namespace=${CIIP_PREFIX}-prod
-        - - $namespace=${AIRFLOW_PREFIX}-tools
-        - - $namespace=${GGIRCS_PREFIX}-tools
-        - - $namespace=${CIIP_PREFIX}-tools
+        - - $namespace=${NAMESPACE}
       destination:
         - - int:network=internal-cluster-api-endpoint

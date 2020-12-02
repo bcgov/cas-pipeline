@@ -11,6 +11,8 @@ Maintainer: Dylan Leard <dylan@button.is>
 
 Options:
 
+  -pp, --project-prefixes
+    The comma-separated project prefixes where the secret will be added. e.g. "abc123,456qwe"
   -ps, --project-suffixes
     The comma-separated project suffixes where the secret will be added. Defaults to "dev,test,prod"
   -ap, --airflow-prefix
@@ -32,6 +34,10 @@ dry_run="none"
 declare -a suffixes=("dev" "test" "prod")
 
 while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
+  -pp | --project-prefixes )
+    shift
+    IFS=',' read -r -a prefixes <<< "$1"
+    ;;
   -ps | --project-suffixes )
     shift
     IFS=',' read -r -a suffixes <<< "$1"
@@ -61,31 +67,29 @@ __dirname="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo "Creating basic NetworkSecurityPolicies"
 
-# Ship-it(deployer) to all namespaces
-oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/deployerAllNamespaces.yml \
-AIRFLOW_PREFIX="$airflow_prefix" \
-GGIRCS_PREFIX="$ggircs_prefix" \
-CIIP_PREFIX="$ciip_prefix" \
-| oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
+for prefix in "${prefixes[@]}"; do
+  for suffix in "${suffixes[@]}"; do
+    namespace="$prefix-$suffix"
+    airflow_namespace="$airflow_prefix-$suffix"
+    ggircs_namespace="$ggircs_prefix-$suffix"
+    ciip_namespace="$ciip_prefix-$suffix"
 
-# All namespaces to K8s
-oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/allNamespacesK8s.yml \
-AIRFLOW_PREFIX="$airflow_prefix" \
-GGIRCS_PREFIX="$ggircs_prefix" \
-CIIP_PREFIX="$ciip_prefix" \
-| oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
+    # Ship-it(deployer) to all namespaces
+    oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/deployerAllNamespaces.yml \
+    NAMESPACE="$namespace" \
+    | oc -n "$namespace" apply --wait --overwrite --validate --dry-run="$dry_run" -f -
 
-# Inter-namespace (dev->dev, test->test, prod->prod)
-for suffix in "${suffixes[@]}"; do
-  suffix="$suffix"
-  airflow_namespace="$airflow_prefix-$suffix"
-  ggircs_namespace="$ggircs_prefix-$suffix"
-  ciip_namespace="$ciip_prefix-$suffix"
+    # All namespaces to K8s
+    oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/allNamespacesK8s.yml \
+    NAMESPACE="$namespace" \
+    | oc -n "$namespace" apply --wait --overwrite --validate --dry-run="$dry_run" -f -
 
-  oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/interNamespace.yml \
-  SUFFIX="$suffix" \
-  AIRFLOW_NAMESPACE="$airflow_namespace" \
-  GGIRCS_NAMESPACE="$ggircs_namespace" \
-  CIIP_NAMESPACE="$ciip_namespace" \
-  | oc apply --wait --overwrite --validate --dry-run="$dry_run" -f -
+    # Inter-namespace (dev->dev, test->test, prod->prod)
+    oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/interNamespace.yml \
+    SUFFIX="$suffix" \
+    AIRFLOW_NAMESPACE="$airflow_namespace" \
+    GGIRCS_NAMESPACE="$ggircs_namespace" \
+    CIIP_NAMESPACE="$ciip_namespace" \
+    | oc -n "$namespace" apply --wait --overwrite --validate --dry-run="$dry_run" -f -
+  done
 done

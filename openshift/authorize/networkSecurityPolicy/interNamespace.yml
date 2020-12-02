@@ -28,7 +28,7 @@ objects:
         created-by: cas-pipline
     spec:
       description: |
-        Allow all pods in dev namespaces to communicate
+        Allow all pods in ${SUFFIX} namespaces to communicate
       source:
         - - $namespace=${AIRFLOW_NAMESPACE}
         - - $namespace=${GGIRCS_NAMESPACE}

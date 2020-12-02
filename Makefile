@@ -33,7 +33,7 @@ authorize:
 	# Create cas-namespaces secret in all dev-test-prod namespaces
 	@@source .env; ./lib/oc_create_namespace_secret.sh -pp $$OC_PROJECT_PREFIXES -ap $$AIRFLOW_PREFIX -gp $$GGIRCS_PREFIX -cp $$CIIP_PREFIX
 	# Create base NetworkSecurityPolicies
-	@@source .env; ./lib/oc_create_network_security_policies.sh -ap $$AIRFLOW_PREFIX -gp $$GGIRCS_PREFIX -cp $$CIIP_PREFIX
+	@@source .env; ./lib/oc_create_network_security_policies.sh -pp $$OC_PROJECT_PREFIXES -ap $$AIRFLOW_PREFIX -gp $$GGIRCS_PREFIX -cp $$CIIP_PREFIX
 
 
 .PHONY: authorize_pathfinder

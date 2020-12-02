@@ -2,38 +2,22 @@ apiVersion: template.openshift.io/v1
 kind: Template
 
 parameters:
-  - description: airflow_prefix
-    displayName: airflow_prefix
-    name: AIRFLOW_PREFIX
-    required: true
-  - description: ggircs_prefix
-    displayName: ggircs_prefix
-    name: GGIRCS_PREFIX
-    required: true
-  - description: ciip_prefix
-    displayName: ciip_prefix
-    name: CIIP_PREFIX
+  - description: namespace
+    displayName: namespace
+    name: NAMESPACE
     required: true
 
 objects:
   - kind: NetworkSecurityPolicy
     apiVersion: security.devops.gov.bc.ca/v1alpha1
     metadata:
-      name: custom-deployer-all-namespaces-communication
+      name: custom-deployer-namespace-communication
       labels:
         created-by: cas-pipline
     spec:
       description: |
-        Allow deployer role (ship-it) to communicate with all namespaces
+        Allow deployer role (ship-it) to communicate with namespace
       source:
         - - role=deployer
       destination:
-        - - $namespace=${AIRFLOW_PREFIX}-dev
-        - - $namespace=${GGIRCS_PREFIX}-dev
-        - - $namespace=${CIIP_PREFIX}-dev
-        - - $namespace=${AIRFLOW_PREFIX}-test
-        - - $namespace=${GGIRCS_PREFIX}-test
-        - - $namespace=${CIIP_PREFIX}-test
-        - - $namespace=${AIRFLOW_PREFIX}-prod
-        - - $namespace=${GGIRCS_PREFIX}-prod
-        - - $namespace=${CIIP_PREFIX}-prod
+        - - $namespace=${NAMESPACE}
