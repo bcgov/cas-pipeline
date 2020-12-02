@@ -77,12 +77,13 @@ CIIP_PREFIX="$ciip_prefix" \
 
 # Inter-namespace (dev->dev, test->test, prod->prod)
 for suffix in "${suffixes[@]}"; do
-  suffix=$suffix
-  airflow_namespace=$airflow_prefix-$suffix
-  ggircs_namespace=$ggircs_prefix-$suffix
-  ciip_namespace=$ciip_prefix-$suffix
+  suffix="$suffix"
+  airflow_namespace="$airflow_prefix-$suffix"
+  ggircs_namespace="$ggircs_prefix-$suffix"
+  ciip_namespace="$ciip_prefix-$suffix"
 
   oc process -f "$__dirname"/../openshift/authorize/networkSecurityPolicy/interNamespace.yml \
+  SUFFIX="$suffix" \
   AIRFLOW_NAMESPACE="$airflow_namespace" \
   GGIRCS_NAMESPACE="$ggircs_namespace" \
   CIIP_NAMESPACE="$ciip_namespace" \

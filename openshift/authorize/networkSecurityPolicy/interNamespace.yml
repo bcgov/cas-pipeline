@@ -14,22 +14,26 @@ parameters:
     displayName: ciip_namespace
     name: CIIP_NAMESPACE
     required: true
+  - description: suffix
+    displayName: suffix
+    name: SUFFIX
+    required: true
 
 objects:
   - kind: NetworkSecurityPolicy
     apiVersion: security.devops.gov.bc.ca/v1alpha1
     metadata:
-    name: custom-${suffix}-namespace-inter-communication
-    labels:
-      created-by: cas-pipline
-  spec:
-    description: |
-      Allow all pods in dev namespaces to communicate
-    source:
-      - - $namespace=${AIRFLOW_NAMESPACE}
-      - - $namespace=${GGIRCS_NAMESPACE}
-      - - $namespace=${CIIP_NAMESPACE}
-    destination:
-      - - $namespace=${AIRFLOW_NAMESPACE}
-      - - $namespace=${GGIRCS_NAMESPACE}
-      - - $namespace=${CIIP_NAMESPACE}
+      name: custom-${SUFFIX}-namespace-inter-communication
+      labels:
+        created-by: cas-pipline
+    spec:
+      description: |
+        Allow all pods in dev namespaces to communicate
+      source:
+        - - $namespace=${AIRFLOW_NAMESPACE}
+        - - $namespace=${GGIRCS_NAMESPACE}
+        - - $namespace=${CIIP_NAMESPACE}
+      destination:
+        - - $namespace=${AIRFLOW_NAMESPACE}
+        - - $namespace=${GGIRCS_NAMESPACE}
+        - - $namespace=${CIIP_NAMESPACE}
