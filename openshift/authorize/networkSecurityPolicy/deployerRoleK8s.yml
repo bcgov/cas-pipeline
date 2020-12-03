@@ -11,13 +11,14 @@ objects:
   - kind: NetworkSecurityPolicy
     apiVersion: security.devops.gov.bc.ca/v1alpha1
     metadata:
-      name: custom-deployer-namespace-communication
+      name: custom-deployer-role-k8s-api-communication
       labels:
         created-by: cas-pipeline
     spec:
       description: |
-        Allow deployer role (ship-it) to communicate with namespace
+        Allow 'deployer' role to communicate with the k8s api
       source:
-        - - role=deployer
-      destination:
         - - $namespace=${NAMESPACE}
+          - role=deployer
+      destination:
+        - - int:network=internal-cluster-api-endpoint
