@@ -27,13 +27,17 @@ endif
 .PHONY: authorize
 authorize:
 	$(call oc_whoami)
-	# Synchronize rolebindings with GitHub teams
+	# # Synchronize rolebindings with GitHub teams
 	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_ADMINS_TEAM -pp $$OC_PROJECT_PREFIXES -r admin
 	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_DEVELOPERS_TEAM -pp $$OC_PROJECT_PREFIXES -r view
+
+.PHONY: provision
+provision:
+	$(call oc_whoami)
 	# Create cas-namespaces secret in all dev-test-prod namespaces
 	@@source .env; ./lib/oc_create_namespace_secret.sh -pp $$OC_PROJECT_PREFIXES -ap $$AIRFLOW_PREFIX -gp $$GGIRCS_PREFIX -cp $$CIIP_PREFIX
 	# Create base NetworkSecurityPolicies
-	@@source .env; ./lib/oc_create_network_security_policies.sh -pp $$OC_PROJECT_PREFIXES -ap $$AIRFLOW_PREFIX -gp $$GGIRCS_PREFIX -cp $$CIIP_PREFIX
+	@@source .env; ./lib/oc_create_network_security_policies.sh -pp $$OC_PROJECT_PREFIXES
 
 
 .PHONY: authorize_pathfinder
