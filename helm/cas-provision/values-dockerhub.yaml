@@ -1,0 +1,6 @@
+# Values file containing dockerhub login info
+
+docker:
+  registry: "https://index.docker+.io/v1/"
+  username: "default"
+  password: "default"
