@@ -1,0 +1,11 @@
+# Example of the values needed for this chart
+
+airflowNamespacePrefix: "airflowprefix" # The prefix for the airflow namespace
+ggircsNamespacePrefix: "ggircsprefix" # The prefix for the ggircs namespace
+ciipNamespacePrefix: "ciipprefix" # The prefix for the ciip namespace
+
+
+docker:
+  registry: "https://index.docker+.io/v1/"
+  username: "username" # The username for the dockerhub account
+  password: "password" # The password for the dockerhub account

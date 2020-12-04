@@ -20,25 +20,21 @@ Options:
     The comma-separated project prefixes where the secret will be added. e.g. "abc123,456qwe"
   -ps, --project-suffixes
     The comma-separated project suffixes where the secret will be added. Defaults to "tools,dev,test,prod"
-  -s, --docker-server
-    The docker server to use. Defaults to "https://index.docker.io/v1/"
-  -u, --docker-username
-    The username to use for the docker registry
-  -p, --docker-password
-    The password to use for the docker registry
-  -e, --docker-email
-    The email to use for the docker registry (optional and inconsequential)
+  -c, --chart-directory
+    The path to the directory containing the chart to install
+  -v, --values-file
+    The values file to use for the helm chart installation, see `./helm/cas-provision/templates/values-example.yaml`.
   --dry-run
-    Prints the list affected things
+    Calls the helm install script with the --dry-run option
   -h, --help
     Prints this message
+
 
 EOF
 }
 
 # default options
-dry_run="none"
-docker_server="https://index.docker.io/v1/"
+dry_run=""
 declare -a suffixes=("tools" "dev" "test" "prod")
 
 while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
@@ -50,24 +46,16 @@ while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     shift
     IFS=',' read -r -a suffixes <<< "$1"
     ;;
-  -s | --docker-server )
+  -c | --chart )
     shift
-    docker_server=$1
+    chart_path=$1
     ;;
-  -u | --docker-username )
+  -v | --values-file )
     shift
-    docker_username=$1
-    ;;
-  -p | --docker-password )
-    shift
-    docker_password=$1
-    ;;
-  -e | --docker-email )
-    shift
-    docker_email=$1
+    values_file=$1
     ;;
   --dry-run )
-    dry_run="client"
+    dry_run="--dry-run"
     ;;
   -h | --help )
     usage
@@ -80,15 +68,8 @@ esac; shift; done
 for prefix in "${prefixes[@]}"; do
   for suffix in "${suffixes[@]}"; do
     namespace=$prefix-$suffix 
-    echo "Creating dockerhub-registry secret in $namespace namespace"
+    echo "Creating helm installation in $namespace namespace"
 
-    oc create secret docker-registry dockerhub-registry \
-    -n "$namespace" \
-    --docker-server="$docker_server" \
-    --docker-username="$docker_username" \
-    --docker-password="$docker_password" \
-    --docker-email="$docker_email" \
-    --dry-run="$dry_run"
-
+    helm install cas-provision $chart_path -f $values_file -n $namespace $dry_run
   done
 done

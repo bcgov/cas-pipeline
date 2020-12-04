@@ -30,17 +30,12 @@ authorize:
 	# Synchronize rolebindings with GitHub teams
 	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_ADMINS_TEAM -pp $$OC_PROJECT_PREFIXES -r admin
 	@@source .env; ./lib/oc_add_gh_team_to_nsp.sh --token $$GH_TOKEN -t $$GH_DEVELOPERS_TEAM -pp $$OC_PROJECT_PREFIXES -r view
-	
-# Target to provision secrets in namespaces
+
+# Target to provision secrets, service accounts and more in namespaces, via the attached helm chart
 .PHONY: provision
 provision:
-	# Making sure we are logged in to the cluster
 	$(call oc_whoami)
-	# Create cas-namespaces secret in all dev-test-prod namespaces
-	@@source .env; ./lib/oc_create_namespace_secret.sh -pp $$OC_PROJECT_PREFIXES -ap $$AIRFLOW_PREFIX -gp $$GGIRCS_PREFIX -cp $$CIIP_PREFIX
-	# Create dockerhub-registry secret in all dev-test-prod-tools namespaces
-	@@source .env; ./lib/oc_create_dockerhub_secret.sh -pp $$OC_PROJECT_PREFIXES -u $$DOCKER_USERNAME -p $$DOCKER_PASSWORD 
-
+	./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -v $$VALUES_FILE_PATH
 
 .PHONY: authorize_pathfinder
 authorize_pathfinder: OC_PROJECT=$(OC_TOOLS_PROJECT)

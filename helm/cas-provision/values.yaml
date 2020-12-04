@@ -1,2 +1,4 @@
 # This chart is not deploying pods
 # Just creating secrets and other configuration objects
+
+# values.yaml is going to be passed in at runtime since it contains secrets.

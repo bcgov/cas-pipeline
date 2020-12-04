@@ -67,3 +67,11 @@ Formats the dockerhub secret value
 {{- define "dockerconfigjson" }}
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\", \"auth\":\"%s\"}}}" .Values.docker.registry .Values.docker.username .Values.docker.password (printf "%s:%s" .Values.docker.username .Values.docker.password | b64enc) | b64enc }}
 {{- end }}
+
+
+{{/*
+Gets the suffix of the namespace. 
+*/}}
+{{- define "namespaceSuffix" }}
+{{- (split "-" .Release.Namespace)._1 | trim -}}
+{{- end }}
