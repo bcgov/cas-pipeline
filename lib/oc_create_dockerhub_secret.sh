@@ -19,7 +19,7 @@ Options:
   -pp, --project-prefixes
     The comma-separated project prefixes where the secret will be added. e.g. "abc123,456qwe"
   -ps, --project-suffixes
-    The comma-separated project suffixes where the secret will be added. Defaults to "dev,test,prod"
+    The comma-separated project suffixes where the secret will be added. Defaults to "tools,dev,test,prod"
   -s, --docker-server
     The docker server to use. Defaults to "https://index.docker.io/v1/"
   -u, --docker-username
@@ -39,7 +39,7 @@ EOF
 # default options
 dry_run="none"
 docker_server="https://index.docker.io/v1/"
-declare -a suffixes=("dev" "test" "prod")
+declare -a suffixes=("tools" "dev" "test" "prod")
 
 while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
   -pp | --project-prefixes )
