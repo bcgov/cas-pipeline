@@ -26,7 +26,7 @@ Options:
   -c, --chart-directory
     The path to the directory containing the chart to install
   -v, --values-file
-    The values file to use for the helm chart installation, see `./helm/cas-provision/templates/values-example.yaml`.
+    The values file to use for the helm chart installation, see `./helm/cas-provision/templates/values.yaml`.
   --dry-run
     Calls the helm install script with the --dry-run option
   -h, --help
