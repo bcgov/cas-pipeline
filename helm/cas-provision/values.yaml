@@ -1,4 +1,12 @@
-# This chart is not deploying pods
-# Just creating secrets and other configuration objects
+# Example of the values needed for this chart
 
-# values.yaml is going to be passed in at runtime since it contains secrets.
+# Will be used by the template to generate secrets in `airflowprefix-dev`, `airflowprefix-test`, ...
+namespacePrefixes:
+  airflow: "airflowprefix"
+  ggircs: "ggircsprefix"
+  ciip: "ciipprefix"
+
+docker:
+  registry: "https://index.docker.io/v1/"
+  username: "username" # The username for the dockerhub account
+  password: "password" # The password for the dockerhub account

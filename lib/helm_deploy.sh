@@ -5,7 +5,10 @@ usage() {
     cat << EOF
 $0 [OPTIONS]
 
-Creates a 'dockerhub-registry' secret in all namespaces defined by the prefix/suffix permutations.
+Deploys the helm chart that contains secrets 
+
+A value file needs to be passed in with the information required by the templates.
+(see the values.yaml file provided for an example)
 
 The list of namespaces affected by the script is defined by the
 "--project-prefixes" and "--project-suffixes" options (see below).
@@ -70,6 +73,6 @@ for prefix in "${prefixes[@]}"; do
     namespace=$prefix-$suffix 
     echo "Creating helm installation in $namespace namespace"
 
-    helm install cas-provision $chart_path -f $values_file -n $namespace $dry_run
+    helm upgrade --install --atomic cas-provision $chart_path -f $values_file -n $namespace $dry_run
   done
 done
