@@ -24,6 +24,8 @@ PATHFINDER_PREFIX := wksv3k
 PROJECT_PREFIX := cas-
 endif
 
+# Make authorize / provision uses variables and a values.yaml file that are protected in BCCAS OnePassword.
+
 .PHONY: authorize
 authorize:
 	$(call oc_whoami)
@@ -35,7 +37,7 @@ authorize:
 .PHONY: provision
 provision:
 	$(call oc_whoami)
-	./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -v $$VALUES_FILE_PATH
+	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -v $$VALUES_FILE_PATH
 
 .PHONY: authorize_pathfinder
 authorize_pathfinder: OC_PROJECT=$(OC_TOOLS_PROJECT)
