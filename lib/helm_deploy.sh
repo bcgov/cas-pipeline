@@ -5,7 +5,7 @@ usage() {
     cat << EOF
 $0 [OPTIONS]
 
-Deploys the helm chart that contains secrets 
+Deploys the helm chart that contains secrets
 
 A value file needs to be passed in with the information required by the templates.
 (see the values.yaml file provided for an example)
@@ -26,7 +26,7 @@ Options:
   -c, --chart-directory
     The path to the directory containing the chart to install
   -v, --values-file
-    The values file to use for the helm chart installation, see `./helm/cas-provision/templates/values.yaml`.
+    The values file to use for the helm chart installation, see $(./helm/cas-provision/templates/values.yaml).
   --dry-run
     Calls the helm install script with the --dry-run option
   -h, --help
@@ -70,9 +70,8 @@ esac; shift; done
 
 for prefix in "${prefixes[@]}"; do
   for suffix in "${suffixes[@]}"; do
-    namespace=$prefix-$suffix 
+    namespace=$prefix-$suffix
     echo "Creating helm installation in $namespace namespace"
-
-    helm upgrade --install --atomic cas-provision $chart_path -f $values_file -n $namespace $dry_run
+    helm upgrade --install --atomic -f "$values_file" -n "$namespace" $dry_run cas-provision "$chart_path"
   done
 done
