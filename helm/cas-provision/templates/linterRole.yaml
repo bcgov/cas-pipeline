@@ -1,4 +1,26 @@
-{{- if .Values.linterNamepace eq .Release.Namespace}}
+# Permission removed during migration:
+# {APIGroups:[""], Resources:["buildconfigs/instantiate"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["buildconfigs/instantiatebinary"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["builds/clone"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["deploymentconfigrollbacks"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["deployments"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["generatedeploymentconfigs"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["imagestreamimports"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["minions"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["nodes"], Verbs:["list" "watch" "get"]}
+# {APIGroups:[""], Resources:["persistentvolumes"], Verbs:["get" "list" "watch"]}
+# {APIGroups:[""], Resources:["securitycontextconstraints"], Verbs:["get" "list" "watch"]}
+# {APIGroups:["apps"], Resources:["petsets"], Verbs:["get" "list" "watch"]}
+# {APIGroups:["batch"], Resources:["scheduledjobs"], Verbs:["get" "list" "watch"]}
+# {APIGroups:["extensions"], Resources:["horizontalpodautoscalers"], Verbs:["get" "list" "watch"]}
+# {APIGroups:["extensions"], Resources:["jobs"], Verbs:["get" "list" "watch"]}
+# {APIGroups:["servicecatalog.k8s.io"], Resources:["servicebindings"], Verbs:["get" "list" "watch" "get" "list" "watch"]}
+# {APIGroups:["servicecatalog.k8s.io"], Resources:["servicebrokers"], Verbs:["get" "list" "watch"]}
+# {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceclasses"], Verbs:["get" "list" "watch"]}
+# {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceinstances"], Verbs:["get" "list" "watch" "get" "list" "watch"]}
+# {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceplans"], Verbs:["get" "list" "watch"]}
+
+{{- if eq .Release.Namespace "0fad32-tools"}}
 apiVersion: authorization.openshift.io/v1
 kind: Role
 metadata:
@@ -209,7 +231,6 @@ rules:
   resources:
   - cronjobs
   - jobs
-  - scheduledjobs
   verbs:
   - get
   - list
@@ -220,8 +241,6 @@ rules:
   resources:
   - deployments
   - deployments/scale
-  - horizontalpodautoscalers
-  - jobs
   - replicasets
   - replicasets/scale
   verbs:
@@ -393,216 +412,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - apps
-  attributeRestrictions: null
-  resources:
-  - petsets
-  verbs:
-  - get
-- apiGroups:
-  - apps
-  attributeRestrictions: null
-  resources:
-  - petsets
-  verbs:
-  - list
-- apiGroups:
-  - apps
-  attributeRestrictions: null
-  resources:
-  - petsets
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - buildconfigs/instantiate
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - buildconfigs/instantiate
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - buildconfigs/instantiate
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - imagestreamimports
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - imagestreamimports
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - imagestreamimports
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - builds/clone
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - builds/clone
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - builds/clone
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - nodes
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - nodes
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - nodes
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - deploymentconfigrollbacks
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - deploymentconfigrollbacks
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - deploymentconfigrollbacks
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - generatedeploymentconfigs
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - generatedeploymentconfigs
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - generatedeploymentconfigs
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - minions
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - minions
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - minions
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - securitycontextconstraints
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - securitycontextconstraints
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - securitycontextconstraints
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - buildconfigs/instantiatebinary
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - buildconfigs/instantiatebinary
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - buildconfigs/instantiatebinary
-  verbs:
-  - watch
-- apiGroups:
   - ""
   attributeRestrictions: null
   resources:
@@ -617,58 +426,6 @@ rules:
   verbs:
   - list
 - apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - deployments
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - deployments
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - deployments
-  verbs:
-  - watch
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - persistentvolumes
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - persistentvolumes
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  attributeRestrictions: null
-  resources:
-  - persistentvolumes
-  verbs:
-  - watch
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - servicebindings
-  - serviceinstances
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - apps
   attributeRestrictions: null
   resources:
@@ -729,79 +486,6 @@ rules:
   attributeRestrictions: null
   resources:
   - daemonsets
-  verbs:
-  - watch
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - servicebindings
-  - serviceinstances
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - servicebrokers
-  verbs:
-  - get
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - servicebrokers
-  verbs:
-  - list
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - servicebrokers
-  verbs:
-  - watch
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - serviceclasses
-  verbs:
-  - get
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - serviceclasses
-  verbs:
-  - list
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - serviceclasses
-  verbs:
-  - watch
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - serviceplans
-  verbs:
-  - get
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - serviceplans
-  verbs:
-  - list
-- apiGroups:
-  - servicecatalog.k8s.io
-  attributeRestrictions: null
-  resources:
-  - serviceplans
   verbs:
   - watch
 - apiGroups:

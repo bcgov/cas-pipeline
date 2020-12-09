@@ -1,3 +1,6 @@
+# Permissions removed during migration:
+# {APIGroups:[""], Resources:["pods/log"], Verbs:["create" "delete" "deletecollection" "patch" "update"]}
+
 apiVersion: authorization.openshift.io/v1
 kind: Role
 metadata:
@@ -49,11 +52,6 @@ rules:
       - watch
       - list
       - get
-      - create
-      - update
-      - patch
-      - delete
-      - deletecollection
   - apiGroups:
       - ""
     attributeRestrictions: null
