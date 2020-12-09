@@ -59,10 +59,6 @@ while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     shift
     values_file=$1
     ;;
-  -l | --linter-namespace )
-    shift
-    linter_namespace=$1
-    ;;
   --dry-run )
     dry_run="--dry-run"
     ;;
@@ -80,8 +76,6 @@ for prefix in "${prefixes[@]}"; do
     namespace=$prefix-$suffix
     echo "Creating helm installation in $namespace namespace"
     helm upgrade --install --atomic -f "$values_file" -n "$namespace" $dry_run cas-provision "$chart_path"
-    echo "Granting Shipit service account deployer role in $namespace namespace"
-    oc -n "$namespace" $dry_run policy add-role-to-user cas-provision-"$namespace"-deployer system:serviceaccount:"$namespace":cas-provision-"$namespace"-shipit --role-namespace="$namespace"
 
   done
 done
