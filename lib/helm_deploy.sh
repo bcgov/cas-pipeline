@@ -85,6 +85,3 @@ for prefix in "${prefixes[@]}"; do
 
   done
 done
-
-echo "Granting CircleCI service account linter role in $linter_namespace namespace"
-oc -n "$linter_namespace" $dry_run policy add-role-to-user cas-provision-"$namespace"-linter system:serviceaccount:"$namespace":cas-provision-"$namespace"-circleci --role-namespace="$linter_namespace"
