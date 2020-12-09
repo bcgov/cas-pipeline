@@ -27,6 +27,8 @@ Options:
     The path to the directory containing the chart to install
   -v, --values-file
     The values file to use for the helm chart installation, see $(./helm/cas-provision/templates/values.yaml).
+  -l, --linter-namespace
+    The namespace for linting charts
   --dry-run
     Calls the helm install script with the --dry-run option
   -h, --help
@@ -57,6 +59,10 @@ while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     shift
     values_file=$1
     ;;
+  -l | --linter-namespace )
+    shift
+    linter_namespace=$1
+    ;;
   --dry-run )
     dry_run="--dry-run"
     ;;
@@ -70,6 +76,7 @@ esac; shift; done
 
 for prefix in "${prefixes[@]}"; do
   for suffix in "${suffixes[@]}"; do
+
     namespace=$prefix-$suffix
     echo "Creating helm installation in $namespace namespace"
     helm upgrade --install --atomic -f "$values_file" -n "$namespace" $dry_run cas-provision "$chart_path"
@@ -78,3 +85,6 @@ for prefix in "${prefixes[@]}"; do
 
   done
 done
+
+echo "Granting CircleCI service account linter role in $linter_namespace namespace"
+oc -n "$linter_namespace" $dry_run policy add-role-to-user cas-provision-"$namespace"-linter system:serviceaccount:"$namespace":cas-provision-"$namespace"-circleci --role-namespace="$linter_namespace"
