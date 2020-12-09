@@ -17,3 +17,4 @@ terraform:
 
 serviceAccounts:
   namespace: "" # The namespace where the service accounts should be created
+linterNamespace: "linterNamespaceName"
