@@ -20,7 +20,7 @@
 # {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceinstances"], Verbs:["get" "list" "watch" "get" "list" "watch"]}
 # {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceplans"], Verbs:["get" "list" "watch"]}
 
-{{- if eq .Release.Namespace "0fad32-tools"}}
+{{- if eq .Release.Namespace .Values.linterNamespace}}
 apiVersion: authorization.openshift.io/v1
 kind: Role
 metadata:
