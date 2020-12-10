@@ -20,7 +20,8 @@
 # {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceinstances"], Verbs:["get" "list" "watch" "get" "list" "watch"]}
 # {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceplans"], Verbs:["get" "list" "watch"]}
 
-{{- if eq .Release.Namespace .Values.linterNamespace}}
+{{ if eq .Release.Namespace .Values.linter.namespace }}
+
 apiVersion: authorization.openshift.io/v1
 kind: Role
 metadata:
@@ -29,6 +30,7 @@ metadata:
       the project. They can not view secrets or membership.
     openshift.io/reconcile-protect: "false"
   name: {{ .Release.Name }}-linter
+  namespace: {{ .Values.linter.namespace }}
 rules:
 - apiGroups:
   - ""
@@ -497,4 +499,5 @@ rules:
   - roles
   verbs:
   - get
+
 {{ end }}

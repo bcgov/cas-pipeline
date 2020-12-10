@@ -1,9 +1,12 @@
+{{ if eq .Release.Namespace .Values.linter.namespace }}
+
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ .Release.Name }}-linter
   labels:
 {{ include "cas-provision.labels" . | indent 4 }}
+  namespace: {{ .Values.linter.namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -12,3 +15,5 @@ subjects:
   - kind: ServiceAccount
     name: {{ .Release.Name }}-linter
     namespace: {{ .Values.linter.namespace }}
+
+{{ end }}
