@@ -28,7 +28,7 @@ metadata:
     openshift.io/description: A user who can view but not edit any resources within
       the project. They can not view secrets or membership.
     openshift.io/reconcile-protect: "false"
-  name: {{ .Release.Namespace }}-linter
+  name: {{ .Release.Name }}-linter
 rules:
 - apiGroups:
   - ""

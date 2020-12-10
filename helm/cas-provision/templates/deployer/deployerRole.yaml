@@ -4,10 +4,12 @@
 apiVersion: authorization.openshift.io/v1
 kind: Role
 metadata:
+  labels:
+{{ include "cas-provision.labels" . | indent 4 }}
   annotations:
     openshift.io/description: A user who can deploy applications
     openshift.io/reconcile-protect: "false"
-  name: {{ .Release.Namespace }}-deployer
+  name: {{ .Release.Name }}-deployer
 rules:
   - apiGroups:
       - image.openshift.io
@@ -47,16 +49,21 @@ rules:
       - endpoints
       - pods
       - pods/exec
-      - pods/log
     verbs:
       - watch
       - list
       - get
+      - create
+      - update
+      - patch
+      - delete
+      - deletecollection
   - apiGroups:
       - ""
     attributeRestrictions: null
     resources:
       - pods/status
+      - pods/log
     verbs:
       - watch
       - list
