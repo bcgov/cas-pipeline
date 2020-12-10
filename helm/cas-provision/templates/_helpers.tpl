@@ -70,8 +70,15 @@ Formats the dockerhub secret value
 
 
 {{/*
-Gets the suffix of the namespace. 
+Gets the suffix of the namespace.
 */}}
 {{- define "namespaceSuffix" }}
 {{- (split "-" .Release.Namespace)._1 | trim -}}
+{{- end }}
+
+{{/*
+Gets the prefix of the namespace.
+*/}}
+{{- define "namespacePrefix" }}
+{{- (split "-" .Release.Namespace)._0 | trim -}}
 {{- end }}

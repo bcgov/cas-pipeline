@@ -27,8 +27,6 @@ Options:
     The path to the directory containing the chart to install
   -v, --values-file
     The values file to use for the helm chart installation, see $(./helm/cas-provision/templates/values.yaml).
-  -l, --linter-namespace
-    The namespace for linting charts
   --dry-run
     Calls the helm install script with the --dry-run option
   -h, --help
