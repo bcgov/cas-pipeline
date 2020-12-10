@@ -17,4 +17,9 @@ terraform:
 
 serviceAccounts:
   namespace: "" # The namespace where the service accounts should be created
-linterNamespace: "linterNamespaceName"
+
+linter:
+  namespace: "" # The namespace where templates will be linted
+
+deployer:
+  namespace: "" # The namespace where the deployer should be created

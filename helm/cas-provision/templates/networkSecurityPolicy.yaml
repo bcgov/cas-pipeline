@@ -9,8 +9,8 @@ spec:
     Allow 'deployer' & 'job-runner' roles to communicate with the k8s api
   source:
     - - $namespace=$namespace
-      - role=deployer
+      - role={{ .Release.Name }}-deployer
     - - $namespace=$namespace
-      - role=job-runner
+      - role={{ .Release.Name }}-job-runner
   destination:
     - - int:network=internal-cluster-api-endpoint
