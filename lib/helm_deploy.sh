@@ -70,8 +70,10 @@ esac; shift; done
 
 for prefix in "${prefixes[@]}"; do
   for suffix in "${suffixes[@]}"; do
+
     namespace=$prefix-$suffix
     echo "Creating helm installation in $namespace namespace"
     helm upgrade --install --atomic -f "$values_file" -n "$namespace" $dry_run cas-provision "$chart_path"
+
   done
 done

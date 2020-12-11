@@ -1,14 +1,16 @@
 kind: NetworkSecurityPolicy
 apiVersion: security.devops.gov.bc.ca/v1alpha1
 metadata:
-  name: custom-deployer-role-k8s-api-communication
+  name: custom-roles-k8s-api-communication
   labels:
     created-by: cas-pipeline
 spec:
   description: |
-    Allow 'deployer' role to communicate with the k8s api
+    Allow 'deployer' & 'job-runner' roles to communicate with the k8s api
   source:
     - - $namespace=$namespace
-      - role=deployer
+      - role={{ .Release.Name }}-deployer
+    - - $namespace=$namespace
+      - role={{ .Release.Name }}-job-runner
   destination:
     - - int:network=internal-cluster-api-endpoint
