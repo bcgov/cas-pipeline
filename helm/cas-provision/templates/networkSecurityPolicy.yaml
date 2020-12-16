@@ -6,11 +6,11 @@ metadata:
     created-by: cas-pipeline
 spec:
   description: |
-    Allow 'deployer' & 'job-runner' roles to communicate with the k8s api
+    Allow 'deployer' & 'job-runner' roles to communicate with the k8s api via the corresponding Service Accounts.
   source:
-    - - $namespace=$namespace
-      - role={{ .Release.Name }}-deployer
-    - - $namespace=$namespace
-      - role={{ .Release.Name }}-job-runner
+    - - $namespace={{ .Release.Namespace }}
+      - "@app:k8s:serviceaccountname={{ .Release.Name }}-job-runner"
+    - - $namespace={{ .Release.Namespace }}
+      - "@app:k8s:serviceaccountname={{ .Release.Name }}-deployer"
   destination:
     - - int:network=internal-cluster-api-endpoint
