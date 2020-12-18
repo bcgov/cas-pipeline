@@ -12,10 +12,6 @@ docker:
   username: "username" # The username for the dockerhub account
   password: "password" # The password for the dockerhub account
 
-terraform:
-  token: "" # Terraform team token
-  workspaceId: "" # Id visible in the terraform workspace's "General Settings"
-
 serviceAccounts:
   namespace: "" # The namespace where the service accounts should be created
 
