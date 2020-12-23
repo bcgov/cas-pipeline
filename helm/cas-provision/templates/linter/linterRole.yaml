@@ -499,5 +499,11 @@ rules:
   - roles
   verbs:
   - get
+- apiGroups:
+    - security.devops.gov.bc.ca
+  resources:
+    - networksecuritypolicies
+  - verbs:
+    - get
 
 {{ end }}
