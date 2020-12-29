@@ -20,3 +20,9 @@ linter:
 
 deployer:
   namespace: "" # The namespace where the deployer should be created
+
+eccc:
+  host: ""
+  username: ""
+  password: ""
+  zip_passwords: "" # a JSON array containing possible passwords for the ECCC zip files
