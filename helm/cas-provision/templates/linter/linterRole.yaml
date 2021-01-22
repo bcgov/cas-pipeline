@@ -1,25 +1,3 @@
-# Permission removed during migration:
-# {APIGroups:[""], Resources:["buildconfigs/instantiate"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["buildconfigs/instantiatebinary"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["builds/clone"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["deploymentconfigrollbacks"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["deployments"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["generatedeploymentconfigs"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["imagestreamimports"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["minions"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["nodes"], Verbs:["list" "watch" "get"]}
-# {APIGroups:[""], Resources:["persistentvolumes"], Verbs:["get" "list" "watch"]}
-# {APIGroups:[""], Resources:["securitycontextconstraints"], Verbs:["get" "list" "watch"]}
-# {APIGroups:["apps"], Resources:["petsets"], Verbs:["get" "list" "watch"]}
-# {APIGroups:["batch"], Resources:["scheduledjobs"], Verbs:["get" "list" "watch"]}
-# {APIGroups:["extensions"], Resources:["horizontalpodautoscalers"], Verbs:["get" "list" "watch"]}
-# {APIGroups:["extensions"], Resources:["jobs"], Verbs:["get" "list" "watch"]}
-# {APIGroups:["servicecatalog.k8s.io"], Resources:["servicebindings"], Verbs:["get" "list" "watch" "get" "list" "watch"]}
-# {APIGroups:["servicecatalog.k8s.io"], Resources:["servicebrokers"], Verbs:["get" "list" "watch"]}
-# {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceclasses"], Verbs:["get" "list" "watch"]}
-# {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceinstances"], Verbs:["get" "list" "watch" "get" "list" "watch"]}
-# {APIGroups:["servicecatalog.k8s.io"], Resources:["serviceplans"], Verbs:["get" "list" "watch"]}
-
 {{ if eq .Release.Namespace .Values.linter.namespace }}
 
 apiVersion: authorization.openshift.io/v1
@@ -500,10 +478,9 @@ rules:
   verbs:
   - get
 - apiGroups:
-    - security.devops.gov.bc.ca
+  - security.devops.gov.bc.ca
   resources:
-    - networksecuritypolicies
-  - verbs:
-    - get
-
+  - networksecuritypolicies
+  verbs:
+  - get
 {{ end }}
