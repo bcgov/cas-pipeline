@@ -26,3 +26,8 @@ eccc:
   username: ""
   password: ""
   zip_passwords: "" # a JSON array containing possible passwords for the ECCC zip files
+
+sysdigTeam:
+  users:
+    - name: some@email.com
+      role: ROLE_TEAM_MANAGER 
