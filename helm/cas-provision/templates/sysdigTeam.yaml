@@ -1,0 +1,16 @@
+{{- if hasSuffix "-tools" .Release.Namespace }}
+
+apiVersion: ops.gov.bc.ca/v1alpha1
+kind: SysdigTeam
+metadata:
+  name: {{ template "namespacePrefix" . }}-sysdigteam
+spec:
+  team: 
+    description: The Sysdig Team for the {{ template "namespacePrefix" . }} Namespaces
+    users: 
+    {{- range .Values.sysdigTeam.users }}
+      - name: {{ .name }}
+        role: {{ .role }}
+    {{- end }}
+
+{{- end }}
