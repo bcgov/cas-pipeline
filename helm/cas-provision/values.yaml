@@ -31,3 +31,6 @@ sysdigTeam:
   users:
     - name: some@email.com
       role: ROLE_TEAM_MANAGER 
+
+acme:
+  url: "" # The url against which acme challenges will be executed
