@@ -187,17 +187,6 @@ rules:
       - patch
       - delete
   - apiGroups:
-      - security.devops.gov.bc.ca
-    resources:
-      - networksecuritypolicies
-    verbs:
-      - get
-      - list
-      - create
-      - update
-      - patch
-      - delete
-  - apiGroups:
       - networking.k8s.io
     resources:
       - networkpolicies
