@@ -478,9 +478,9 @@ rules:
   verbs:
   - get
 - apiGroups:
-  - security.devops.gov.bc.ca
+    - networking.k8s.io
   resources:
-  - networksecuritypolicies
+    - networkpolicies
   verbs:
-  - get
+    - get
 {{ end }}
