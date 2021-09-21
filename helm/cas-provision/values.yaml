@@ -34,3 +34,9 @@ sysdigTeam:
 
 acme:
   url: "" # The url against which acme challenges will be executed
+
+# API keys for the MDT GHG credentials issuer
+ghgCredentialIssuerKey:
+  dev: ~
+  test: ~
+  prod: ~
