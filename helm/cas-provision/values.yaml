@@ -5,6 +5,7 @@ namespacePrefixes:
   airflow: "airflowprefix"
   ggircs: "ggircsprefix"
   ciip: "ciipprefix"
+  cif: "cifprefix"
 
 docker:
   secretName: dockerhub-registry
@@ -30,7 +31,7 @@ eccc:
 sysdigTeam:
   users:
     - name: some@email.com
-      role: ROLE_TEAM_MANAGER 
+      role: ROLE_TEAM_MANAGER
 
 acme:
   url: "" # The url against which acme challenges will be executed

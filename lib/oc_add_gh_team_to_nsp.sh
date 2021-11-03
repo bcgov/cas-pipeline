@@ -5,12 +5,12 @@ usage() {
     cat << EOF
 $0 [OPTIONS]
 
-Retrieves the list of users from a GitHub team 
+Retrieves the list of users from a GitHub team
 and adds a RoleBinding for each user in the provided namespace sets
 
-The list of namespaces affected by the script is defined by the 
+The list of namespaces affected by the script is defined by the
 "--project-prefixes" and "--project-suffixes" options (see below).
-For instance, "--project-prefixes abc123,456qwe --project-suffixes tools,dev" 
+For instance, "--project-prefixes abc123,456qwe --project-suffixes tools,dev"
 would affect the following namespaces: abc123-tools, abc123-dev, 456qwe-tools and 456qwe-dev
 
 Maintainer: Matthieu Foucault <matthieu@button.is>
@@ -92,7 +92,7 @@ for prefix in "${prefixes[@]}"; do
     for login in $team_members; do
       echo "Binding GitHub user $login to role $role in $namespace"
       if ! $dry_run; then
-        oc process -f "$__dirname"/../openshift/authorize/rolebinding/clusterRoleBinding.yml GH_LOGIN="$login" GH_TEAM="${org}_$team" NAMESPACE="$namespace" ROLE="$role" | \
+        oc process -f "$__dirname"/clusterRoleBinding.yaml GH_LOGIN="$login" GH_TEAM="${org}_$team" NAMESPACE="$namespace" ROLE="$role" | \
         oc -n "$namespace" apply --wait --overwrite --validate -f-
       fi
     done
