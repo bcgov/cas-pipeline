@@ -4,65 +4,39 @@
 
 # cas-pipeline
 
-A collection of make functions used to compose pipelines
-Examples of [standard targets] and usage to be added shortly.
+A set of shell scripts, makefiles and a helm chart to help the Climate Action Secretariat team deploy applications to the OpenShift cluster.
 
-## background
+## Intended usage
 
-[Pathfinder] projects follow specific patterns when deploying to [OCP]
-which are common to all projects on the cluster.
+The Makefile in this repository has two main commands used to, respectively, grant access to the appropriate OpenShift namespaces, and to add common configuration items in said namespaces
 
-For instance:
+### `make authorize`
 
-- each project receives four [k8s namespaces]:
-  - tools
-  - dev
-  - test
-  - prod
-- images should always be built in the tools namespace
-- images should always be tagged to other namespaces
-- tags should be structured to enable rapid deployment rollback
-- configuration should be stored as code
-- service accounts should be used to limit processes cluster access
+*To be run anytime the CAS team members change, or new namespaces are added*
 
-...among other patterns.
+Loads the list of namespaces from the `.env` file (see [.env-example](), the actual `.env` file is stored in the teams password manager), reads the list of users present in the appropriate GitHub teams (see teams descriptions on GitHub), and create a `RoleBinding` object for each user/namespace pair.
 
-This project provides a deployment abstraction layer for all
-Climate Action Secretariat projects.
+This script first deletes the previously created `RoleBinding`s (identified by a label) and recreates them based on the GitHub teams membership, to ensure that previous team members access is revoked.
 
-## usage
+Because it temporarily revokes access for all team members, this needs to be run manually by one of the current members listed as technical lead on the [project registry](https://registry.developer.gov.bc.ca/), as they are also granted access via a `RoleBinding` created by the Platform Services team.
 
-This project is intented to be added as a [submodule] to other
-Climate Action Secretariat projects.
+### `make provision`
 
-The preferred name of the submodule folder is `.pipeline`:
+Deploys the [`cas-provision` helm chart] to every namespace used by the team. This relies on a hidden `.values.yaml` file (stored in the team's password manager) and creates various objects such as:
 
-```
-git submodule add https://github.com/bcgov/cas-pipeline.git .pipeline
-```
+- `deployer`, `linter` and `job-runner` roles following the [least privilege principle]. Those roles are only allowed to manage objects used in the CAS team's projects, and would need to be updated if new OpenShift object types were to be used (e.g. see [PR #53](https://github.com/bcgov/cas-pipeline/pull/53), when `horizontalpodautoscalers` were first used).
+- secrets listing the namespace names of the various applications (which are randomly generated when provisions), providing easier referencing for developers, .i.e. an application can look at the `cas-namespaces` secret to refer to the namespace of other applications.
+- a DockerHub registry credential
+- a `SysdigTeam` object, which is a custom resource created by platform services to grant access to the Sysdig monitoring platform.
+- various secrets containing credentials used by our applications
 
-For help, please visit [#cas] on [public team chat].
 
-## Roles and service accounts
+### Adding a namespace
 
-This project contains roles definitions for the CircleCI and Shipit service accounts used by other CAS projects.
-The intent behind creating those custom roles is to follow the [least privilege principle].
-Using the `make authorize` command, those roles and service accounts can be updated in the CAS [Pathfinder] projects .
 
-## related
 
-- [openshift-developer-tools](https://github.com/BCDevOps/openshift-developer-tools/tree/master/bin)
-- [bcdk](https://github.com/BCDevOps/bcdk/tree/release/0.0.1)
-- [extended-oc](https://github.com/bcgov/esm-server/blob/dev/openshift/templates/lib/extended-oc.sh)
-- [mds/pipeline](https://github.com/bcgov/mds/tree/develop/pipeline)
-- [tfrs/readme](https://github.com/bcgov/tfrs/blob/master/openshift/templates/components/README.md)
-- [gwells/scripts](https://github.com/bcgov/gwells/tree/release/openshift/scripts)
+## Deprecated things
 
-[standard targets]: https://www.gnu.org/software/make/manual/html_node/Standard-Targets.html
-[pathfinder]: https://developer.gov.bc.ca/What-is-Pathfinder
-[ocp]: https://www.openshift.com/products/container-platform
-[k8s namespaces]: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
-[submodule]: https://git-scm.com/book/en/v2/Git-Tools-Submodules
-[#cas]: https://chat.pathfinder.gov.bc.ca/channel/cas
-[public team chat]: https://developer.gov.bc.ca/Steps-to-join-Pathfinder-Rocket.Chat
+Prior to using Helm to deploy applications to the OpenShift cluster, the CAS team used a set of common `make` commands (e.g. `configure`, `build`, `install`) that abstracted the `oc` command line tool. These came with various utility functions located in the `*.mk` files, which are still in use in some projects but are considered deprecated.
+
 [least privilege principle]: https://csrc.nist.gov/glossary/term/least-privilege
