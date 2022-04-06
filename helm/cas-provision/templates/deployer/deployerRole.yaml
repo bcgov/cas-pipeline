@@ -214,4 +214,10 @@ rules:
       - update
       - patch
       - delete
-
+  - apiGroups:
+      - artifactory.devops.gov.bc.ca
+    resources:
+      - artifactoryserviceaccounts
+    verbs:
+      - get
+      - list
