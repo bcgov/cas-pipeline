@@ -483,4 +483,11 @@ rules:
     - networkpolicies
   verbs:
     - get
+- apiGroups:
+    - postgres-operator.crunchydata.com
+  resources:
+    - postgresclusters
+  verbs:
+    - get
+    - list
 {{ end }}
