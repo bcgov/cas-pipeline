@@ -5,6 +5,7 @@ namespace: 09269b-tools
 namespacesToMonitor:
   names:
     - c53ff1-dev
+    - c53ff1-test
 
 # List of receivers to alert via the Alert Manager
 alertReceivers:
