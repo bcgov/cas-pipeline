@@ -45,3 +45,22 @@ lint_monitoring_chart:
 	@set -euo pipefail; \
 	helm dep up ./helm/crunchy-monitoring; \
 	helm template -f ./helm/crunchy-monitoring/values.yaml crunchy-monitoring ./helm/crunchy-monitoring --validate;
+
+.PHONY: install_crunchy_monitoring
+install: ## Installs the helm chart on the OpenShift cluster
+install: NAMESPACE=$(CIIP_NAMESPACE_PREFIX)-tools
+install: CHART_DIR=./helm/crunchy_monitoring
+install: CHART_INSTANCE=crunchy_monitoring
+install: HELM_OPTS=--atomic --wait-for-jobs --timeout 2400s --namespace $(NAMESPACE) \
+										--values $(CHART_DIR)/values.yaml
+install:
+	@set -euo pipefail; \
+	if [ -z '$(CIIP_NAMESPACE_PREFIX)' ]; then \
+		echo "CIIP_NAMESPACE_PREFIX is not set"; \
+		exit 1; \
+	fi; \
+	helm dep up $(CHART_DIR); \
+	if ! helm status --namespace $(NAMESPACE) $(CHART_INSTANCE); then \
+		helm install $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR); \
+	fi; \
+	helm upgrade $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR);
