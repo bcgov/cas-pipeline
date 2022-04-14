@@ -4,7 +4,6 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
 {{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: crunchy-alertmanager
   namespace: {{ .Values.namespace }}
@@ -14,7 +13,6 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Release.Name }}
       name: crunchy-alertmanager
 {{ include "crunchy-monitoring.selectorLabels" . | indent 6 }}
   strategy:
@@ -25,8 +23,8 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Release.Name }}
         name: crunchy-alertmanager
+{{ include "crunchy-monitoring.labels" . | indent 8 }}
     spec:
       containers:
       - args:

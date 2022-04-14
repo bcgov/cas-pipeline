@@ -17,7 +17,8 @@ data:
     - job_name: 'crunchy-postgres-exporter'
       kubernetes_sd_configs:
       - role: pod
-        namespaces: {{ .Values.namespacesToMonitor }}
+        namespaces:
+          names: {{ toYaml .Values.namespacesToMonitor | nindent 12 }}
 
       relabel_configs:
       - source_labels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_crunchy_postgres_exporter,__meta_kubernetes_pod_label_crunchy_postgres_exporter]
@@ -85,7 +86,6 @@ data:
 kind: ConfigMap
 metadata:
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
     vendor: crunchydata
 {{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: crunchy-prometheus

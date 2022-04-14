@@ -14,7 +14,6 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Release.Name }}
       name: crunchy-prometheus
 {{ include "crunchy-monitoring.selectorLabels" . | indent 6 }}
   strategy:
@@ -26,8 +25,8 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app.kubernetes.io/name: {{ .Release.Name }}
         name: crunchy-prometheus
+{{ include "crunchy-monitoring.labels" . | indent 8 }}
     spec:
       containers:
       - image: prom/prometheus:v2.27.1

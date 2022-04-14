@@ -4,7 +4,6 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
 {{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: crunchy-grafana
   namespace: {{ .Values.namespace }}
@@ -25,8 +24,8 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Release.Name }}
         name: crunchy-grafana
+{{ include "crunchy-monitoring.labels" . | indent 8 }}
     spec:
       containers:
       - env:

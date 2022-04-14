@@ -28,7 +28,7 @@ data:
         severity: 'warning'
       equal: ['alertname', 'job', 'service']
 
-    receivers: {{ .Values.alertReceivers }}
+    receivers: {{ toYaml .Values.alertReceivers | nindent 4}}
 
     ## Examples of alternative alert receivers. See documentation for more info on how to configure these fully
     #- name: 'pagerduty-dba'
@@ -78,7 +78,6 @@ data:
 kind: ConfigMap
 metadata:
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
     vendor: crunchydata
 {{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: alertmanager-config
