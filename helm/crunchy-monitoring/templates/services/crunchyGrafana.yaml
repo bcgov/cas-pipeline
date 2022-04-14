@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: postgres-operator-monitoring
+    name: crunchy-grafana
+    vendor: crunchydata
+  name: crunchy-grafana
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+  - name: grafana
+    port: 3000
+  - name: grafana-proxy
+    port: 9091
+    protocol: TCP
+    targetPort: grafana-proxy
+  selector:
+    name: crunchy-grafana
+  type: ClusterIP

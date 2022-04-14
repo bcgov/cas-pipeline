@@ -1,0 +1,14 @@
+# Namespace to deploy to
+namespace: 09269b-tools
+
+# Namespaces to monitor
+namespacesToMonitor:
+  names:
+    - c53ff1-dev
+
+# List of receivers to alert via the Alert Manager
+alertReceivers:
+  - name: 'Dylan Leard'
+    email_configs:
+    - to: 'dylan@button.is'
+      send_resolved: true

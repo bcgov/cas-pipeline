@@ -38,3 +38,10 @@ authorize:
 provision:
 	$(call oc_whoami)
 	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -v $$VALUES_FILE_PATH
+
+.PHONY: lint_monitoring_chart
+lint_monitoring_chart: ## Checks the configured helm chart template definitions against the remote schema
+lint_monitoring_chart:
+	@set -euo pipefail; \
+	helm dep up ./helm/crunchy-monitoring; \
+	helm template -f ./helm/crunchy-monitoring/values.yaml crunchy-monitoring ./helm/crunchy-monitoring --validate;
