@@ -3,6 +3,8 @@ kind: NetworkPolicy
 metadata:
   name: allow-prometheus-to-alertmanager
   namespace: {{ .Values.namespace }}
+  labels:
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
 spec:
   ingress:
   - from:

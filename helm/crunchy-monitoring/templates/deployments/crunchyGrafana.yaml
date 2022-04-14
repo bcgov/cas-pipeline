@@ -5,6 +5,7 @@ metadata:
     deployment.kubernetes.io/revision: "1"
   labels:
     app.kubernetes.io/name: postgres-operator-monitoring
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: crunchy-grafana
   namespace: {{ .Values.namespace }}
 spec:
@@ -15,6 +16,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: postgres-operator-monitoring
       name: crunchy-grafana
+{{ include "crunchy-monitoring.selectorLabels" . | indent 6 }}
   strategy:
     rollingUpdate:
       maxSurge: 25%

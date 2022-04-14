@@ -3,6 +3,7 @@ kind: RoleBinding
 metadata:
   labels:
     vendor: crunchydata
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: prometheus-crb
   namespace: {{ .Values.namespace }}
 roleRef:

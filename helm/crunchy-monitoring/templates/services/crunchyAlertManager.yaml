@@ -5,6 +5,7 @@ metadata:
     app.kubernetes.io/name: postgres-operator-monitoring
     name: crunchy-alertmanager
     vendor: crunchydata
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: crunchy-alertmanager
   namespace: {{ .Values.namespace }}
 spec:

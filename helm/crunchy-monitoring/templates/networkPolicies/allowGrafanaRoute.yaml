@@ -3,6 +3,8 @@ kind: NetworkPolicy
 metadata:
   name: allow-grafana-route
   namespace: {{ .Values.namespace }}
+  labels:
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
 spec:
   ingress:
   - from:

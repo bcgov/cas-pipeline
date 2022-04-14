@@ -31,3 +31,5 @@ kind: ConfigMap
 metadata:
   name: grafana-config
   namespace: {{ .Values.namespace }}
+  labels:
+{{ include "crunchy-monitoring.labels" . | indent 4 }}

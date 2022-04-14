@@ -5,5 +5,6 @@ metadata:
     serviceaccounts.openshift.io/oauth-redirectreference.primary: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"crunchy-grafana"}}'
   labels:
     vendor: crunchydata
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: grafana
   namespace: {{ .Values.namespace }}

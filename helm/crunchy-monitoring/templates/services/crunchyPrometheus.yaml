@@ -5,6 +5,7 @@ metadata:
     app.kubernetes.io/name: postgres-operator-monitoring
     name: crunchy-prometheus
     vendor: crunchydata
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: crunchy-prometheus
   namespace: {{ .Values.namespace }}
 spec:

@@ -4,6 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: pgo-monitoring
     vendor: crunchydata
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
   name: prometheusdata
   namespace: {{ .Values.namespace }}
 spec:

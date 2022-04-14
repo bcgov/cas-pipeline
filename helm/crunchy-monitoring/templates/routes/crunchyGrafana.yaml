@@ -3,6 +3,8 @@ kind: Route
 metadata:
   name: crunchy-grafana
   namespace: {{ .Values.namespace }}
+  labels:
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
 spec:
   port:
     targetPort: grafana-proxy
