@@ -50,7 +50,7 @@ data:
     #    send_resolved: true
 
     route:
-        receiver: default-receiver
+        receiver: {{ .Values.defaultReceiver }}
         group_by: [severity, service, job, alertname]
         group_wait: 30s
         group_interval: 5m

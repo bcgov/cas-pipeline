@@ -8,7 +8,21 @@ namespacesToMonitor:
 
 # List of receivers to alert via the Alert Manager
 alertReceivers:
+  - name: 'ggircs'
+    email_configs:
+    - to: 'ggircs@gov.bc.ca'
+      send_resolved: true
   - name: 'Dylan Leard'
     email_configs:
     - to: 'dylan@button.is'
       send_resolved: true
+  - name: 'Matthieu Foucault'
+    email_configs:
+    - to: 'matthieu@button.is'
+      send_resolved: true
+  - name: 'Pierre Bastianelli'
+    email_configs:
+    - to: 'pierre.bastianelli@gov.bc.ca'
+      send_resolved: true
+
+defaultReceiver: ggircs
