@@ -30,17 +30,6 @@ Deploys the [`cas-provision` helm chart] to every namespace used by the team. Th
 - a `SysdigTeam` object, which is a custom resource created by platform services to grant access to the Sysdig monitoring platform.
 - various secrets containing credentials used by our applications
 
-
-### Adding a namespace
-
-
-
-## Deprecated things
-
-Prior to using Helm to deploy applications to the OpenShift cluster, the CAS team used a set of common `make` commands (e.g. `configure`, `build`, `install`) that abstracted the `oc` command line tool. These came with various utility functions located in the `*.mk` files, which are still in use in some projects but are considered deprecated.
-
-[least privilege principle]: https://csrc.nist.gov/glossary/term/least-privilege
-
 ### `make install_crunchy_monitoring`
 
 Deploys the [`crunchy-monitoring` helm chart] to the namespace defined in the values file. This relies on a hidden `.crunchy-values.yaml` file (stored in the team's password manager).
@@ -52,3 +41,14 @@ Deploys the [`crunchy-monitoring` helm chart] to the namespace defined in the va
 Lints the [`crunchy-monitoring` helm chart]
 
 - requires defining the CIIP_NAMESPACE_PREFIX variable
+
+
+### Adding a namespace
+
+
+
+## Deprecated things
+
+Prior to using Helm to deploy applications to the OpenShift cluster, the CAS team used a set of common `make` commands (e.g. `configure`, `build`, `install`) that abstracted the `oc` command line tool. These came with various utility functions located in the `*.mk` files, which are still in use in some projects but are considered deprecated.
+
+[least privilege principle]: https://csrc.nist.gov/glossary/term/least-privilege
