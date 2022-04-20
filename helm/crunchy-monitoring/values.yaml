@@ -1,28 +1,16 @@
-# Namespace to deploy to
-namespace: 09269b-tools
+# Example of the values needed for this chart
 
+# Namespace to deploy to
+namespace: namespace-environment
 # Namespaces to monitor
 namespacesToMonitor:
-  - c53ff1-dev
-  - c53ff1-test
+  - namespace-environment
 
 # List of receivers to alert via the Alert Manager
 alertReceivers:
-  - name: 'ggircs'
+  - name: 'name-of-receiver'
     email_configs:
-    - to: 'ggircs@gov.bc.ca'
-      send_resolved: true
-  - name: 'Dylan Leard'
-    email_configs:
-    - to: 'dylan@button.is'
-      send_resolved: true
-  - name: 'Matthieu Foucault'
-    email_configs:
-    - to: 'matthieu@button.is'
-      send_resolved: true
-  - name: 'Pierre Bastianelli'
-    email_configs:
-    - to: 'pierre.bastianelli@gov.bc.ca'
+    - to: 'some-email@email.org'
       send_resolved: true
 
-defaultReceiver: ggircs
+defaultReceiver: default-receiver

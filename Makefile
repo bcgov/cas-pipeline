@@ -43,8 +43,12 @@ provision:
 lint_monitoring_chart: ## Checks the configured helm chart template definitions against the remote schema
 lint_monitoring_chart:
 	@set -euo pipefail; \
+	if [ -z '$(CIIP_NAMESPACE_PREFIX)' ]; then \
+		echo "CIIP_NAMESPACE_PREFIX is not set"; \
+		exit 1; \
+	fi; \
 	helm dep up ./helm/crunchy-monitoring; \
-	helm template -f ./helm/crunchy-monitoring/values.yaml crunchy-monitoring ./helm/crunchy-monitoring --validate;
+	helm template --set namespace=$(CIIP_NAMESPACE_PREFIX)-tools -f ./helm/crunchy-monitoring/values.yaml crunchy-monitoring ./helm/crunchy-monitoring --validate;
 
 .PHONY: install_crunchy_monitoring
 install_crunchy_monitoring: ## Installs the helm chart on the OpenShift cluster
@@ -61,6 +65,6 @@ install_crunchy_monitoring:
 	fi; \
 	helm dep up $(CHART_DIR); \
 	if ! helm status --namespace $(NAMESPACE) $(CHART_INSTANCE); then \
-		helm install $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR); \
+		helm install $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR) -v $$MONITORING_VALUES_FILE_PATH; \
 	fi; \
-	helm upgrade $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR);
+	helm upgrade $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR) -v $$MONITORING_VALUES_FILE_PATH;
