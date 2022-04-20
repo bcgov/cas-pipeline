@@ -56,7 +56,7 @@ install_crunchy_monitoring: NAMESPACE=$(CIIP_NAMESPACE_PREFIX)-tools
 install_crunchy_monitoring: CHART_DIR=./helm/crunchy-monitoring
 install_crunchy_monitoring: CHART_INSTANCE=crunchy-monitoring
 install_crunchy_monitoring: HELM_OPTS=--atomic --wait-for-jobs --timeout 2400s --namespace $(NAMESPACE) \
-	--values $(CHART_DIR)/values.yaml
+	--values $(CHART_DIR)/.crunchy-values.yaml
 install_crunchy_monitoring:
 	@set -euo pipefail; \
 	if [ -z '$(CIIP_NAMESPACE_PREFIX)' ]; then \
@@ -65,6 +65,6 @@ install_crunchy_monitoring:
 	fi; \
 	helm dep up $(CHART_DIR); \
 	if ! helm status --namespace $(NAMESPACE) $(CHART_INSTANCE); then \
-		helm install $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR) -v $$MONITORING_VALUES_FILE_PATH; \
+		helm install $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR); \
 	fi; \
-	helm upgrade $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR) -v $$MONITORING_VALUES_FILE_PATH;
+	helm upgrade $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR);
