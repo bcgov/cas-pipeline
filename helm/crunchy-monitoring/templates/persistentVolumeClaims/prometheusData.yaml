@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    vendor: crunchydata
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
+  name: prometheusdata
+  namespace: {{ .Values.namespace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: netapp-block-standard

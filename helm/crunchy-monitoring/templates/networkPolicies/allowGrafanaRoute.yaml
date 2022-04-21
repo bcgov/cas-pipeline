@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-grafana-route
+  namespace: {{ .Values.namespace }}
+  labels:
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          network.openshift.io/policy-group: ingress
+  podSelector:
+    matchLabels:
+      name: crunchy-grafana
+  policyTypes:
+  - Ingress

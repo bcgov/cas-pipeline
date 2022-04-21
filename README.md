@@ -30,6 +30,18 @@ Deploys the [`cas-provision` helm chart] to every namespace used by the team. Th
 - a `SysdigTeam` object, which is a custom resource created by platform services to grant access to the Sysdig monitoring platform.
 - various secrets containing credentials used by our applications
 
+### `make install_crunchy_monitoring`
+
+Deploys the [`crunchy-monitoring` helm chart] to the namespace defined in the values file. This relies on a hidden `.crunchy-values.yaml` file (stored in the team's password manager).
+
+- requires defining the CIIP_NAMESPACE_PREFIX variable
+
+### `make lint_monitoring_chart`
+
+Lints the [`crunchy-monitoring` helm chart]
+
+- requires defining the CIIP_NAMESPACE_PREFIX variable
+
 
 ### Adding a namespace
 

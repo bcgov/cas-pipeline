@@ -38,3 +38,33 @@ authorize:
 provision:
 	$(call oc_whoami)
 	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -v $$VALUES_FILE_PATH
+
+.PHONY: lint_monitoring_chart
+lint_monitoring_chart: ## Checks the configured helm chart template definitions against the remote schema
+lint_monitoring_chart:
+	@set -euo pipefail; \
+	if [ -z '$(CIIP_NAMESPACE_PREFIX)' ]; then \
+		echo "CIIP_NAMESPACE_PREFIX is not set"; \
+		exit 1; \
+	fi; \
+	helm dep up ./helm/crunchy-monitoring; \
+	helm template --set namespace=$(CIIP_NAMESPACE_PREFIX)-tools -f ./helm/crunchy-monitoring/values.yaml crunchy-monitoring ./helm/crunchy-monitoring --validate;
+
+.PHONY: install_crunchy_monitoring
+install_crunchy_monitoring: ## Installs the helm chart on the OpenShift cluster
+install_crunchy_monitoring: NAMESPACE=$(CIIP_NAMESPACE_PREFIX)-tools
+install_crunchy_monitoring: CHART_DIR=./helm/crunchy-monitoring
+install_crunchy_monitoring: CHART_INSTANCE=crunchy-monitoring
+install_crunchy_monitoring: HELM_OPTS=--atomic --wait-for-jobs --timeout 2400s --namespace $(NAMESPACE) \
+	--values $(CHART_DIR)/.crunchy-values.yaml
+install_crunchy_monitoring:
+	@set -euo pipefail; \
+	if [ -z '$(CIIP_NAMESPACE_PREFIX)' ]; then \
+		echo "CIIP_NAMESPACE_PREFIX is not set"; \
+		exit 1; \
+	fi; \
+	helm dep up $(CHART_DIR); \
+	if ! helm status --namespace $(NAMESPACE) $(CHART_INSTANCE); then \
+		helm install $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR); \
+	fi; \
+	helm upgrade $(HELM_OPTS) $(CHART_INSTANCE) $(CHART_DIR);

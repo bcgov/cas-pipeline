@@ -1,3 +1,5 @@
 
 .env
 .values.yaml
+.scratch/
+.crunchy-values.yaml

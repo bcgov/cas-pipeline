@@ -1,0 +1,39 @@
+apiVersion: v1
+data:
+  crunchy_grafana_dashboards.yml: |
+    ###
+    #
+    # Copyright 2017-2022 Crunchy Data Solutions, Inc. All Rights Reserved.
+    #
+    ###
+    apiVersion: 1
+
+    providers:
+    - name: 'crunchy_dashboards'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 3 #how often Grafana will scan for changed dashboards
+      options:
+        path: $GF_PATHS_PROVISIONING/dashboards
+  pgbackrest.json: |
+{{ .Files.Get "grafanaDashboards_pgBackrest.json" | indent 4 }}
+  pod_details.json: |
+{{ .Files.Get "grafanaDashboards_podDetails.json" | indent 4 }}
+  postgres_overview.json: |
+{{ .Files.Get "grafanaDashboards_postgresOverview.json" | indent 4 }}
+  postgresql_details.json: |
+{{ .Files.Get "grafanaDashboards_postgresDetails.json" | indent 4 }}
+  postgresql_service_health.json: |
+{{ .Files.Get "grafanaDashboards_postgresServiceHealth.json" | indent 4 }}
+  prometheus_alerts.json: |
+{{ .Files.Get "grafanaDashboards_prometheusAlerts.json" | indent 4 }}
+  query_statistics.json: |
+{{ .Files.Get "grafanaDashboards_queryStatistics.json" | indent 4 }}
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: {{ .Values.namespace }}
+  labels:
+{{ include "crunchy-monitoring.labels" . | indent 4 }}
