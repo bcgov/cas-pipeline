@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   crunchy-alert-rules-pg.yml: |
-{{ .Files.Get "alertManagerRulesConfig.yml" | indent 4 }}
+{{ .Files.Get "ymlFiles/alertManagerRulesConfig.yml" | indent 4 }}
 kind: ConfigMap
 metadata:
   labels:
