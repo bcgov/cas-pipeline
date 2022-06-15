@@ -37,7 +37,13 @@ authorize:
 .PHONY: provision
 provision:
 	$(call oc_whoami)
-	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -v $$VALUES_FILE_PATH
+	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -n cas-provision -v $$VALUES_FILE_PATH
+
+.PHONY: provision_artifactory
+provision_artifactory: ## Install the artifactory chart, creating an artifactory service account in every namespace. Should only be run once.
+provision_artifactory:
+	$(call oc_whoami)
+	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision-artifactory/ -n cas-provision-artifactory -v $$VALUES_FILE_PATH
 
 .PHONY: lint_monitoring_chart
 lint_monitoring_chart: ## Checks the configured helm chart template definitions against the remote schema
