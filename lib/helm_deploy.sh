@@ -25,6 +25,8 @@ Options:
     The comma-separated project suffixes where the secret will be added. Defaults to "tools,dev,test,prod"
   -c, --chart-directory
     The path to the directory containing the chart to install
+  -n, --chart-name
+    The name of the chart to install
   -v, --values-file
     The values file to use for the helm chart installation, see $(./helm/cas-provision/templates/values.yaml).
   --dry-run
@@ -49,9 +51,13 @@ while [[ -n ${1+x} && "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     shift
     IFS=',' read -r -a suffixes <<< "$1"
     ;;
-  -c | --chart )
+  -c | --chart-directory )
     shift
     chart_path=$1
+    ;;
+  -n | --chart-name )
+    shift
+    chart_name=$1
     ;;
   -v | --values-file )
     shift
@@ -73,7 +79,7 @@ for prefix in "${prefixes[@]}"; do
 
     namespace=$prefix-$suffix
     echo "Creating helm installation in $namespace namespace"
-    helm upgrade --install --atomic -f "$values_file" -n "$namespace" $dry_run cas-provision "$chart_path"
+    helm upgrade --install --atomic -f "$values_file" -n "$namespace" $dry_run "$chart_name" "$chart_path"
 
   done
 done
