@@ -41,3 +41,9 @@ ghgCredentialIssuerKey:
   dev: ~
   test: ~
   prod: ~
+
+# API keys for the growthbook feature-flagging service
+growthbookApiKey:
+  dev: ~
+  test: ~
+  prod: ~
