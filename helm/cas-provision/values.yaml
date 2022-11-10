@@ -47,3 +47,17 @@ growthbookApiKey:
   dev: ~
   test: ~
   prod: ~
+
+kcClientSecrets:
+  ggircs:
+    dev: ~
+    test: ~
+    prod: ~
+  cif:
+    dev: ~
+    test: ~
+    prod: ~
+  ciip:
+    dev: ~
+    test: ~
+    prod: ~
