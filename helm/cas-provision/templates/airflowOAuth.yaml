@@ -1,0 +1,11 @@
+{{- if and (hasPrefix .Values.namespacePrefixes.airflow .Release.Namespace)}}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: airflow-oauth
+  labels: {{ include "cas-provision.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  clientId: {{ .Values.airflowOAuth.clientId }}
+  clientSecret: {{ .Values.airflowOAuth.clientSecret }}
+{{- end }}
