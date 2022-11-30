@@ -61,3 +61,7 @@ kcClientSecrets:
     dev: ~
     test: ~
     prod: ~
+
+airflowOAuth:
+  clientId: ~
+  clientSecret: ~
