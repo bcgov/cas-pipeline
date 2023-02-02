@@ -1,4 +1,4 @@
-{{- if and (hasPrefix .Values.namespacePrefixes.airflow .Release.Namespace)}}
+{{- if hasPrefix .Values.namespacePrefixes.airflow .Release.Namespace}}
 kind: Secret
 apiVersion: v1
 metadata:
@@ -6,6 +6,17 @@ metadata:
   labels: {{ include "cas-provision.labels" . | nindent 4 }}
 type: Opaque
 stringData:
-  clientId: {{ .Values.airflowOAuth.clientId }}
-  clientSecret: {{ .Values.airflowOAuth.clientSecret }}
+{{- if hasSuffix "-dev" .Release.Namespace }}
+  clientId: {{ .Values.airflowOAuth.dev.clientId }}
+  clientSecret: {{ .Values.airflowOAuth.dev.clientSecret }}
+{{- end }}
+{{- if hasSuffix "-test" .Release.Namespace }}
+  clientId: {{ .Values.airflowOAuth.test.clientId }}
+  clientSecret: {{ .Values.airflowOAuth.test.clientSecret }}
+{{- end }}
+{{- if hasSuffix "-prod" .Release.Namespace }}
+  clientId: {{ .Values.airflowOAuth.prod.clientId }}
+  clientSecret: {{ .Values.airflowOAuth.prod.clientSecret }}
+{{- end }}
+
 {{- end }}
