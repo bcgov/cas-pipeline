@@ -1,4 +1,4 @@
-{{- if and (hasPrefix .Values.namespacePrefixes.airflow .Release.Namespace)}}
+{{- if hasPrefix .Values.namespacePrefixes.airflow .Release.Namespace}}
 kind: Secret
 apiVersion: v1
 metadata:
