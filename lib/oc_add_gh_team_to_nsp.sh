@@ -82,13 +82,13 @@ __dirname="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "Retriving members of $org/$team"
 
 team_members=$(curl --silent -H "Authorization: token $token" https://api.github.com/orgs/"$org"/teams/"$team"/members | jq -r '.[] | .login | ascii_downcase')
+# Extract your GitHub username
+my_github_username=$(oc whoami | awk -F'@' '{print $1}')
 
 for prefix in "${prefixes[@]}"; do
   for suffix in "${suffixes[@]}"; do
     namespace=$prefix-$suffix
     if ! $dry_run; then
-      # Extract your GitHub username
-      my_github_username=$(oc whoami | awk -F'@' '{print $1}')
       # Temporarily change the GH_TEAM of the user calling this script so that their permissions are not removed in the following command
       oc process -f "$__dirname"/clusterRoleBinding.yaml GH_LOGIN="$my_github_username" GH_TEAM="temp_admin" NAMESPACE="$namespace" ROLE="$role" | \
         oc -n "$namespace" apply --wait --overwrite --validate -f-
