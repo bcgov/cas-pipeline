@@ -1,5 +1,5 @@
 # Do not apply this network policy in the warehouse or obps namespaces
-{{- if not (or (hasPrefix .Values.namespacePrefixes.warehouse .Release.Namespace) (hasPrefix .Values.namespacePrefixes.warehouse .Release.Namespace))}}
+{{- if not (or (hasPrefix .Values.namespacePrefixes.warehouse .Release.Namespace) (hasPrefix .Values.namespacePrefixes.obps .Release.Namespace))}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
