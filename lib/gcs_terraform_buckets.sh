@@ -20,7 +20,7 @@ Options:
     The comma-separated project suffixes of the project to create buckets for. Defaults to "dev,test,prod"
   -gcp, --google-cloud-project
     The google cloud project id where the buckets will be created.
-  -gcp, --google-cloud-region
+  -gcr, --google-cloud-region
     The google cloud region where the buckets will be created. Defaults to "northamerica-northeast1", in Montreal.
   -h, --help
     Prints this message
