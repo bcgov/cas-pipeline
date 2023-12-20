@@ -30,6 +30,10 @@ Deploys the [`cas-provision` helm chart] to every namespace used by the team. Th
 - a `SysdigTeam` object, which is a custom resource created by platform services to grant access to the Sysdig monitoring platform.
 - various secrets containing credentials used by our applications
 
+### `make provision_terraform_storage`
+
+Utilizing `gcp` (the Google Cloud Platform CLI), creates buckets for TF state for every namespace used by the team. Relies on a being authorized with a service account (credentials stored in the team's password manager) with storage permissions on the project.
+
 ### `make install_crunchy_monitoring`
 
 Deploys the [`crunchy-monitoring` helm chart] to the namespace defined in the values file. This relies on a hidden `.crunchy-values.yaml` file (stored in the team's password manager).
