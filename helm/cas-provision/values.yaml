@@ -72,3 +72,7 @@ airflowOAuth:
   prod:
     clientId: ~
     clientSecret: ~
+
+gcpTerraform:
+  projectId: "ggl-project-id-where-terraform-state-buckets-live"
+  serviceAccountCredentials: "single line string of gcp-tf-credentials.json"
