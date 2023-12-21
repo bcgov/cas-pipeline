@@ -49,7 +49,6 @@ provision_artifactory:
 .PHONY: provision_terraform_storage
 provision_terraform_storage:
 	@@source .env; ./lib/gcs_terraform_buckets.sh -pp $$OC_PROJECT_PREFIXES -gcp $$GCP_PROJECT
-	@@source .env; ./lib/generate_tf_backend_file.sh -pp $$OC_PROJECT_PREFIXES
 
 .PHONY: lint_monitoring_chart
 lint_monitoring_chart: ## Checks the configured helm chart template definitions against the remote schema
