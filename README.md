@@ -30,6 +30,7 @@ Deploys the [`cas-provision` helm chart] to every namespace used by the team. Th
 - a `SysdigTeam` object, which is a custom resource created by platform services to grant access to the Sysdig monitoring platform.
 - various secrets containing credentials used by our applications
 - Utilizing `gcp` (the Google Cloud Platform CLI), creates buckets for TF state for every namespace used by the team. Relies on a being authorized with a service account (credentials stored in the team's password manager) with storage permissions on the project.
+  - **Note**: `gcp` will give errors when a bucket is created *already under the service accounts control*. The script ignores these errors, as they don't need to block further buckets from being created or the rest of the make target executing.
 
 ### `make install_crunchy_monitoring`
 
