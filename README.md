@@ -29,6 +29,8 @@ Deploys the [`cas-provision` helm chart] to every namespace used by the team. Th
 - a DockerHub registry credential
 - a `SysdigTeam` object, which is a custom resource created by platform services to grant access to the Sysdig monitoring platform.
 - various secrets containing credentials used by our applications
+- Utilizing `gcp` (the Google Cloud Platform CLI), creates buckets for TF state for every namespace used by the team. Relies on a being authorized with a service account (credentials stored in the team's password manager) with storage permissions on the project.
+  - **Note**: `gcp` will give errors when a bucket is created *already under the service accounts control*. The script ignores these errors, as they don't need to block further buckets from being created or the rest of the make target executing.
 
 ### `make install_crunchy_monitoring`
 
@@ -52,3 +54,10 @@ Lints the [`crunchy-monitoring` helm chart]
 Prior to using Helm to deploy applications to the OpenShift cluster, the CAS team used a set of common `make` commands (e.g. `configure`, `build`, `install`) that abstracted the `oc` command line tool. These came with various utility functions located in the `*.mk` files, which are still in use in some projects but are considered deprecated.
 
 [least privilege principle]: https://csrc.nist.gov/glossary/term/least-privilege
+
+## Terraform in CAS repos
+
+See an example of our containerized Terraform process in an OpenShift job that is integrated into a the 'cas-registration' Helm chart. It deploys at the pre-install, pre-upgrade hooks. The Terraform scripts are located in the `/terraform` subdirectory in the chart, which is then pulled in via a ConfigMap utilized by the job at `/templates/backend/job/terraform-apply.yaml`.
+
+- `terraform-apply.yaml`: This file defines the Job that deploys a container to run Terraform. Secrets (deployed by `make provision`) contain the credentials and `.tfbackend` Terraform uses to access the GCP buckets where it stores state. The `terraform-modules.yaml` ConfigMap is what pulls in the Terraform scripts that will be run.
+- `terraform-modules.yaml`: This file defines a ConfigMap that sources terraform `.tf` files from a subdirectory in the chart. All `.tf` files in the subdirectory are pulled into the ConfigMap, which is then mounted as a Volume on the container created in `terraform-apply.yaml`. Changes to these files are *automatically applied* when the helm chart is installed/upgraded. Currently, this is `-auto-approved`.

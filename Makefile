@@ -37,6 +37,7 @@ authorize:
 .PHONY: provision
 provision:
 	$(call oc_whoami)
+	@@source .env; ./lib/gcs_terraform_buckets.sh -pp $$OC_PROJECT_PREFIXES -gcp $$GCP_PROJECT
 	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -n cas-provision -v $$VALUES_FILE_PATH
 
 .PHONY: provision_artifactory
