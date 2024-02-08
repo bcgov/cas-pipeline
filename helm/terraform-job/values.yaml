@@ -1,1 +1,21 @@
 # Default values for terraform-job.
+image:
+  repository: hashicorp/terraform
+  pullPolicy: Always
+  tag: "1.4.6"
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+    ephemeral-storage: 1Gi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+    ephemeral-storage: 256Mi
+
+terraform:
+  namespace_apps: '["backups"]'
+
+serviceAccount:
+  roleName: "terraform-secret-admin"
