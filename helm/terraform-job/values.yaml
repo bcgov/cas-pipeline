@@ -16,6 +16,11 @@ resources:
 
 terraform:
   namespace_apps: '["backups"]'
+  moduleDirectory: 'terraform'
+  modules:
+    "main.tf": ""
+    "variables.tf": ""
+
 
 serviceAccount:
   name: "terraform-kubernetes-service-account"

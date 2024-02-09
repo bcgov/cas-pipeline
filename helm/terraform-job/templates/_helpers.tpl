@@ -60,3 +60,13 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Creates an list of files with thier base64 values from a given directory
+*/}}
+{{- define "terraform-job." -}}
+{{- range $path, $data := .Files.Glob "{{ .Values.terraform.moduleDirectory }}/**.tf" }}
+{{ $path | base | indent 2 }}: >-
+{{- $data | toString | b64enc | nindent 4 }}
+{{ end }}
+{{ end }}

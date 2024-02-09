@@ -35,7 +35,6 @@ spec:
             - name: TF_VAR_project_id
               valueFrom:
                 secretKeyRef:
-                  # TODO: Add documentation to note the need to have credentials already stored in OpenShift.
                   name: gcp-credentials-secret
                   key: gcp_project_id
             - name: TF_VAR_openshift_namespace
