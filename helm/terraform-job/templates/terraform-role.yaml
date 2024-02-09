@@ -1,8 +1,6 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  # TODO: Parameterize
-  # name: "terraform-secret-admin"
   name: {{ .Values.serviceAccount.roleName }}
   namespace: {{ .Release.Namespace }}
   annotations:

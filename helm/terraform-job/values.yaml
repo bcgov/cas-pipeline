@@ -18,4 +18,8 @@ terraform:
   namespace_apps: '["backups"]'
 
 serviceAccount:
+  name: "terraform-kubernetes-service-account"
   roleName: "terraform-secret-admin"
+
+openShift:
+  host: "https://api.silver.devops.gov.bc.ca:6443"

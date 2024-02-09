@@ -12,8 +12,7 @@ spec:
   activeDeadlineSeconds: 900
   template:
     spec:
-      # TODO: Paramaterize
-      serviceAccountName: "terraform-kubernetes-service-account"
+      serviceAccountName: {{ .Values.serviceAccount.name }}
       containers:
         - name: terraform-apply
           resources: {{ toYaml .Values.resources | nindent 12 }}
@@ -44,8 +43,7 @@ spec:
             - name: TF_VAR_apps
               value: {{ .Values.terraform.namespace_apps | quote }}
             - name: kubernetes_host
-              # TODO: Paramaterize
-              value: "https://api.silver.devops.gov.bc.ca:6443"
+              value: {{ .Values.openShift.host }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/gcp/credentials.json"
           # Terraform was having an issue pulling kubernetes_host in as a TF_VAR, so we add it as a attribute to the command

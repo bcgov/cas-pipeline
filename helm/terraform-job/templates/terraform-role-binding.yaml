@@ -1,18 +1,15 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  # TODO: Parameterize
-  name: "terraform-kubernetes-service-account-secret-admin-binding"
+  name: "{{ .Values.serviceAccount.name }}-secret-admin-binding"
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-install, pre-upgrade
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  # TODO: Parameterize
   name: {{ .Values.serviceAccount.roleName }}
 subjects:
 - kind: ServiceAccount
-  # TODO: Parameterize
-  name: "terraform-kubernetes-service-account"
+  name: {{ .Values.serviceAccount.name }}
   namespace: {{ .Release.Namespace }}
