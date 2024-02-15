@@ -15,12 +15,7 @@ resources:
     ephemeral-storage: 256Mi
 
 terraform:
-  namespace_apps: '["backups"]'
-  moduleDirectory: 'terraform'
-  modules:
-    "main.tf": ""
-    "variables.tf": ""
-
+  namespace_apps: '[]'
 
 serviceAccount:
   name: "terraform-kubernetes-service-account"
