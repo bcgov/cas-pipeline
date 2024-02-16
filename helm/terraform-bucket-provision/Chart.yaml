@@ -1,0 +1,6 @@
+apiVersion: v2
+name: terraform-bucket-provision
+description: A chart to deploy a job to run terraform that utilizes terraform modules to create storage buckets and associated service accounts.
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
