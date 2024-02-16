@@ -1,7 +1,6 @@
 {{/*
 Creates an list of files with thier base64 values from the context's "terraform" directory.
 */}}
-{{- define "terraform-job.moduleImportMap" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
