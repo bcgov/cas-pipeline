@@ -15,4 +15,3 @@ binaryData:
 {{ $path | base | indent 2 }}: >-
 {{- $data | toString | b64enc | nindent 4 }}
 {{- end }}
-{{- end }}
