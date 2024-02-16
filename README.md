@@ -57,7 +57,27 @@ Prior to using Helm to deploy applications to the OpenShift cluster, the CAS tea
 
 ## Terraform in CAS repos
 
-See an example of our containerized Terraform process in an OpenShift job that is integrated into a the 'cas-registration' Helm chart. It deploys at the pre-install, pre-upgrade hooks. The Terraform scripts are located in the `/terraform` subdirectory in the chart, which is then pulled in via a ConfigMap utilized by the job at `/templates/backend/job/terraform-apply.yaml`.
+### Components
 
-- `terraform-apply.yaml`: This file defines the Job that deploys a container to run Terraform. Secrets (deployed by `make provision`) contain the credentials and `.tfbackend` Terraform uses to access the GCP buckets where it stores state. The `terraform-modules.yaml` ConfigMap is what pulls in the Terraform scripts that will be run.
-- `terraform-modules.yaml`: This file defines a ConfigMap that sources terraform `.tf` files from a subdirectory in the chart. All `.tf` files in the subdirectory are pulled into the ConfigMap, which is then mounted as a Volume on the container created in `terraform-apply.yaml`. Changes to these files are *automatically applied* when the helm chart is installed/upgraded. Currently, this is `-auto-approved`.
+#### `~/helm/terraform-bucket-provision/`
+
+This repo contains a Helm chart that contains a job that will import and run Terraform files. It deploys at the pre-install, pre-upgrade hooks. This chart references secrets and config that is deployed to a namespace when a project is provisioned by *`cas-pipeline`* (credentials, project_id, kubeconfig, terraform backendconfig).
+
+`terraform-apply.yaml`: This file defines the Job that deploys a container to run Terraform. Secrets (deployed by `make provision`) contain the credentials and `.tfbackend` Terraform uses to access the GCP buckets where it stores state. The `terraform-modules.yaml` ConfigMap is what pulls in the Terraform scripts that will be run.
+
+#### `~/helm/terraform-bucket-provision/terraform`
+
+In tandem with the Helm chart is a Terraform module that creates GCP storage buckets, service accounts to access those buckets (admins and viewers) and injects those credentials into OpenShift for usage. These modules are pulled in via a configMap which pulls all files from this charts `/terraform` directory. These are bundled with the chart as the way we use Terraform is currently identical in our CAS projects.
+
+### Usage
+
+1. Import the Helm Chart into your project's main chart as a dependency.
+2. Update your `values.yaml` (and any environmental versions of values) with those required by the terraform-bucket-provision chart:
+
+```yaml
+terraform-bucket-provision:
+  terraform:
+    namespace_apps: '["example-project-backups", "example-project-uploads"]'
+```
+
+---
