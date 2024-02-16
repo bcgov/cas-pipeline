@@ -15,7 +15,7 @@ resources:
     ephemeral-storage: 256Mi
 
 terraform:
-  namespace_apps: '[]'
+  namespace_apps: ~
 
 serviceAccount:
   name: "terraform-kubernetes-service-account"
