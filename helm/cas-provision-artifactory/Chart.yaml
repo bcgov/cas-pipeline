@@ -4,4 +4,4 @@ description: |
   Small helm chart to provision an artifactory service account.
   This chart can only be installed once, as the artifactory service account cannot be patched.
 type: application
-version: 0.1.0
+version: 0.1.2

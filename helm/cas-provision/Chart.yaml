@@ -3,5 +3,5 @@ name: cas-provision
 description: A Helm chart for provisioning CAS secrets, roles, service accounts, etc. This chart is not meant to deploy any pods or applications.
 
 type: application
-version: 0.1.0
+version: 0.1.2
 appVersion: 0.1.0
