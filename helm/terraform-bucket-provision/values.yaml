@@ -16,6 +16,7 @@ resources:
 
 terraform:
   namespace_apps: ~
+  workspace: default
 
 serviceAccount:
   name: "terraform-kubernetes-service-account"
