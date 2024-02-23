@@ -1,0 +1,50 @@
+apiVersion: v1
+entries:
+  cas-provision:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2024-02-17T00:19:08.575411332Z"
+    description: A Helm chart for provisioning CAS secrets, roles, service accounts,
+      etc. This chart is not meant to deploy any pods or applications.
+    digest: ce20f792740ccfd902df546ee84a9eb4d84ec06180a6c6da95370f421f280acf
+    name: cas-provision
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-pipeline/releases/download/cas-provision-0.1.2/cas-provision-0.1.2.tgz
+    version: 0.1.2
+  cas-provision-artifactory:
+  - apiVersion: v2
+    created: "2024-02-17T00:19:08.663580883Z"
+    description: 'Small helm chart to provision an artifactory service account. This
+      chart can only be installed once, as the artifactory service account cannot
+      be patched. '
+    digest: e9461c62b55ffef48377a3901fefbd168e01755a953bd88d7ca65a6748f21c7b
+    name: cas-provision-artifactory
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-pipeline/releases/download/cas-provision-artifactory-0.1.2/cas-provision-artifactory-0.1.2.tgz
+    version: 0.1.2
+  crunchy-monitoring:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-17T00:19:08.772453893Z"
+    description: A Helm chart for setting up monitoring of CrunchyDB Postgresql clusters
+    digest: d443ba27329670117803276c0ca203a2b2a24d00a32fdc8c8437f75e5ae4a649
+    name: crunchy-monitoring
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-pipeline/releases/download/crunchy-monitoring-0.1.2/crunchy-monitoring-0.1.2.tgz
+    version: 0.1.2
+  terraform-bucket-provision:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-17T00:19:08.87676046Z"
+    description: A chart to deploy a job to run terraform that utilizes terraform
+      modules to create storage buckets and associated service accounts.
+    digest: bc7fb811eb1d530af0f4711ba1f44b37b75d55cef30c65c3a1a31f67ea7f10bb
+    name: terraform-bucket-provision
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-pipeline/releases/download/terraform-bucket-provision-0.1.2/terraform-bucket-provision-0.1.2.tgz
+    version: 0.1.2
+generated: "2024-02-17T00:19:08.876770269Z"
