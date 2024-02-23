@@ -57,6 +57,19 @@ Prior to using Helm to deploy applications to the OpenShift cluster, the CAS tea
 
 ## Terraform in CAS repos
 
+### Usage
+
+1. Import the Helm Chart into your project's main chart as a dependency.
+2. Update your `values.yaml` (and any environmental versions of values) with those required by the terraform-bucket-provision chart:
+    > 2a. If the project shares a namespace with another one (as is the case with `cas-metabase` sharing `cas-ggircs`'s namespace), use the `workspace` value with anything other than default to create a seperate Terraform workspace in the state to avoid overwriting.
+
+```yaml
+terraform-bucket-provision:
+  terraform:
+    namespace_apps: '["example-project-backups", "example-project-uploads"]'
+    workspace: example # This value is OPTIONAL, only set if required
+```
+
 ### Components
 
 #### `~/helm/terraform-bucket-provision/`
@@ -69,15 +82,3 @@ This repo contains a Helm chart that contains a job that will import and run Ter
 
 In tandem with the Helm chart is a Terraform module that creates GCP storage buckets, service accounts to access those buckets (admins and viewers) and injects those credentials into OpenShift for usage. These modules are pulled in via a configMap which pulls all files from this charts `/terraform` directory. These are bundled with the chart as the way we use Terraform is currently identical in our CAS projects.
 
-### Usage
-
-1. Import the Helm Chart into your project's main chart as a dependency.
-2. Update your `values.yaml` (and any environmental versions of values) with those required by the terraform-bucket-provision chart:
-
-```yaml
-terraform-bucket-provision:
-  terraform:
-    namespace_apps: '["example-project-backups", "example-project-uploads"]'
-```
-
----
