@@ -1,0 +1,28 @@
+{{- if hasPrefix .Values.namespacePrefixes.obps .Release.Namespace}}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ches-integration
+  labels: {{ include "cas-provision.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+{{- if hasSuffix "-dev" .Release.Namespace }}
+  clientId: {{ .Values.ches.obps.dev.clientId }}
+  clientSecret: {{ .Values.ches.obps.dev.clientSecret }}
+  tokenEndpoint: {{ .Values.ches.obps.dev.tokenEndpoint }}
+  apiUrl: {{ .Values.ches.obps.dev.apiUrl }}
+{{- end }}
+{{- if hasSuffix "-test" .Release.Namespace }}
+  clientId: {{ .Values.ches.obps.test.clientId }}
+  clientSecret: {{ .Values.ches.obps.test.clientSecret }}
+  tokenEndpoint: {{ .Values.ches.obps.test.tokenEndpoint }}
+  apiUrl: {{ .Values.ches.obps.test.apiUrl }}
+{{- end }}
+{{- if hasSuffix "-prod" .Release.Namespace }}
+  clientId: {{ .Values.ches.obps.prod.clientId }}
+  clientSecret: {{ .Values.ches.obps.prod.clientSecret }}
+  tokenEndpoint: {{ .Values.ches.obps.prod.tokenEndpoint }}
+  apiUrl: {{ .Values.ches.obps.prod.apiUrl }}
+{{- end }}
+
+{{- end }}
