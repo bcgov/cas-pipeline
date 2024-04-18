@@ -37,6 +37,7 @@ authorize:
 .PHONY: provision
 provision:
 	$(call oc_whoami)
+# The gcs_terraform_buckets shells script is not idempotent (fails if buckets exist) & needs to be commented out for the helm_deploy script to run.
 	@@source .env; ./lib/gcs_terraform_buckets.sh -pp $$OC_PROJECT_PREFIXES -gcp $$GCP_PROJECT
 	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -n cas-provision -v $$VALUES_FILE_PATH
 
