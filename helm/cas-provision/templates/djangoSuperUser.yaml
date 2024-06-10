@@ -1,0 +1,13 @@
+{{- if hasPrefix .Values.namespacePrefixes.obps .Release.Namespace}}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: django-superuser
+  labels: {{ include "cas-provision.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+{{- if hasSuffix "-dev" .Release.Namespace }}
+  username: {{ .Values.djangoSuperUser.obps.dev.username }}
+  password: {{ .Values.djangoSuperUser.obps.dev.password }}
+{{- end }}
+{{- end }}
