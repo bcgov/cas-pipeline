@@ -16,6 +16,8 @@ The Makefile in this repository has two main commands used to, respectively, gra
 
 Loads the list of namespaces from the `.env` file (see [.env-example](), the actual `.env` file is stored in the teams password manager), reads the list of users present in the appropriate GitHub teams (see teams descriptions on GitHub), and create a `RoleBinding` object for each user/namespace pair.
 
+In order for the `make authorize` to be able to read the members of the teams outlined in the `.env` file, it will need a github token with the `read:org` permission. You can generate this token from your github developer settings. Create a short lived token & use that token to populate the `gh_token` variable in the `.env` file.
+
 This script first deletes the previously created `RoleBinding`s (identified by a label) and recreates them based on the GitHub teams membership, to ensure that previous team members access is revoked.
 
 Because it temporarily revokes access for all team members, this needs to be run manually by one of the current members listed as technical lead on the [project registry](https://registry.developer.gov.bc.ca/), as they are also granted access via a `RoleBinding` created by the Platform Services team.
