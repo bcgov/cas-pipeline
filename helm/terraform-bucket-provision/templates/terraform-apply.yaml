@@ -9,10 +9,10 @@ metadata:
     "helm.sh/hook-weight": "10"
 spec:
   backoffLimit: 0
-  activeDeadlineSeconds: 900
   template:
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
+      activeDeadlineSeconds: 900
       containers:
         - name: terraform-apply
           resources: {{ toYaml .Values.resources | nindent 12 }}
