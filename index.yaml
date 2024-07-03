@@ -38,6 +38,17 @@ entries:
   terraform-bucket-provision:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-07-03T17:48:00.730713744Z"
+    description: A chart to deploy a job to run terraform that utilizes terraform
+      modules to create storage buckets and associated service accounts.
+    digest: d5b50a6abe137819897e346bc91987de9e744407dfd00bdd6893a69a4a0fafaf
+    name: terraform-bucket-provision
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-pipeline/releases/download/terraform-bucket-provision-0.1.4/terraform-bucket-provision-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-02-23T19:03:04.298190528Z"
     description: A chart to deploy a job to run terraform that utilizes terraform
       modules to create storage buckets and associated service accounts.
@@ -47,4 +58,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-pipeline/releases/download/terraform-bucket-provision-0.1.3/terraform-bucket-provision-0.1.3.tgz
     version: 0.1.3
-generated: "2024-02-23T19:03:04.298200847Z"
+generated: "2024-07-03T17:48:00.7307278Z"
