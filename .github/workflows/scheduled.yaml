@@ -1,0 +1,39 @@
+name: Scheduled Workflow
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  pull_request: #TODO remove PR trigger after successful test
+    branches:
+      - master
+
+permissions: read-all
+jobs:
+  
+  add-remove-users-from-openshift:
+    name: Add/Remove Users from OpenShift Based On Github Team Membership
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "4"
+      - name: Login to OpenShift
+        shell: bash
+        run: |
+          # OC Login, the service account token is used to get a temporary token, this is custom service account token which has access to different namespaces
+          OC_TEMP_TOKEN=$(curl -k -X POST ${{ secrets.oc_server }}/api/v1/namespaces/${{ secrets.oc_namespace }}/serviceaccounts/pipeline/token --header "Authorization: Bearer ${{ secrets.oc_token }}" -d '{"spec": {"expirationSeconds": 600}}' -H 'Content-Type: application/json; charset=utf-8' | jq -r '.status.token' )
+
+          oc login --token=$OC_TEMP_TOKEN --server=${{ secrets.oc_server }}
+      - name: Create Env File And Execute Make Authorize
+        shell: bash
+        run: |
+          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" > .env
+          echo "GH_ADMINS_TEAM=${{ secrets.GH_ADMINS_TEAM }}" >> .env
+          echo "GH_DEVELOPERS_TEAM=${{ secrets.GH_DEVELOPERS_TEAM }}" >> .env
+          echo "OC_PROJECT_PREFIXES=${{ secrets.OC_PROJECT_PREFIXES }}" >> .env
+          
+
