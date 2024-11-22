@@ -81,7 +81,15 @@ __dirname="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo "Retriving members of $org/$team"
 
-response=$(curl --silent -H "Authorization: token $token" https://api.github.com/orgs/"$org"/teams/"$team"/members)
+QUERY="query { organization(login: \"${org}\") { team(slug: \"${team}\") { members(first: 100) { edges { node { login } } } } } }"
+response=$(curl -X POST https://api.github.com/graphql \
+-H "Authorization: Bearer $token" \
+-H "Content-Type: application/json" \
+-d '{
+    "query": "'"$QUERY"'"
+}')
+
+#response=$(curl --silent -H "Authorization: token $token" https://api.github.com/orgs/"$org"/teams/"$team"/members)
 echo "GitHub API response: $response"
 team_members=$(echo "$response" | jq -r '.[] | .login | ascii_downcase')
 echo "Found the following members"
