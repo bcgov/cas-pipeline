@@ -5,6 +5,13 @@ on:
   pull_request: #TODO remove PR trigger after successful test
     branches:
       - master
+  workflow_dispatch: 
+    inputs:
+      token:
+        description: 'Github Token to override default'
+        required: false
+        type: string
+        mask: true
 
 permissions: read-all
 jobs:
@@ -31,6 +38,9 @@ jobs:
       - name: Create Env File And Execute Make Authorize
         shell: bash
         run: |
-          ./lib/oc_add_gh_team_to_nsp.sh --token ${{ secrets.GITHUB_TOKEN }} -t ${{ secrets.GH_ADMINS_TEAM }} -pp ${{ secrets.OC_PROJECT_PREFIXES }} -r admin
+          # check if input token is there or else default to github token
+          TOKEN=${{ github.event.inputs.token }} || ${{ secrets.GITHUB_TOKEN }}
+          echo "::add-mask::$TOKEN"
+          ./lib/oc_add_gh_team_to_nsp.sh --token ${TOKEN} -t ${{ secrets.GH_ADMINS_TEAM }} -pp ${{ secrets.OC_PROJECT_PREFIXES }} -r admin
           
 
