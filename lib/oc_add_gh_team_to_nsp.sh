@@ -81,7 +81,9 @@ __dirname="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo "Retriving members of $org/$team"
 
-team_members=$(curl --silent -H "Authorization: token $token" https://api.github.com/orgs/"$org"/teams/"$team"/members | jq -r '.[] | .login | ascii_downcase')
+response=$(curl --silent -H "Authorization: token $token" https://api.github.com/orgs/"$org"/teams/"$team"/members)
+echo "GitHub API response: $response"
+team_members=$(echo "$response" | jq -r '.[] | .login | ascii_downcase')
 echo "Found the following members"
 # Extract your GitHub username
 my_github_username=$(oc whoami | awk -F'@' '{print $1}')
