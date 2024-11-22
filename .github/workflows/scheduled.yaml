@@ -31,9 +31,6 @@ jobs:
       - name: Create Env File And Execute Make Authorize
         shell: bash
         run: |
-          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" > .env
-          echo "GH_ADMINS_TEAM=${{ secrets.GH_ADMINS_TEAM }}" >> .env
-          echo "GH_DEVELOPERS_TEAM=${{ secrets.GH_DEVELOPERS_TEAM }}" >> .env
-          echo "OC_PROJECT_PREFIXES=${{ secrets.OC_PROJECT_PREFIXES }}" >> .env
+          ./lib/oc_add_gh_team_to_nsp.sh --token ${{ secrets.GITHUB_TOKEN }} -t ${{ secrets.GH_ADMINS_TEAM }} -pp ${{ secrets.OC_PROJECT_PREFIXES }} -r admin
           
 
