@@ -38,8 +38,7 @@ jobs:
         shell: bash
         run: |
           # check if input token is there or else default to github token
-          TOKEN=${{ github.event.inputs.token }} || ${{ secrets.GITHUB_TOKEN }}
-          echo "::add-mask::$TOKEN"
+          TOKEN=${{ secrets.GH_TOKEN }}
           ./lib/oc_add_gh_team_to_nsp.sh --token ${TOKEN} -t ${{ secrets.GH_ADMINS_TEAM }} -pp ${{ secrets.OC_PROJECT_PREFIXES }} -r admin
           
 
