@@ -90,8 +90,9 @@ response=$(curl -X POST https://api.github.com/graphql \
 
 #response=$(curl --silent -H "Authorization: token $token" https://api.github.com/orgs/"$org"/teams/"$team"/members)
 echo "GitHub API response: $response"
-team_members=$(echo "$response" | jq -r '.[] | .login | ascii_downcase')
+team_members=$(echo "$response" | jq -r '.data.organization.team.members.edges[].node.login | ascii_downcase')
 echo "Found the following members"
+echo "$team_members"
 # Extract your GitHub username
 my_github_username=$(oc whoami | awk -F'@' '{print $1}')
 
