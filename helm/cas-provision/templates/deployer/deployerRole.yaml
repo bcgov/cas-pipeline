@@ -90,6 +90,15 @@ rules:
       - update
       - patch
   - apiGroups:
+      - apps
+    attributeRestrictions: null
+    resources:
+      - deployments/scale
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
       - route.openshift.io
     attributeRestrictions: null
     resources:

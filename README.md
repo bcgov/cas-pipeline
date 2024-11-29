@@ -12,11 +12,12 @@ The Makefile in this repository has two main commands used to, respectively, gra
 
 ### `make authorize`
 
-*To be run anytime the CAS team members change, or new namespaces are added*
+_To be run anytime the CAS team members change, or new namespaces are added_
 
 Loads the list of namespaces from the `.env` file (see [.env-example](), the actual `.env` file is stored in the teams password manager), reads the list of users present in the appropriate GitHub teams (see teams descriptions on GitHub), and create a `RoleBinding` object for each user/namespace pair.
 
 In order for the `make authorize` to be able to read the members of the teams outlined in the `.env` file, it will need a github token with the `read:org` permission. You can generate this token from your github developer settings. Create a short lived token & use that token to populate the `gh_token` variable in the `.env` file.
+[NOTE]: Note: To work with GH Enterprise's SSO, you'll need to authorize your token for the org of your team
 
 This script first deletes the previously created `RoleBinding`s (identified by a label) and recreates them based on the GitHub teams membership, to ensure that previous team members access is revoked.
 
@@ -32,7 +33,7 @@ Deploys the [`cas-provision` helm chart] to every namespace used by the team. Th
 - a `SysdigTeam` object, which is a custom resource created by platform services to grant access to the Sysdig monitoring platform.
 - various secrets containing credentials used by our applications
 - Utilizing `gcp` (the Google Cloud Platform CLI), creates buckets for TF state for every namespace used by the team. Relies on a being authorized with a service account (credentials stored in the team's password manager) with storage permissions on the project.
-  - **Note**: `gcp` will give errors when a bucket is created *already under the service accounts control*. The script ignores these errors, as they don't need to block further buckets from being created or the rest of the make target executing.
+  - **Note**: `gcp` will give errors when a bucket is created _already under the service accounts control_. The script ignores these errors, as they don't need to block further buckets from being created or the rest of the make target executing.
 
 ### `make install_crunchy_monitoring`
 
@@ -46,10 +47,7 @@ Lints the [`crunchy-monitoring` helm chart]
 
 - requires defining the CIIP_NAMESPACE_PREFIX variable
 
-
 ### Adding a namespace
-
-
 
 ## Deprecated things
 
@@ -63,7 +61,7 @@ Prior to using Helm to deploy applications to the OpenShift cluster, the CAS tea
 
 1. Import the Helm Chart into your project's main chart as a dependency.
 2. Update your `values.yaml` (and any environmental versions of values) with those required by the terraform-bucket-provision chart:
-    > 2a. If the project shares a namespace with another one (as is the case with `cas-metabase` sharing `cas-ggircs`'s namespace), use the `workspace` value with anything other than default to create a seperate Terraform workspace in the state to avoid overwriting.
+   > 2a. If the project shares a namespace with another one (as is the case with `cas-metabase` sharing `cas-ggircs`'s namespace), use the `workspace` value with anything other than default to create a seperate Terraform workspace in the state to avoid overwriting.
 
 ```yaml
 terraform-bucket-provision:
@@ -76,11 +74,10 @@ terraform-bucket-provision:
 
 #### `~/helm/terraform-bucket-provision/`
 
-This repo contains a Helm chart that contains a job that will import and run Terraform files. It deploys at the pre-install, pre-upgrade hooks. This chart references secrets and config that is deployed to a namespace when a project is provisioned by *`cas-pipeline`* (credentials, project_id, kubeconfig, terraform backendconfig).
+This repo contains a Helm chart that contains a job that will import and run Terraform files. It deploys at the pre-install, pre-upgrade hooks. This chart references secrets and config that is deployed to a namespace when a project is provisioned by _`cas-pipeline`_ (credentials, project_id, kubeconfig, terraform backendconfig).
 
 `terraform-apply.yaml`: This file defines the Job that deploys a container to run Terraform. Secrets (deployed by `make provision`) contain the credentials and `.tfbackend` Terraform uses to access the GCP buckets where it stores state. The `terraform-modules.yaml` ConfigMap is what pulls in the Terraform scripts that will be run.
 
 #### `~/helm/terraform-bucket-provision/terraform`
 
 In tandem with the Helm chart is a Terraform module that creates GCP storage buckets, service accounts to access those buckets (admins and viewers) and injects those credentials into OpenShift for usage. These modules are pulled in via a configMap which pulls all files from this charts `/terraform` directory. These are bundled with the chart as the way we use Terraform is currently identical in our CAS projects.
-
