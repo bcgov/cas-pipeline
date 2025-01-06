@@ -1,0 +1,9 @@
+apiVersion: v2
+name: cas-logging-sidecar
+description: A Helm chart to deploy Logging Sidecars to CAS applications.
+
+type: application
+version: 0.0.1
+appVersion: "1.16.0"
+
+# This chart should take a list of applications in the values that the sidecars are associated with. The destination of the logs should also be specified in the values
