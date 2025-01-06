@@ -1,0 +1,52 @@
+{{- define "cas-logging-sidecar.containers" -}}
+- name: oc-logs-container
+  image: openshift/origin-cli-latest
+  env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: {{ .podToSidecar }}
+    - name: CONTAINER_NAME
+      valueFrom:
+        fieldRef: {{ .containerToSidecar}}
+    - name: LOG_NAME
+      valueFrom:
+        fieldRef: {{ .logName }}
+  command:
+    - "/bin/sh"
+    - "-c"
+    - |
+      echo 'Starting log capture';
+      oc logs -f $POD_NAME -c $CONTAINER_NAME --pod-running-timeout=20s >> /var/log/$LOG_NAME.log;
+  volumeMounts:
+  - name: shared-logs
+    mountPath: /var/log
+- name: logrotate-container
+  image: skymatic/logrotate
+  command:
+    - "/bin/sh"
+    - "-c"
+    - "while true; do logrotate -s /var/log/logrotate.status -f /etc/logrotate.conf; sleep 5; done"
+  volumeMounts:
+  - name: shared-logs
+    mountPath: /var/log
+  - name: logrotate-config
+    mountPath: /etc/logrotate.conf
+    subPath: logrotate.conf
+- name: fluent-bit
+  image: fluent/fluent-bit:latest
+  env: 
+{{- end }}
+{{- define "cas-logging-sidecar.volumes" -}}
+- name: shared-logs
+  emptyDir: {}
+- name: logrotate-config
+  configMap:
+    name: logrotate-configmap
+- name: fluent-bit-config
+  configMap:
+    name: fluent-bit-config
+- name: parsers-config
+  configMap:
+    name: fluent-bit-config
+{{- end }}
