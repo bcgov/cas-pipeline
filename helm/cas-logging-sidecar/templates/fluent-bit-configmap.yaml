@@ -15,8 +15,8 @@ data:
         HTTP_Port            2020
     [INPUT]
         Name                tail
-        Path                /var/log/{{ .logName }}.log
-        Tag                 {{ .tag }}
+        Path                /var/log/{{ .Values.logName }}.log
+        Tag                 {{ .Values.tag }}
         Mem_Buf_Limit        5MB
         DB                  /var/log/flb_kube.db
         Refresh_Interval     10
@@ -25,10 +25,10 @@ data:
     [OUTPUT]
         Name                es
         Match               *
-        Host                {{ .elasticSearchHost }}
+        Host                {{ .Values.host }}
         Port                9200
-        Index               {{ .index }}
-        Logstash_Prefix     {{ .logPrefix }}
+        Index               {{ .Values.index }}
+        Logstash_Prefix     {{ .Values.prefix }}
         Logstash_DateFormat %Y.%m.%d
         Logstash_Format     On
         Retry_Limit         False

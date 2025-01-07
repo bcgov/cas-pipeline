@@ -4,7 +4,7 @@ metadata:
   name: logrotate-configmap
 data:
   logrotate.conf: |
-    /var/log/{{ .logName }}.log {
+    /var/log/{{ .Values.logName }}.log {
         size 100M
         missingok
         notifempty
