@@ -2,6 +2,8 @@
 
 This library chart is a template used to deploy a logging sidecar to a pod. The sidecar utilizes Fluent Bit and LogRotate to capture logs from a container within OpenShift and write them to ElasticSearch. The chart includes a service account, role, and role binding that are used to grant the service account access to the logs.
 
+See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for more information about the EFK stack the logs are sent to.
+
 ## Usage
 
 0. Add the library chart to your project. This can be done by adding the following to your `Chart.yaml` file:
