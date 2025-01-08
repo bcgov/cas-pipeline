@@ -5,7 +5,7 @@
     - name: POD_NAME
       valueFrom:
         fieldRef:
-          fieldPath: {{ .podToSidecar }}
+          fieldPath: .Metadata.Name
     - name: CONTAINER_NAME
       valueFrom:
         fieldRef: {{ .containerToSidecar}}

@@ -21,7 +21,6 @@ This library chart is a template used to deploy a logging sidecar to a pod. The 
 ```yaml
 spec.template.spec.containers:
 {{- include "cas-logging-sidecar.containers" (dict 
-    "podToSidecar" "cas-cif"
     "containerToSidecar" "cas-cif-frontend"
     "logName" .Values.logName) | nindent 8 }}
 
@@ -37,7 +36,6 @@ spec.template.spec.volumes:
 
 | Parameter | Description | Example |
 | --- | --- | --- |
-| `"podToSidecar"` | The pod where the sidecar should be implemented. | `"cas-cif"` |
 | `"containerToSidecar"` | The container that the sidecar should log for. | `"cas-cif-frontend"` |
 | `"logName"` | The name for the output logfile. **NOTE**: This must match the logname used in `values.yaml`. | `.Values.logName` |
 
@@ -69,7 +67,6 @@ spec:
           ports:
             - containerPort: 80
         {{- include "cas-logging-sidecar.containers" (dict 
-            "podToSidecar" .Metadata.Name
             "containerToSidecar" .Spec.Template.Spec.Containers.0.Name
             "logName" .Values.logName
             "tag" "cas-frontend" ) | nindent 8 }}
