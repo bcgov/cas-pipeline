@@ -42,11 +42,11 @@
   emptyDir: {}
 - name: logrotate-config
   configMap:
-    name: logrotate-configmap
+    name: {{ .releaseName }}-logrotate-configmap
 - name: fluent-bit-config
   configMap:
-    name: fluent-bit-config
+    name: {{ .releaseName }}-fluent-bit-configmap
 - name: parsers-config
   configMap:
-    name: fluent-bit-config
+    name: {{ .releaseName }}-fluent-bit-configmap
 {{- end }}

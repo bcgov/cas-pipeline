@@ -32,11 +32,16 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
     ```yaml
     spec.template.spec.containers:
     {{- include "cas-logging-sidecar.containers" (dict 
+        "releaseName" "cas-cif"
+        "podToSideCar" "cas-cif-front"
         "containerToSidecar" "cas-cif-frontend"
-        "logName" .Values.logName) | nindent 8 }}
+        "logName" .Values.logName
+        "host" "elasticsearch.abc123-namespace.svc.cluster.local") | nindent 8 }}
 
     spec.template.spec.volumes:
-    {{- include "cas-logging-sidecar.volumes" . | nindent 8 }}
+    {{- include "cas-logging-sidecar.volumes" (dict
+      "releaseName" "cas-cif"
+      ) | nindent 8 }}
     ```
 
     > *Note*: You can use `.Values.abc` if you want to use the values from your values.yaml file.
