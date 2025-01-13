@@ -1,27 +1,22 @@
+# Note: the `.containers` template cannot use any "globals" like `.Release.Name` directly as the `.` context is replaced with the `dict` parameter on use. See README.md for more details
 {{- define "cas-logging-sidecar.containers" -}}
-- name: oc-logs-container
-  image: openshift/origin-cli-latest
+- name: {{ .containerToSidecar }}-oc-logs-container
+  image: openshift/origin-cli:latest
   env:
     - name: POD_NAME
       valueFrom:
         fieldRef:
-          fieldPath: .Metadata.Name
-    - name: CONTAINER_NAME
-      valueFrom:
-        fieldRef: {{ .containerToSidecar}}
-    - name: LOG_NAME
-      valueFrom:
-        fieldRef: {{ .logName }}
+          fieldPath: metadata.name
   command:
     - "/bin/sh"
     - "-c"
     - |
       echo 'Starting log capture';
-      oc logs -f $POD_NAME -c $CONTAINER_NAME --pod-running-timeout=20s >> /var/log/$LOG_NAME.log;
+      oc logs -f $POD_NAME -c {{ .containerToSidecar }} --pod-running-timeout=20s >> /var/log/{{ .logName }}.log;
   volumeMounts:
   - name: shared-logs
     mountPath: /var/log
-- name: logrotate-container
+- name: {{ .containerToSidecar }}-logrotate-container
   image: skymatic/logrotate
   command:
     - "/bin/sh"
@@ -35,18 +30,33 @@
     subPath: logrotate.conf
 - name: fluent-bit
   image: fluent/fluent-bit:latest
-  env: 
+  env:
+    - name: FLUENT_ELASTICSEARCH_HOST
+      value: {{ .host }}
+    - name: FLUENT_ELASTICSEARCH_PORT
+      value: "9200"
+  command: [ "/fluent-bit/bin/fluent-bit", "-c", "/var/log/fluent-bit.conf" ]
+  volumeMounts:
+    - name: shared-logs
+      mountPath: /var/log
+    - name: fluent-bit-config
+      mountPath: /var/log/fluent-bit.conf
+      subPath: fluent-bit.conf
+    - name: parsers-config
+      mountPath:  /var/log/parsers.conf
+      subPath: parsers.conf
 {{- end }}
+# Note: The `.volumes` template can use `.Release.Name` directly as it is passed in with the `.` context parameter
 {{- define "cas-logging-sidecar.volumes" -}}
 - name: shared-logs
   emptyDir: {}
 - name: logrotate-config
   configMap:
-    name: {{ .releaseName }}-logrotate-configmap
+    name: {{ .Release.Name }}-logrotate-configmap
 - name: fluent-bit-config
   configMap:
-    name: {{ .releaseName }}-fluent-bit-configmap
+    name: {{ .Release.Name }}-fluent-bit-configmap
 - name: parsers-config
   configMap:
-    name: {{ .releaseName }}-fluent-bit-configmap
+    name: {{ .Release.Name }}-fluent-bit-configmap
 {{- end }}

@@ -32,8 +32,6 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
     ```yaml
     spec.template.spec.containers:
     {{- include "cas-logging-sidecar.containers" (dict 
-        "releaseName" "cas-cif"
-        "podToSideCar" "cas-cif-front"
         "containerToSidecar" "cas-cif-frontend"
         "logName" .Values.logName
         "host" "elasticsearch.abc123-namespace.svc.cluster.local") | nindent 8 }}
@@ -64,7 +62,8 @@ spec:
             - containerPort: 80
         {{- include "cas-logging-sidecar.containers" (dict 
             "containerToSidecar" .Spec.Template.Spec.Containers.0.Name
-            "logName" .Values.logName) | nindent 8 }}
+            "logName" .Values.logName
+            "host" .Values.host) | nindent 8 }}
       volumes:
         {{- include "cas-logging-sidecar.volumes" . | nindent 8 }}
 ```
