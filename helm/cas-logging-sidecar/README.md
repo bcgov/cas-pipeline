@@ -27,7 +27,13 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
 
     > *Note*: These parameters are used in the configmaps for Fluent Bit and Logrotate.
 
-2. `{{- include }}` the sidecar container and volumes into your deployment file. This must be passed the following paramters: `.podToSidecar`, `.containerToSidecar`, `.logName`, `.tag`. This is done using a dict in the include statement, for example:
+2. Associate the service account from the chart with the pod's template.
+
+    ```yaml
+    spec.template.spec.serviceAccountName: {{ .Release.Name }}-pod-logger
+    ```
+
+3. `{{- include }}` the sidecar container and volumes into your deployment file. This must be passed the following paramters: `.podToSidecar`, `.containerToSidecar`, `.logName`, `.tag`. This is done using a dict in the include statement, for example:
 
     ```yaml
     spec.template.spec.containers:
@@ -55,6 +61,7 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: {{ .Release.Name }}-pod-logger
       containers:
         - name: cas-frontend
           image: cas-frontend:latest
