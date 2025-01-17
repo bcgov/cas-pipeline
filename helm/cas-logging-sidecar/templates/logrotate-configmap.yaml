@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-logrotate-configmap
+data:
+  logrotate.conf: |
+    /var/log/{{ .Values.logName }}.log {
+        size 100M
+        missingok
+        notifempty
+        copytruncate
+        rotate 5
+        compress
+        delaycompress
+        dateext
+        dateformat -%Y%m%d%H%M%S
+    }

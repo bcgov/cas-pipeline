@@ -1,0 +1,83 @@
+# Note: the `.containers` template cannot use any "globals" like `.Release.Name` directly as the `.` context is replaced with the `dict` parameter on use. See README.md for more details
+{{- define "cas-logging-sidecar.containers" -}}
+- name: {{ .containerToSidecar }}-oc-logs-container
+  resources:
+    limits:
+      memory: 64Mi
+      cpu: 100m
+    requests:
+      memory: 16Mi
+      cpu: 10m
+  image: openshift/origin-cli:latest
+  env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+  command:
+    - "/bin/sh"
+    - "-c"
+    - |
+      echo 'Starting log capture';
+      oc logs -f $POD_NAME -c {{ .containerToSidecar }} --pod-running-timeout=20s >> /var/log/{{ .logName }}.log;
+  volumeMounts:
+  - name: shared-logs
+    mountPath: /var/log
+- name: {{ .containerToSidecar }}-logrotate-container
+  resources:
+    limits:
+      memory: 64Mi
+      cpu: 100m
+    requests:
+      memory: 16Mi
+      cpu: 10m
+  image: skymatic/logrotate
+  command:
+    - "/bin/sh"
+    - "-c"
+    - "while true; do logrotate -s /var/log/logrotate.status -f /etc/logrotate.conf; sleep 5; done"
+  volumeMounts:
+  - name: shared-logs
+    mountPath: /var/log
+  - name: logrotate-config
+    mountPath: /etc/logrotate.conf
+    subPath: logrotate.conf
+- name: fluent-bit
+  resources:
+    limits:
+      memory: 100Mi
+      cpu: 200m
+    requests:
+      memory: 25Mi
+      cpu: 50m
+  image: fluent/fluent-bit:latest
+  env:
+    - name: FLUENT_ELASTICSEARCH_HOST
+      value: {{ .host }}
+    - name: FLUENT_ELASTICSEARCH_PORT
+      value: "9200"
+  command: [ "/fluent-bit/bin/fluent-bit", "-c", "/var/log/fluent-bit.conf" ]
+  volumeMounts:
+    - name: shared-logs
+      mountPath: /var/log
+    - name: fluent-bit-config
+      mountPath: /var/log/fluent-bit.conf
+      subPath: fluent-bit.conf
+    - name: parsers-config
+      mountPath:  /var/log/parsers.conf
+      subPath: parsers.conf
+{{- end }}
+# Note: The `.volumes` template can use `.Release.Name` directly as it is passed in with the `.` context parameter
+{{- define "cas-logging-sidecar.volumes" -}}
+- name: shared-logs
+  emptyDir: {}
+- name: logrotate-config
+  configMap:
+    name: {{ .Release.Name }}-logrotate-configmap
+- name: fluent-bit-config
+  configMap:
+    name: {{ .Release.Name }}-fluent-bit-configmap
+- name: parsers-config
+  configMap:
+    name: {{ .Release.Name }}-fluent-bit-configmap
+{{- end }}
