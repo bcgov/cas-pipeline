@@ -23,3 +23,6 @@ kibana:
   port: 5601
   cpuRequest: 10m
   memoryRequest: 500Mi
+
+  route: ~
+

@@ -9,5 +9,5 @@ spec:
   selector:
     app: kibana
   ports:
-    - name: http
+    - name: kibana
       port: {{ .Values.kibana.port }}
