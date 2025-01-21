@@ -16,5 +16,5 @@ spec:
   to:
     kind: Service
     name: kibana
-    namespace: {{ .Values.namespace }}
+    namespace: {{ .Release.Namespace }}
     weight: 100

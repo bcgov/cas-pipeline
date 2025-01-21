@@ -1,6 +1,4 @@
 # Default values for cas-efk.
-namespace: default
-
 elasticSearchVolume: elasticsearch-data
 elasticsearch:
   image: docker.elastic.co/elasticsearch/elasticsearch
