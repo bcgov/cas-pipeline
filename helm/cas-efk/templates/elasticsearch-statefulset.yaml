@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: es-cluster
+  namespace: {{ .Values.namespace }}
+  labels:
+    "app.kubernetes.io/part-of": efk-stack
+spec:
+  serviceName: elasticsearch
+  replicas: {{ .Values.elasticsearch.replicas }}
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+        - name: elasticsearch
+          image: {{ .Values.elasticsearch.image }}:{{ .Values.elasticsearch.version }}
+          resources:
+            requests:
+              cpu: {{ .Values.elasticsearch.cpuRequest }}
+              memory: {{ .Values.elasticsearch.memoryRequest }}
+          ports:
+            - name: rest
+              containerPort: {{ .Values.elasticsearch.port.rest }}
+              protocol: TCP
+            - name: inter-node
+              containerPort: {{ .Values.elasticsearch.port.internode }}
+              protocol: TCP
+          volumeMounts:
+            - name: {{ .Values.elasticsearch.volume }}
+              mountPath: /usr/share/elasticsearch/data
+          env:
+            - name: cluster.name
+              value: elasticsearch
+            - name: node.name
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- $replicaCount := .Values.elasticsearch.replicas | int }}
+            - name: discovery.seed_hosts
+              value: "{{- range $i, $e := until $replicaCount -}}
+                  es-cluster-{{ $i }}.elasticsearch{{- if ne $i (sub $replicaCount 1) }},{{ end }}
+                {{- end }}"
+            - name: cluster.initial_master_nodes
+              value: "{{- range $i, $e := until $replicaCount -}}
+                  es-cluster-{{ $i }}{{- if ne $i (sub $replicaCount 1) }},{{ end }}
+                {{- end }}"
+            - name: ES_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
+            - name: xpack.security.enabled
+              value: "false"
+      volumes:
+        - name: {{ .Values.elasticsearch.volume }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.elasticsearch.volume }}
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Values.elasticsearch.volume }}
+        labels:
+          app: elasticsearch
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.elasticsearch.storageClass }}
+        resources:
+          requests:
+            storage: {{ .Values.elasticsearch.storageRequest }}

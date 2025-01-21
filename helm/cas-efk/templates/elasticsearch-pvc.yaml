@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.elasticsearch.volume }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: elasticsearch
+    app.kubernetes.io/part-of: elasticsearch
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.elasticsearch.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.elasticsearch.storageRequest }}
