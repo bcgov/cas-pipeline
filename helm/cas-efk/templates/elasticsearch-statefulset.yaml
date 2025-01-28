@@ -33,9 +33,24 @@ spec:
           volumeMounts:
             - name: {{ .Values.elasticsearch.volume }}
               mountPath: /usr/share/elasticsearch/data
-            - name: certs
+            {{- if .Values.elasticsearch.security }}
+            - name: cert-store
               mountPath: /usr/share/elasticsearch/config/certs
+            - name: cert-authority
+              mountPath: /usr/share/elasticsearch/config/certs/ca.crt
+              subPath: ca.crt
+            - name: cert-authority
+              mountPath: /usr/share/elasticsearch/config/certs/ca.key
+              subPath: ca.key
+            - name: config
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+            {{ end }}
           env:
+            {{- if not .Values.elasticsearch.security }}
+            - name: xpack.security.enabled
+              value: "false"
+            {{ end }}
             - name: cluster.name
               value: elasticsearch
             - name: node.name
@@ -53,25 +68,40 @@ spec:
                 {{- end }}"
             - name: ES_JAVA_OPTS
               value: "-Xms512m -Xmx512m"
+            - name: CERT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.elasticsearch.caSecret }}
+                  key: pass
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           command:
             - sh
             - -c
             - |
-              echo "xpack.security.enabled: true
-              network.host: 0.0.0.0
-              xpack.security.transport.ssl.enabled: true
-              xpack.security.transport.ssl.verification_mode: certificate
-              xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/${HOSTNAME}.key
-              xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/${HOSTNAME}.crt
-              xpack.security.transport.ssl.certificate_authorities: [\"/usr/share/elasticsearch/config/certs/ca.crt\"]" > /usr/share/elasticsearch/config/elasticsearch.yml
+              bin/elasticsearch-certutil cert -pem \
+                --ca-cert ./config/certs/ca.crt --ca-key ./config/certs/ca.key --ca-pass ${CERT_PASS} \
+                --name ${HOSTNAME} --dns ${HOSTNAME},${HOSTNAME}.elasticsearch --ip ${POD_IP} \
+                --out ./config/certs/${HOSTNAME}.zip --silent
+              unzip -q -o ./config/certs/${HOSTNAME}.zip -d ./config/certs
+              rm ./config/certs/${HOSTNAME}.zip
               exec /usr/local/bin/docker-entrypoint.sh
       volumes:
         - name: {{ .Values.elasticsearch.volume }}
           persistentVolumeClaim:
             claimName: {{ .Values.elasticsearch.volume }}
-        - name: certs
+        {{- if .Values.elasticsearch.security }}
+        - name: cert-authority
           secret:
-            secretName: elastic-certs
+            secretName: {{ .Values.elasticsearch.caSecret }}
+        - name: cert-store
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: elasticsearch-config
+        {{ end }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.elasticsearch.volume }}

@@ -15,6 +15,9 @@ elasticsearch:
   cpuRequest: 500m
   memoryRequest: 1Gi
 
+  security: true
+  caSecret: elastic-certificate-authority
+
 kibana:
   image: docker.elastic.co/kibana/kibana
   version: 8.4.3
