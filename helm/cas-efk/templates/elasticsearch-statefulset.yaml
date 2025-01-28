@@ -33,6 +33,8 @@ spec:
           volumeMounts:
             - name: {{ .Values.elasticsearch.volume }}
               mountPath: /usr/share/elasticsearch/data
+            - name: certs
+              mountPath: /usr/share/elasticsearch/config/certs
           env:
             - name: cluster.name
               value: elasticsearch
@@ -51,12 +53,24 @@ spec:
                 {{- end }}"
             - name: ES_JAVA_OPTS
               value: "-Xms512m -Xmx512m"
-            - name: xpack.security.enabled
-              value: "false"
+          command:
+            - sh
+            - -c
+            - |
+              echo "xpack.security.enabled: true
+              xpack.security.transport.ssl.enabled: true
+              xpack.security.transport.ssl.verification_mode: certificate
+              xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/${HOSTNAME}.key
+              xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/${HOSTNAME}.crt
+              xpack.security.transport.ssl.certificate_authorities: [\"/usr/share/elasticsearch/config/certs/ca.crt\"]" > /usr/share/elasticsearch/config/elasticsearch.yml
+              exec /usr/local/bin/docker-entrypoint.sh
       volumes:
         - name: {{ .Values.elasticsearch.volume }}
           persistentVolumeClaim:
             claimName: {{ .Values.elasticsearch.volume }}
+        - name: certs
+          secret:
+            secretName: elastic-certs
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.elasticsearch.volume }}
