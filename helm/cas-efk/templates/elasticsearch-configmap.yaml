@@ -15,4 +15,9 @@ data:
     xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/${HOSTNAME}/${HOSTNAME}.key
     xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/${HOSTNAME}/${HOSTNAME}.crt
     xpack.security.transport.ssl.certificate_authorities: ["/usr/share/elasticsearch/config/certs/ca.crt"]
+
+    # Kibana security config
+    xpack.security.authc.realms.pki.realm1.order: 1
+    xpack.security.authc.realms.pki.realm1.certificate_authorities: "/usr/share/elasticsearch/config/certs/ca.crt"
+    xpack.security.authc.realms.native.realm2.order: 2
 {{ end }}

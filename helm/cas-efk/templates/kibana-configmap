@@ -1,0 +1,15 @@
+{{ if .Values.elasticsearch.security }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    "app.kubernetes.io/part-of": efk-stack
+data:
+  kibana.yml: |
+    elasticsearch.username: "kibana_system"
+    elasticsearch.password: ${ES_PASSWORD}
+    elasticsearch.hosts: ["http://elasticsearch:9200"]
+    elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/ca.crt"]
+{{ end }}

@@ -77,6 +77,16 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: KIBANA_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cas-kibana-admin
+                  key: "username"
+            - name: KIBANA_ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: cas-kibana-admin
+                  key: "password"
           command:
             - sh
             - -c
@@ -87,6 +97,7 @@ spec:
                 --out ./config/certs/${HOSTNAME}.zip --silent
               unzip -q -o ./config/certs/${HOSTNAME}.zip -d ./config/certs
               rm ./config/certs/${HOSTNAME}.zip
+              bin/elasticsearch-users useradd ${KIBANA_ADMIN_USER} -p ${KIBANA_ADMIN_PASS} -r kibana_admin
               exec /usr/local/bin/docker-entrypoint.sh
       volumes:
         - name: {{ .Values.elasticsearch.volume }}
