@@ -27,3 +27,11 @@ In order for Kibana to be able to connect with Elasticsearch, the password for t
 1. In your console, use `oc get pods` in your namespace to find the deployed Elastic pod name. It should be named something like `es-cluster-0`. Use this wherever you see `<pod-name>` in the directions below.
 1. After the ElasticSearch pods have been deployed, run `oc exec -it es-cluster-0 -- bin/elasticsearch-reset-password -bs -u kibana_system` to reset the password for the `kibana_system` user. The output below will be the new password. Copy this into the `password` field in the secret `kibana` in the `es-password` key.
 1. Restart the Kibana pod with `oc rollout restart deployment/kibana -n <namespace>`.
+
+## Accessing Kibana
+
+Kibana does not currently have a secure route to access it. You will need to use `oc port-forward` to access it. In your console, run `oc port-forward service/kibana 5601:5601 -n <namespace>` to forward port 5601 to your local machine. You can then access Kibana at `http://localhost:5601`.
+
+### Updating the HTTPS certificate for Kibana
+
+Follow the directions [in the elasticseach documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup-https.html#encrypt-kibana-browser) to acquire the cert and key for Kibana. Then get the certificate signed by a CA and then update the Kibana Route with new certificates in OpenShift.
