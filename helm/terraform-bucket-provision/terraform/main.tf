@@ -36,16 +36,16 @@ resource "google_storage_bucket" "bucket" {
 
 # Create GCP service accounts for each GCS bucket
 resource "google_service_account" "account" {
-  for_each     = { for v in var.apps : v => v }
-  account_id   = "sa-${var.openshift_namespace}-${each.value}"
-  display_name = "${var.openshift_namespace}-${each.value} Service Account"
+  for_each     = { for v in local.storage_bucket_base_names : v => v }
+  account_id   = "sa-${each.value}"
+  display_name = "${each.value} Service Account"
   depends_on   = [google_storage_bucket.bucket]
 }
 
 # Assign Storage Admin role for the corresponding service accounts
 resource "google_storage_bucket_iam_member" "admin" {
-  for_each   = { for v in var.apps : v => v }
-  bucket     = "${var.openshift_namespace}-${each.value}"
+  for_each   = { for v in local.storage_bucket_base_names : v => v }
+  bucket     = each.value
   role       = "roles/storage.admin"
   member     = "serviceAccount:${google_service_account.account[each.key].email}"
   depends_on = [google_service_account.account]
@@ -53,16 +53,16 @@ resource "google_storage_bucket_iam_member" "admin" {
 
 # Create viewer GCP service accounts for each GCS bucket
 resource "google_service_account" "viewer_account" {
-  for_each     = { for v in var.apps : v => v }
-  account_id   = "ro-${var.openshift_namespace}-${each.value}"
-  display_name = "${var.openshift_namespace}-${each.value} Viewer Service Account"
+  for_each     = { for v in local.storage_bucket_base_names : v => v }
+  account_id   = "ro-${each.value}"
+  display_name = "${each.value} Viewer Service Account"
   depends_on   = [google_storage_bucket.bucket]
 }
 
 # Assign (manually created) Storage Viewer role for the corresponding service accounts
 resource "google_storage_bucket_iam_member" "viewer" {
-  for_each   = { for v in var.apps : v => v }
-  bucket     = "${var.openshift_namespace}-${each.value}"
+  for_each   = { for v in local.storage_bucket_base_names : v => v }
+  bucket     = each.value
   role       = "projects/${var.project_id}/roles/${var.iam_storage_role_template_id}"
   member     = "serviceAccount:${google_service_account.viewer_account[each.key].email}"
   depends_on = [google_service_account.viewer_account]
@@ -81,9 +81,9 @@ resource "google_service_account_key" "viewer_key" {
 }
 
 resource "kubernetes_secret" "secret_sa" {
-  for_each = { for v in var.apps : v => v }
+  for_each = { for v in local.storage_bucket_base_names : v => v }
   metadata {
-    name      = "gcp-${var.openshift_namespace}-${each.value}-service-account-key"
+    name      = "gcp-${each.value}-service-account-key"
     namespace = var.openshift_namespace
     labels = {
       created-by = "Terraform"
@@ -91,7 +91,7 @@ resource "kubernetes_secret" "secret_sa" {
   }
 
   data = {
-    "bucket_name"             = "${var.openshift_namespace}-${each.value}"
+    "bucket_name"             = "${each.value}"
     "credentials.json"        = base64decode(google_service_account_key.key[each.key].private_key)
     "viewer_credentials.json" = base64decode(google_service_account_key.viewer_key[each.key].private_key)
   }
