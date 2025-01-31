@@ -25,5 +25,44 @@ spec:
           env:
             - name: ELASTICSEARCH_URL
               value: {{ .Values.elasticsearch.host }}:{{ .Values.elasticsearch.port.rest }}
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kibana
+                  key: "es-password"
           ports:
             - containerPort: {{ .Values.kibana.port }}
+          volumeMounts:
+            {{- if .Values.elasticsearch.security }}
+            - name: kibana-cert
+              mountPath: /usr/share/kibana/config/certs/kibana.crt
+              subPath: kibana.crt
+            - name: kibana-cert
+              mountPath: /usr/share/kibana/config/certs/kibana.key
+              subPath: kibana.key
+            - name: cert-authority
+              mountPath: /usr/share/kibana/config/certs/ca.crt
+              subPath: ca.crt
+            - name: cert-authority
+              mountPath: /usr/share/kibana/config/certs/ca.key
+              subPath: ca.key
+            - name: config
+              mountPath: /usr/share/kibana/config/kibana.yml
+              subPath: kibana.yml
+            {{ end }}
+      volumes:
+        {{- if .Values.elasticsearch.security }}
+        - name: cert-authority
+          secret:
+            secretName: {{ .Values.elasticsearch.caSecret }}
+        - name: kibana-cert
+          secret:
+            secretName: elastic-certs
+        - name: config
+          configMap:
+            name: kibana-config
+        {{ end }}

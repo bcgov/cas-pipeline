@@ -1,0 +1,23 @@
+{{ if .Values.elasticsearch.security }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    "app.kubernetes.io/part-of": efk-stack
+data:
+  elasticsearch.yml: |
+    network.host: 0.0.0.0
+    xpack.security.enabled: true
+    xpack.security.transport.ssl.enabled: true
+    xpack.security.transport.ssl.verification_mode: full
+    xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/${HOSTNAME}/${HOSTNAME}.key
+    xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/${HOSTNAME}/${HOSTNAME}.crt
+    xpack.security.transport.ssl.certificate_authorities: ["/usr/share/elasticsearch/config/certs/ca.crt"]
+
+    # Kibana security config
+    xpack.security.authc.realms.pki.realm1.order: 1
+    xpack.security.authc.realms.pki.realm1.certificate_authorities: "/usr/share/elasticsearch/config/certs/ca.crt"
+    xpack.security.authc.realms.native.realm2.order: 2
+{{ end }}
