@@ -2,6 +2,9 @@
 locals {
   # The GCP region to create things in. https://cloud.google.com/compute/docs/regions-zones"
   region = "northamerica-northeast1" # Montreal
+
+  # An array of storage bucket names to be used for uploaded files
+  storage_bucket_base_names = [for v in var.apps : "${var.openshift_namespace}-${v}"]
 }
 
 variable "project_id" {

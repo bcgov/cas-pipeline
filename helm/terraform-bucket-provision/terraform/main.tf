@@ -29,8 +29,8 @@ provider "google" {
 
 # Create GCS buckets
 resource "google_storage_bucket" "bucket" {
-  for_each = { for v in var.apps : v => v }
-  name     = "${var.openshift_namespace}-${each.value}"
+  for_each = { for v in local.storage_bucket_base_names : v => v }
+  name     = each.value
   location = local.region
 }
 
@@ -95,4 +95,40 @@ resource "kubernetes_secret" "secret_sa" {
     "credentials.json"        = base64decode(google_service_account_key.key[each.key].private_key)
     "viewer_credentials.json" = base64decode(google_service_account_key.viewer_key[each.key].private_key)
   }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# The following resources will only be created if the uploaded_file_scanning_enabled variable is set to true
+# ---------------------------------------------------------------------------------------------------------------------
+
+# Create GCS buckets for quarantined and clean files
+resource "google_storage_bucket" "quarantine_bucket" {
+  count    = var.uploaded_file_scanning_enabled ? 1 : 0
+  for_each = { for v in local.storage_bucket_base_names : v => v }
+  name     = "quarantined-${each.value}"
+  location = local.region
+}
+
+resource "google_storage_bucket" "clean_bucket" {
+  count    = var.uploaded_file_scanning_enabled ? 1 : 0
+  for_each = { for v in local.storage_bucket_base_names : v => v }
+  name     = "clean-${each.value}"
+  location = local.region
+}
+
+# Create GCP service accounts for quarantined and clean GCS buckets
+resource "google_service_account" "quarantined_bucket_account" {
+  count        = var.uploaded_file_scanning_enabled ? 1 : 0
+  for_each     = { for v in local.storage_bucket_base_names : v => v }
+  account_id   = "sa-quar-${each.value}"
+  display_name = "${each.value} Service Account"
+  depends_on   = [google_storage_bucket.quarantine_bucket]
+}
+
+resource "google_service_account" "clean_bucket_account" {
+  count        = var.uploaded_file_scanning_enabled ? 1 : 0
+  for_each     = { for v in local.storage_bucket_base_names : v => v }
+  account_id   = "sa-clean-${each.value}"
+  display_name = "${each.value} Service Account"
+  depends_on   = [google_storage_bucket.clean_bucket]
 }
