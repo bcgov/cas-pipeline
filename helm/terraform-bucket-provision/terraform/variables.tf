@@ -31,3 +31,9 @@ variable "iam_storage_role_template_id" {
   description = "ID for a custom IAM role template we manually created in GCP for Storage Viewers"
   default     = "casStorageViewer"
 }
+
+variable "uploaded_file_scanning_enabled" {
+  type        = bool
+  description = "Enables uploaded file scanning in GCP using ClamAV"
+  default     = false
+}

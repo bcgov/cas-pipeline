@@ -24,3 +24,6 @@ serviceAccount:
 
 openShift:
   host: "https://api.silver.devops.gov.bc.ca:6443"
+
+uploadedFileScanning:
+  enabled: false

@@ -41,6 +41,8 @@ spec:
               value: {{ .Release.Namespace | quote }}
             - name: TF_VAR_apps
               value: {{ .Values.terraform.namespace_apps | quote }}
+            - name: TF_VAR_uploaded_file_scanning_enabled
+              value: {{ .Values.uploadedFileScanning.enabled | quote }}
             - name: kubernetes_host
               value: {{ .Values.openShift.host }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
