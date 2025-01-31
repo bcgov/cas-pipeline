@@ -1,0 +1,20 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kibana
+  labels:
+    "app.kubernetes.io/name": efk-stack
+  annotations:
+    haproxy.router.openshift.io/balance: roundrobin
+spec:
+  host: {{ .Values.kibana.route }}
+  port: 
+    targetPort: kibana
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: kibana
+    namespace: {{ .Release.Namespace }}
+    weight: 100

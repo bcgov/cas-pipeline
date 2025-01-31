@@ -1,0 +1,26 @@
+# Default values for cas-efk.
+elasticSearchVolume: elasticsearch-data
+elasticsearch:
+  image: docker.elastic.co/elasticsearch/elasticsearch
+  version: 8.4.3
+  replicas: 3
+  host: elasticsearch
+  port:
+    rest: 9200
+    internode: 9300
+  storageRequest: 1Gi
+  volume: elasticsearch-data
+  storageClass: netapp-block-standard
+
+  cpuRequest: 500m
+  memoryRequest: 1Gi
+
+kibana:
+  image: docker.elastic.co/kibana/kibana
+  version: 8.4.3
+  port: 5601
+  cpuRequest: 10m
+  memoryRequest: 500Mi
+
+  route: ~
+
