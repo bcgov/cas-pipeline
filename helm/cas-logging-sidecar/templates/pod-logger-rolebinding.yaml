@@ -2,6 +2,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ .Release.Name }}-pod-logger-rolebinding
+  annotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+    "helm.sh/hook-weight": "-5"
 subjects:
   - kind: ServiceAccount
     name: {{ .Release.Name }}-pod-logger
