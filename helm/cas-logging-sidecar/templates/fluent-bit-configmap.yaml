@@ -27,6 +27,9 @@ data:
         Match               *
         Host                {{ .Values.host }}
         Port                9200
+        tls                 On
+        http_user           ${FLUENT_ELASTICSEARCH_USER}
+        http_passwd         ${FLUENT_ELASTICSEARCH_PASSWORD}
         Index               {{ .Values.index }}
         Logstash_Prefix     {{ .Values.prefix }}
         Logstash_DateFormat %Y.%m.%d

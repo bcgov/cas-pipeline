@@ -56,6 +56,16 @@
       value: {{ .host }}
     - name: FLUENT_ELASTICSEARCH_PORT
       value: "9200"
+    - name: FLUENT_ELASTICSEARCH_USER
+      valueFrom:
+        secretKeyRef:
+          name: fluentbit-credentials
+          key: username
+    - name: FLUENT_ELASTICSEARCH_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: fluentbit-credentials
+          key: password
   command: [ "/fluent-bit/bin/fluent-bit", "-c", "/var/log/fluent-bit.conf" ]
   volumeMounts:
     - name: shared-logs
