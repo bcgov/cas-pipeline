@@ -44,5 +44,6 @@ data:
         Name                json
         Format              json
         Time_Key            timestamp
+        Time_Format         %Y-%m-%dT%H:%M:%S.%LZ
         Decode_Field_as     escaped_utf8 log do_next
         Decode_Field_as     json log
