@@ -25,9 +25,9 @@ data:
     [OUTPUT]
         Name                es
         Match               *
-        Host                {{ .Values.host }}
+        Host                {{ .Values.cas-logging-sidecar.host }}
         Port                9200
-        tls                 On
+        tls                 Off
         http_user           ${FLUENT_ELASTICSEARCH_USER}
         http_passwd         ${FLUENT_ELASTICSEARCH_PASSWORD}
         Index               {{ .Values.index }}
