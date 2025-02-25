@@ -3,3 +3,5 @@
 .values.yaml
 .scratch/
 .crunchy-values.yaml
+
+oc_secret_dump**
