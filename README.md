@@ -35,6 +35,12 @@ Deploys the [`cas-provision` helm chart] to every namespace used by the team. Th
 - Utilizing `gcp` (the Google Cloud Platform CLI), creates buckets for TF state for every namespace used by the team. Relies on a being authorized with a service account (credentials stored in the team's password manager) with storage permissions on the project.
   - **Note**: `gcp` will give errors when a bucket is created _already under the service accounts control_. The script ignores these errors, as they don't need to block further buckets from being created or the rest of the make target executing.
 
+### `make backup_secrets`
+
+Downloads all the openshift secrets in the namespaces specified in the `.env` file, and generates an tar archive that can be saved anywhere safe.
+- requires defining the OC_PROJECT_PREFIXES variable
+- will automatically iterate over "dev, test, prod, tools" suffixes
+
 ### `make install_crunchy_monitoring`
 
 Deploys the [`crunchy-monitoring` helm chart] to the namespace defined in the values file. This relies on a hidden `.crunchy-values.yaml` file (stored in the team's password manager).
