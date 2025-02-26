@@ -49,6 +49,7 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
     ```
 
     > *Note*: You can use `.Values.abc` if you want to use the values from your values.yaml file.
+    > If the value comes from the dependency chart, such as the host, you will need to use `(index .Values "cas-logging-sidecar" "host")`. This is due to this dependency chart using hyphens in the name.
 
 ### Example use
 
@@ -70,7 +71,7 @@ spec:
         {{- include "cas-logging-sidecar.containers" (dict 
             "containerToSidecar" .Spec.Template.Spec.Containers.0.Name
             "logName" .Values.logName
-            "host" .Values.host) | nindent 8 }}
+            "host" (index .Values "cas-logging-sidecar" "host")  ) | nindent 8 }}
       volumes:
         {{- include "cas-logging-sidecar.volumes" . | nindent 8 }}
 ```
