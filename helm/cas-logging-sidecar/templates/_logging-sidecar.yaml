@@ -4,7 +4,6 @@
   resources:
     limits:
       memory: 64Mi
-      cpu: 100m
     requests:
       memory: 16Mi
       cpu: 10m
@@ -27,7 +26,6 @@
   resources:
     limits:
       memory: 64Mi
-      cpu: 100m
     requests:
       memory: 16Mi
       cpu: 10m
@@ -46,7 +44,6 @@
   resources:
     limits:
       memory: 100Mi
-      cpu: 200m
     requests:
       memory: 25Mi
       cpu: 50m
