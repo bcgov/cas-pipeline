@@ -41,6 +41,11 @@ provision:
 	@@source .env; ./lib/gcs_terraform_buckets.sh -pp $$OC_PROJECT_PREFIXES -gcp $$GCP_PROJECT
 	@@source .env; ./lib/helm_deploy.sh -pp $$OC_PROJECT_PREFIXES -c ./helm/cas-provision/ -n cas-provision -v $$VALUES_FILE_PATH
 
+.PHONY: backup_secrets
+backup_secrets:
+	$(call oc_whoami)
+	@@source .env; ./lib/oc_backup_secrets.sh $$OC_PROJECT_PREFIXES
+
 .PHONY: provision_artifactory
 provision_artifactory: ## Install the artifactory chart, creating an artifactory service account in every namespace. Should only be run once.
 provision_artifactory:
