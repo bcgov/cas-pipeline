@@ -18,7 +18,7 @@
     - "-c"
     - |
       echo 'Starting log capture';
-      kubectl logs -f $POD_NAME -c {{ .containerToSidecar }} --pod-running-timeout=20s | grep "" --line-buffered >> /var/log/{{ .logName }}.log;
+      kubectl logs -f $POD_NAME -c {{ .containerToSidecar }} --pod-running-timeout=20s >> /var/log/{{ .logName }}.log;
   volumeMounts:
   - name: shared-logs
     mountPath: /var/log
