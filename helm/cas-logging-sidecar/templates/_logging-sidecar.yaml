@@ -3,11 +3,11 @@
 - name: {{ .containerToSidecar }}-oc-logs-container
   resources:
     limits:
-      memory: 64Mi
+      memory: 128Mi
     requests:
-      memory: 16Mi
-      cpu: 10m
-  image: openshift/origin-cli:latest
+      memory: 32Mi
+      cpu: 20m
+  image: bitnami/kubectl:latest
   env:
     - name: POD_NAME
       valueFrom:
@@ -18,17 +18,17 @@
     - "-c"
     - |
       echo 'Starting log capture';
-      oc logs -f $POD_NAME -c {{ .containerToSidecar }} --pod-running-timeout=20s >> /var/log/{{ .logName }}.log;
+      kubectl logs -f $POD_NAME -c {{ .containerToSidecar }} --pod-running-timeout=20s | grep "" --line-buffered >> /var/log/{{ .logName }}.log;
   volumeMounts:
   - name: shared-logs
     mountPath: /var/log
 - name: {{ .containerToSidecar }}-logrotate-container
   resources:
     limits:
-      memory: 64Mi
+      memory: 32Mi
     requests:
-      memory: 16Mi
-      cpu: 10m
+      memory: 8Mi
+      cpu: 20m
   image: skymatic/logrotate
   command:
     - "/bin/sh"
@@ -46,7 +46,7 @@
       memory: 100Mi
     requests:
       memory: 25Mi
-      cpu: 50m
+      cpu: 30m
   image: fluent/fluent-bit:latest
   env:
     - name: FLUENT_ELASTICSEARCH_HOST
