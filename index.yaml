@@ -14,6 +14,16 @@ entries:
   cas-logging-sidecar:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2025-04-08T20:56:06.711559118Z"
+    description: A Helm chart to deploy Logging Sidecars to CAS applications.
+    digest: 4b5e05181604aad9d3a43a73e1a5209cca171693f2b8be437241584d9526f3ff
+    name: cas-logging-sidecar
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-pipeline/releases/download/cas-logging-sidecar-0.4.3/cas-logging-sidecar-0.4.3.tgz
+    version: 0.4.3
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2025-03-07T17:56:15.048294523Z"
     description: A Helm chart to deploy Logging Sidecars to CAS applications.
     digest: e0ecffc1117e278a58808ff47b3043f8c126b1126b4171b734a84aeb9aa40108
@@ -140,4 +150,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-pipeline/releases/download/terraform-bucket-provision-0.1.3/terraform-bucket-provision-0.1.3.tgz
     version: 0.1.3
-generated: "2025-03-07T17:56:15.048331512Z"
+generated: "2025-04-08T20:56:06.711600698Z"
