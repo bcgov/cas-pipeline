@@ -1,0 +1,22 @@
+{{- if hasPrefix .Values.namespacePrefixes.obps .Release.Namespace }}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: elicensing-integration
+  labels: {{ include "cas-provision.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+{{- if hasSuffix "-dev" .Release.Namespace }}
+  apiUrl: {{ .Values.elicensing.obps.dev.apiUrl }}
+  authToken: {{ .Values.elicensing.obps.dev.authToken }}
+{{- end }}
+{{- if hasSuffix "-test" .Release.Namespace }}
+  apiUrl: {{ .Values.elicensing.obps.test.apiUrl }}
+  authToken: {{ .Values.elicensing.obps.test.authToken }}
+{{- end }}
+{{- if hasSuffix "-prod" .Release.Namespace }}
+  apiUrl: {{ .Values.elicensing.obps.prod.apiUrl }}
+  authToken: {{ .Values.elicensing.obps.prod.authToken }}
+{{- end }}
+
+{{- end }}
