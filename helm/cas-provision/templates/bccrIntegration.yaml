@@ -1,0 +1,12 @@
+{{- if hasPrefix .Values.namespacePrefixes.obps .Release.Namespace }}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: bccr-integration
+  labels: {{ include "cas-provision.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  apiUrl: {{ if hasSuffix "-prod" .Release.Namespace }}{{ .Values.bccr.obps.prod.apiUrl }}{{ else }}{{ .Values.bccr.obps.dev.apiUrl }}{{ end }}
+  clientId: {{ .Values.bccr.obps.clientId }}
+  clientSecret: {{ .Values.bccr.obps.clientSecret }}
+{{- end }}
