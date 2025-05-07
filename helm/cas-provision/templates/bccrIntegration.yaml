@@ -1,0 +1,25 @@
+{{- if hasPrefix .Values.namespacePrefixes.obps .Release.Namespace }}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: bccr-integration
+  labels: {{ include "cas-provision.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+{{- if hasSuffix "-dev" .Release.Namespace }}
+  apiUrl: {{ .Values.bccr.obps.dev.apiUrl }}
+  clientId: {{ .Values.bccr.obps.dev.clientId }}
+  clientSecret: {{ .Values.bccr.obps.dev.clientSecret }}
+{{- end }}
+{{- if hasSuffix "-test" .Release.Namespace }}
+  apiUrl: {{ .Values.bccr.obps.test.apiUrl }}
+  clientId: {{ .Values.bccr.obps.test.clientId }}
+  clientSecret: {{ .Values.bccr.obps.test.clientSecret }}
+{{- end }}
+{{- if hasSuffix "-prod" .Release.Namespace }}
+  apiUrl: {{ .Values.bccr.obps.prod.apiUrl }}
+  clientId: {{ .Values.bccr.obps.prod.clientId }}
+  clientSecret: {{ .Values.bccr.obps.prod.clientSecret }}
+{{- end }}
+
+{{- end }}

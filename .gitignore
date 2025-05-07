@@ -5,3 +5,6 @@
 .crunchy-values.yaml
 
 oc_secret_dump**
+
+# JetBrains
+.idea/
