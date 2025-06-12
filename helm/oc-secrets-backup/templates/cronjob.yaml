@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-job
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+{{ include "oc-secrets-backup.labels" . | indent 4 }}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      activeDeadlineSeconds: 900
+      containers:
+        - name: oc-secrets-backup
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          image: ghcr.io/bcgov/cas-oc-backup:latest
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: {{ .Values.workspacePath }}
+              name: workspace
+            - mountPath: {{ .Values.backupPath }}
+              name: backup-volume
+          env:
+            - name: NAMESPACES
+              value: {{ .Values.namespaces }}
+            - name: WORKSPACE_PATH
+              value: {{ .Values.workspacePath }}
+            - name: BACKUP_VOLUME_PATH
+              value: {{ .Values.backupPath }}
+      restartPolicy: Never
+      volumes:
+        - name: workspace
+          emptyDir: {}
+        - name: backup-volume
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-backup-pvc
