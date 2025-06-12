@@ -94,3 +94,4 @@ spec:
 | `index` | `fluent-bit-configmap.yaml` | Index name. | `cif-logs` |
 | `prefix` | `fluent-bit-configmap.yaml` | The index name is composed using a prefix and the date. The last string appended belongs to the date when the data is being generated. | `cif-logs` |
 | `tag` | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin. | `oc-cif` |
+| `appName`  | `fluent-bit` container                   | The name of the application that is being logged. Added to the Elastic index name to make it easier to search for logs. | `frontend` |
