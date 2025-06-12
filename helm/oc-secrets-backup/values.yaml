@@ -1,5 +1,10 @@
 
+# The name of the service account to use for the secrets backup job.
+# The service account must have get/list access to secrets in the specified namespaces.
+# This is usually done by provisioning Roles and RoleBindings in each of the namespaces.
+serviceAccountName: cas-provision-secret-admin
 
-namespaces: "bcee29"
-workspacePath: "/workspace"
-backupPath: "/backup"
+# Namespaces to backup secrets from.
+namespaces: 
+  - "bcee29"
+  - "c53ff1"

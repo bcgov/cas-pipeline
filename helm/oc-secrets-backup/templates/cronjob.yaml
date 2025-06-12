@@ -9,24 +9,28 @@ spec:
   backoffLimit: 0
   template:
     spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
       activeDeadlineSeconds: 900
       containers:
         - name: oc-secrets-backup
-          resources: {{ toYaml .Values.resources | nindent 12 }}
+          resources: 
+            requests:
+              cpu: 200m
+              memory: 256Mi
           image: ghcr.io/bcgov/cas-oc-backup:latest
           imagePullPolicy: Always
           volumeMounts:
-            - mountPath: {{ .Values.workspacePath }}
+            - mountPath: /workspace
               name: workspace
-            - mountPath: {{ .Values.backupPath }}
+            - mountPath: /backups
               name: backup-volume
           env:
             - name: NAMESPACES
-              value: {{ .Values.namespaces }}
-            - name: WORKSPACE_PATH
-              value: {{ .Values.workspacePath }}
-            - name: BACKUP_VOLUME_PATH
-              value: {{ .Values.backupPath }}
+              value: {{ (join "," .Values.namespaces) | quote }}
+            - name: WORKSPACE
+              value: /workspace
+            - name: BACKUP_VOLUME
+              value: /backups
       restartPolicy: Never
       volumes:
         - name: workspace
