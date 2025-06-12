@@ -49,6 +49,8 @@
       cpu: 30m
   image: fluent/fluent-bit:latest
   env:
+    - name: FLUENT_APP_NAME
+      value: {{ .appName }}
     - name: FLUENT_ELASTICSEARCH_HOST
       value: {{ .host }}
     - name: FLUENT_ELASTICSEARCH_PORT
