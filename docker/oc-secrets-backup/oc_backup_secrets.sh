@@ -2,14 +2,13 @@
 set -euo pipefail
 
 OC_PROJECT_PREFIXES=$1
-
 WORKSPACE=$WORKSPACE
 
 echo "Found namespaces: $OC_PROJECT_PREFIXES"
-OC_PROJECT_SUFFIXES="dev,test,prod,tools"
+OC_PROJECT_SUFFIXES="dev,tools"
 
 folder="oc_secret_dump"
-mkdir -p $folder
+mkdir -p "$WORKSPACE/$folder"
 
 IFS=','
 read -r -a prefixes <<< "$OC_PROJECT_PREFIXES"
