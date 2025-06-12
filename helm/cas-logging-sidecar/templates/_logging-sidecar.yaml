@@ -49,6 +49,8 @@
       cpu: 30m
   image: fluent/fluent-bit:latest
   env:
+    # "appName": The name of the application that is being logged.
+    # Added to the Elastic index name to make it easier to search for logs. Example: "frontend"
     - name: FLUENT_APP_NAME
       value: {{ .appName }}
     - name: FLUENT_ELASTICSEARCH_HOST
