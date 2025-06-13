@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-logrotate-configs
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+{{ include "oc-secrets-backup.labels" . | indent 4 }}
+data:
+  logrotate.daily.conf: |
+    /backups/oc_secret_dump.tar.gz {
+      rotate 15
+      daily
+      olddir /backups/daily
+      nocompress
+      copy
+    }
+  logrotate.weekly.conf: |
+    /backups/oc_secret_dump.tar.gz {
+      rotate 10
+      weekly
+      olddir /backups/weekly
+      nocompress
+      copy
+    }
+  logrotate.monthly.conf: |
+    /backups/oc_secret_dump.tar.gz {
+      rotate 12
+      monthly
+      olddir /backups/monthly
+      nocompress
+      copy
+    }
+  logrotate.yearly.conf: |
+    /backups/oc_secret_dump.tar.gz {
+      rotate 99
+      yearly
+      olddir /backups/yearly
+      nocompress
+      copy
+    }

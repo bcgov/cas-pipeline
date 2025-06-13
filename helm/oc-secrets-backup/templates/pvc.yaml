@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-backup-pvc
+  namespace: {{ .Release.Namespace }}
+  labels: 
+    app.kubernetes.io/name: {{ .Release.Name }}
+{{ include "oc-secrets-backup.labels" . | indent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: netapp-file-backup
+  resources:
+    requests:
+      storage: 2Gi
