@@ -24,6 +24,8 @@ spec:
               name: workspace
             - mountPath: /backups
               name: backup-volume
+            - mountPath: /logrotate-configs
+              name: logrotate-configs
           env:
             - name: NAMESPACES
               value: {{ (join "," .Values.namespaces) | quote }}
@@ -38,3 +40,7 @@ spec:
         - name: backup-volume
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-backup-pvc
+        - name: logrotate-configs
+          configMap:
+            name: {{ .Release.Name }}-logrotate-configs
+          
