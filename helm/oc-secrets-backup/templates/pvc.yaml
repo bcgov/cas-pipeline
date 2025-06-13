@@ -11,7 +11,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: netapp-block-standard
+  storageClassName: netapp-file-backup
   resources:
     requests:
-      storage: 100Mi
+      storage: 2Gi

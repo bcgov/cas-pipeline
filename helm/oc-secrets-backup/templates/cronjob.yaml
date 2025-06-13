@@ -1,46 +1,50 @@
 apiVersion: batch/v1
-kind: Job
+kind: CronJob
 metadata:
   name: {{ .Release.Name }}-job
   labels:
     app.kubernetes.io/name: {{ .Release.Name }}
 {{ include "oc-secrets-backup.labels" . | indent 4 }}
 spec:
-  backoffLimit: 0
-  template:
+  # Runs at 11:00 PM every day
+  schedule: "0 23 * * *"
+  jobTemplate:
     spec:
-      serviceAccountName: {{ .Values.serviceAccountName }}
-      activeDeadlineSeconds: 900
-      containers:
-        - name: oc-secrets-backup
-          resources: 
-            requests:
-              cpu: 200m
-              memory: 256Mi
-          image: ghcr.io/bcgov/cas-oc-backup:latest
-          imagePullPolicy: Always
-          volumeMounts:
-            - mountPath: /workspace
-              name: workspace
-            - mountPath: /backups
-              name: backup-volume
-            - mountPath: /logrotate-configs
-              name: logrotate-configs
-          env:
-            - name: NAMESPACES
-              value: {{ (join "," .Values.namespaces) | quote }}
-            - name: WORKSPACE
-              value: /workspace
-            - name: BACKUP_VOLUME
-              value: /backups
-      restartPolicy: Never
-      volumes:
-        - name: workspace
-          emptyDir: {}
-        - name: backup-volume
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-backup-pvc
-        - name: logrotate-configs
-          configMap:
-            name: {{ .Release.Name }}-logrotate-configs
-          
+      backoffLimit: 0
+      template:
+        spec:
+          serviceAccountName: {{ .Values.serviceAccountName }}
+          activeDeadlineSeconds: 900
+          containers:
+            - name: oc-secrets-backup
+              resources: 
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+              image: ghcr.io/bcgov/cas-oc-backup:latest
+              imagePullPolicy: Always
+              volumeMounts:
+                - mountPath: /workspace
+                  name: workspace
+                - mountPath: /backups
+                  name: backup-volume
+                - mountPath: /logrotate-configs
+                  name: logrotate-configs
+              env:
+                - name: NAMESPACES
+                  value: {{ (join "," .Values.namespaces) | quote }}
+                - name: WORKSPACE
+                  value: /workspace
+                - name: BACKUP_VOLUME
+                  value: /backups
+          restartPolicy: Never
+          volumes:
+            - name: workspace
+              emptyDir: {}
+            - name: backup-volume
+              persistentVolumeClaim:
+                claimName: {{ .Release.Name }}-backup-pvc
+            - name: logrotate-configs
+              configMap:
+                name: {{ .Release.Name }}-logrotate-configs
+              
