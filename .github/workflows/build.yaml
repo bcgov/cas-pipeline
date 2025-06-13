@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-      - feat/oc-secrets-backup
-
 
 jobs:
   docker-build:
