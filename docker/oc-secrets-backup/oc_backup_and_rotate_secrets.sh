@@ -3,6 +3,7 @@ set -euxo pipefail
 
 # Validate that the required environment variables are set
 OC_PROJECT_PREFIXES=$NAMESPACES
+OC_PROJECT_SUFFIXES=$PROJECT_SUFFIXES
 WORKSPACE=$WORKSPACE
 BACKUP_VOLUME=$BACKUP_VOLUME
 
@@ -11,7 +12,7 @@ BACKUP_VOLUME=$BACKUP_VOLUME
 ####################################################
 
 echo "Found namespaces: $OC_PROJECT_PREFIXES"
-OC_PROJECT_SUFFIXES="dev,tools"
+echo "Found project suffixes: $OC_PROJECT_SUFFIXES"
 
 folder="oc_secret_dump"
 mkdir -p "$WORKSPACE/$folder"

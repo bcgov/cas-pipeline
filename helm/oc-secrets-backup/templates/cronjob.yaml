@@ -33,6 +33,8 @@ spec:
               env:
                 - name: NAMESPACES
                   value: {{ (join "," .Values.namespaces) | quote }}
+                - name: PROJECT_SUFFIXES
+                  value: {{ (join "," .Values.suffixes) | quote }}
                 - name: WORKSPACE
                   value: /workspace
                 - name: BACKUP_VOLUME

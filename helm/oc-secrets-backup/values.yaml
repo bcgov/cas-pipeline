@@ -6,5 +6,15 @@ serviceAccountName: cas-provision-secret-admin
 
 # Namespaces to backup secrets from.
 namespaces: 
-  - "bcee29"
-  - "c53ff1"
+  - bcee29
+  - c53ff1
+  - 0fad32
+  - 9212c9
+  - 09269b
+  - d193ca
+
+suffixes:
+  - dev
+  - test
+  - prod
+  - tools
