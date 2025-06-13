@@ -6,6 +6,8 @@ metadata:
   labels: 
     app.kubernetes.io/name: {{ .Release.Name }}
 {{ include "oc-secrets-backup.labels" . | indent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
 spec:
   accessModes:
     - ReadWriteOnce

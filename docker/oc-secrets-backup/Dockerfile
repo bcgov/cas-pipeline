@@ -12,5 +12,5 @@ COPY ./oc_backup_secrets.sh /usr/local/bin/oc_backup_secrets
 CMD [ \
     "bash", \
     "-c", \
-    "oc_backup_secrets $NAMESPACES" \
+    "oc_backup_secrets" \
 ]
