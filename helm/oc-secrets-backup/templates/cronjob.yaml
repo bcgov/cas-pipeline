@@ -6,8 +6,8 @@ metadata:
     app.kubernetes.io/name: {{ .Release.Name }}
 {{ include "oc-secrets-backup.labels" . | indent 4 }}
 spec:
-  # Runs at 11:00 PM every day
-  schedule: "0 23 * * *"
+  # Runs at 6:00 AM (11pm PST) every day
+  schedule: "0 6 * * *"
   jobTemplate:
     spec:
       backoffLimit: 0
