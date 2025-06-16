@@ -77,6 +77,9 @@
     - name: parsers-config
       mountPath:  /var/log/parsers.conf
       subPath: parsers.conf
+    - name: fluent-bit-lua-scripts
+      mountPath: /fluent-bit/scripts
+      readOnly: true
 {{- end }}
 # Note: The `.volumes` template can use `.Release.Name` directly as it is passed in with the `.` context parameter
 {{- define "cas-logging-sidecar.volumes" -}}
@@ -91,4 +94,7 @@
 - name: parsers-config
   configMap:
     name: {{ .Release.Name }}-fluent-bit-configmap
+- name: fluent-bit-lua-scripts
+  configMap:
+    name: {{ .Release.Name }}-fluent-bit-lua-scripts
 {{- end }}

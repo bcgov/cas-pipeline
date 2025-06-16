@@ -95,3 +95,8 @@ spec:
 | `prefix` | `fluent-bit-configmap.yaml` | The index name is composed using a prefix and the date. The last string appended belongs to the date when the data is being generated. | `cif-logs` |
 | `tag` | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin. | `oc-cif` |
 | `appName`  | `fluent-bit` container                   | The name of the application that is being logged. Added to the Elastic index name to make it easier to search for logs. | `frontend` |
+
+## Fluent Bit Lua Script
+This chart includes a Lua script (add_timestamp.lua) used by Fluent Bit to enrich log records by adding a UTC timestamp field if it is missing. This ensures all logs have consistent timestamp information before they are sent to Elasticsearch for indexing.
+
+The Lua script is provided as a ConfigMap (fluent-bit-lua-scripts) and referenced in the Fluent Bit configuration to perform this log enrichment during processing.
