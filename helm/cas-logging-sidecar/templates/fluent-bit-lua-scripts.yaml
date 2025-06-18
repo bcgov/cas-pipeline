@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-fluent-bit-lua-scripts
+  namespace: {{ .Release.Namespace }}
+data:
+  add_timestamp.lua: |
+    function add_timestamp(tag, timestamp, record)
+        if not record.timestamp then
+            local ts = os.date("!%Y-%m-%dT%H:%M:%SZ", math.floor(timestamp))
+            record.timestamp = ts
+        end
+        return 1, timestamp, record
+    end
