@@ -1,0 +1,19 @@
+
+# The name of the service account to use for the secrets backup job.
+# The service account must have get/list access to secrets in the specified namespaces.
+# This is usually done by provisioning Roles and RoleBindings in each of the namespaces.
+serviceAccountName: cas-provision-secret-admin
+
+# Namespaces to backup secrets from.
+namespaces: 
+  - c53ff1
+  - 0fad32
+  - 9212c9
+  - 09269b
+  - d193ca
+
+suffixes:
+  - dev
+  - test
+  - prod
+  - tools
