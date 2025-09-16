@@ -87,14 +87,14 @@ spec:
 
 ### `values.yaml` list
 
-| Value | Usage location | Description | Example |
-| --- | --- | --- | --- |
-| `logName` | `fluent-bit-configmap.yaml`, `logrotate-configmap.yaml` | The name for the output logfile. | `cif-frontend-log` |
-| `host` | `fluent-bit-configmap.yaml` | ElasticSearch host to send logs to. | `elasticsearch.abc123-tools.svc.cluster.local` |
-| `index` | `fluent-bit-configmap.yaml` | Index name. | `cif-logs` |
-| `prefix` | `fluent-bit-configmap.yaml` | The index name is composed using a prefix and the date. The last string appended belongs to the date when the data is being generated. | `cif-logs` |
-| `tag` | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin. | `oc-cif` |
-| `appName`  | `fluent-bit` container                   | The name of the application that is being logged. Added to the Elastic index name to make it easier to search for logs. | `frontend` |
+| Value | Usage location | Description                                                                                                                                           | Example                                        |
+| --- | --- |-------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| `logName` | `fluent-bit-configmap.yaml`, `logrotate-configmap.yaml` | The name for the output logfile.                                                                                                                      | `cif-frontend-log`                             |
+| `host` | `fluent-bit-configmap.yaml` | ElasticSearch host to send logs to.                                                                                                                   | `elasticsearch.abc123-tools.svc.cluster.local` |
+| `index` | `fluent-bit-configmap.yaml` | Index name.                                                                                                                                           | `cif-logs`                                     |
+| `prefix` | `fluent-bit-configmap.yaml` | The index name is composed using a prefix and the date. The last string appended belongs to the date when the data is being generated.                | `cif-logs`                                     |
+| `tag` | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin.                                                                                           | `oc-cif`                                       |
+| `appName`  | `fluent-bit` container                   | The name of the application that is being logged. Added to the Elastic index name to make it easier to search for logs. **Note:** Must be lowercase only. | `frontend` or `test-app-name`                                 |
 
 ## Fluent Bit Lua Script
 This chart includes a Lua script (add_timestamp.lua) used by Fluent Bit to enrich log records by adding a UTC timestamp field if it is missing. This ensures all logs have consistent timestamp information before they are sent to Elasticsearch for indexing.
