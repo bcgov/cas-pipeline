@@ -6,6 +6,8 @@ namespacePrefixes:
   ggircs: "ggircsprefix"
   ciip: "ciipprefix"
   cif: "cifprefix"
+  warehouse: "warehouseprefix"
+  obps: "obpsprefix"
 
 docker:
   secretName: dockerhub-registry
@@ -76,3 +78,54 @@ airflowOAuth:
 gcpTerraform:
   projectId: "ggl-project-id-where-terraform-state-buckets-live"
   serviceAccountCredentials: "single line string of gcp-tf-credentials.json"
+
+ches:
+  obps:
+    dev:
+      clientSecret: ~
+      clientId: ~
+      tokenEndpoint: ~
+      apiUrl: ~
+    test:
+      clientSecret: ~
+      clientId: ~
+      tokenEndpoint: ~
+      apiUrl: ~
+    prod:
+      clientSecret: ~
+      clientId: ~
+      tokenEndpoint: ~
+      apiUrl: ~
+
+djangoSuperUser:
+  obps:
+    dev:
+      username: ~
+      password: ~
+
+bccr:
+  obps:
+    dev:
+      apiUrl: ~
+      clientId: ~
+      clientSecret: ~
+    test:
+      apiUrl: ~
+      clientId: ~
+      clientSecret: ~
+    prod:
+      apiUrl: ~
+      clientId: ~
+      clientSecret: ~
+
+elicensing:
+  obps:
+    dev:
+      apiUrl: ~
+      authToken: ~
+    test:
+      apiUrl: ~
+      authToken: ~
+    prod:
+      apiUrl: ~
+      authToken: ~
