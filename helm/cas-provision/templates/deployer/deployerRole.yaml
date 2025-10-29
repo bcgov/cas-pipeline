@@ -149,6 +149,14 @@ rules:
       - delete
       - watch
       - list
+  - apigroups:
+      - batch
+    resources:
+      - jobs/status
+    verbs:
+      - get
+      - list
+      - watch
   - apiGroups:
       - policy
     resources:
