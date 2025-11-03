@@ -35,3 +35,15 @@ Kibana does not currently have a secure route to access it. You will need to use
 ### Updating the HTTPS certificate for Kibana
 
 Follow the directions [in the elasticseach documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup-https.html#encrypt-kibana-browser) to acquire the cert and key for Kibana. Then get the certificate signed by a CA and then update the Kibana Route with new certificates in OpenShift.
+
+
+
+## Index Lifecycle Management (ILM)
+
+The EFK stack includes automated Index Lifecycle Management (ILM) policies for log retention and storage optimization. For detailed information about ILM policies, retention periods, and implementation, see [ILM Retention Policy Documentation](../cas-efk/docs/ilm-retention-policy.md).
+
+**Quick Overview:**
+- **Dev/Test Environments**: 3 months retention (90 days)
+- **Prod Environment**: 2 years retention (730 days)
+- Automated lifecycle phases: Hot → Warm → Delete
+- Policies automatically applied to all new indices via index templates
