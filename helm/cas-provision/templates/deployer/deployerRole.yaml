@@ -149,7 +149,7 @@ rules:
       - delete
       - watch
       - list
-  - apigroups:
+  - apiGroups:
       - batch
     resources:
       - jobs/status
