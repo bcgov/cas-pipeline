@@ -96,7 +96,29 @@ spec:
 | `tag` | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin.                                                                                           | `oc-cif`                                       |
 | `appName`  | `fluent-bit` container                   | The name of the application that is being logged. Added to the Elastic index name to make it easier to search for logs. **Note:** Must be lowercase only. | `frontend` or `test-app-name`                                 |
 
-## Fluent Bit Lua Script
+## Fluent Bit Configuration
+
+### Storage and Buffering Settings
+
+The Fluent Bit configuration includes several storage parameters that are critical for reliable log delivery and preventing data loss:
+
+| Parameter | Value | Purpose |
+| --- | --- | --- |
+| `Flush` | `2` | Sends data to Elasticsearch every 2 seconds, creating smaller batches to prevent HTTP buffer overflow errors |
+| `storage.type` | `filesystem` | Persists chunks to disk instead of memory, preventing log loss on container restarts |
+| `storage.path` | `/var/log/flb-storage/` | Directory where buffered chunks are stored |
+| `storage.sync` | `normal` | Balanced approach for syncing data to disk (performance vs safety) |
+| `storage.checksum` | `off` | Disabled for better performance in sidecar containers |
+| `storage.max_chunks_up` | `128` | Limits chunks in memory (~256MB max) to prevent memory exhaustion |
+| `storage.backlog.mem_limit` | `5M` | Additional safety net to cap backlog memory usage |
+
+**Why these matter:**
+- **Prevents buffer overflow errors**: The `Flush` setting of 2 seconds combined with `storage.max_chunks_up` prevents the HTTP client buffer from exceeding its 512KB limit
+- **Data durability**: Filesystem storage ensures logs aren't lost if Elasticsearch is slow or the container restarts
+- **Memory protection**: Limits prevent the sidecar from consuming excessive memory and impacting the main application
+- **Backpressure handling**: When limits are reached, Fluent Bit pauses log reading rather than crashing
+
+### Lua Script
 This chart includes a Lua script (add_timestamp.lua) used by Fluent Bit to enrich log records by adding a UTC timestamp field if it is missing. This ensures all logs have consistent timestamp information before they are sent to Elasticsearch for indexing.
 
 The Lua script is provided as a ConfigMap (fluent-bit-lua-scripts) and referenced in the Fluent Bit configuration to perform this log enrichment during processing.
