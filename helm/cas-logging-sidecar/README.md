@@ -111,7 +111,7 @@ The Fluent Bit configuration includes several storage parameters that are critic
 | `storage.checksum` | `off` | Disabled for better performance in sidecar containers |
 | `storage.max_chunks_up` | `128` | Limits chunks in memory (~256MB max) to prevent memory exhaustion |
 | `storage.backlog.mem_limit` | `5M` | Additional safety net to cap backlog memory usage |
-
+| `Buffer_Size` (OUTPUT) | `1MB` | HTTP client buffer size for the Elasticsearch output plugin, increased from default (4KB) to handle larger payloads between flushes |
 **Why these matter:**
 - **Prevents buffer overflow errors**: The `Flush` setting of 2 seconds combined with `storage.max_chunks_up` prevents the HTTP client buffer from exceeding its 512KB limit
 - **Data durability**: Filesystem storage ensures logs aren't lost if Elasticsearch is slow or the container restarts
