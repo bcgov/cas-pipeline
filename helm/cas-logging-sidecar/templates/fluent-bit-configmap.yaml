@@ -55,6 +55,7 @@ data:
         Suppress_Type_Name  On
         Type                _doc
         Time_Key            @timestamp
+        Buffer_Size         1MB
   parsers.conf: |
     [MULTILINE_PARSER]
         Name          multiline
