@@ -29,13 +29,13 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
 
 2. Associate the service account from the chart with the pod's template.
 
-    ```yaml
+    ```text
     spec.template.spec.serviceAccountName: {{ .Release.Name }}-pod-logger
     ```
 
 3. `{{- include }}` the sidecar container and volumes into your deployment file. This must be passed the following paramters: `.podToSidecar`, `.containerToSidecar`, `.logName`, `.tag`. This is done using a dict in the include statement, for example:
 
-    ```yaml
+    ```text
     spec.template.spec.containers:
     {{- include "cas-logging-sidecar.containers" (dict 
         "containerToSidecar" "cas-cif-frontend"
@@ -53,7 +53,7 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
 
 ### Example use
 
-```yaml
+```text
 # templates/cas-frontend-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -104,21 +104,60 @@ The Fluent Bit configuration includes several storage parameters that are critic
 
 | Parameter | Value | Purpose |
 | --- | --- | --- |
-| `Flush` | `2` | Sends data to Elasticsearch every 2 seconds, creating smaller batches to prevent HTTP buffer overflow errors |
+| `Flush` | `5` | Sends data to Elasticsearch every 5 seconds, creating larger but less frequent batches to balance throughput and reduce overhead. |
 | `storage.type` | `filesystem` | Persists chunks to disk instead of memory, preventing log loss on container restarts |
 | `storage.path` | `/var/log/flb-storage/` | Directory where buffered chunks are stored |
 | `storage.sync` | `normal` | Balanced approach for syncing data to disk (performance vs safety) |
 | `storage.checksum` | `off` | Disabled for better performance in sidecar containers |
 | `storage.max_chunks_up` | `128` | Limits chunks in memory (~256MB max) to prevent memory exhaustion |
-| `storage.backlog.mem_limit` | `5M` | Additional safety net to cap backlog memory usage |
-| `Buffer_Size` (OUTPUT) | `1MB` | HTTP client buffer size for the Elasticsearch output plugin, increased from default (4KB) to handle larger payloads between flushes |
+| `storage.backlog.mem_limit` | `5M` | Additional safety net to cap backlog memory usage. |
+
 **Why these matter:**
-- **Prevents buffer overflow errors**: The `Flush` setting of 2 seconds combined with `storage.max_chunks_up` prevents the HTTP client buffer from exceeding its 512KB limit
+- **Prevents buffer overflow errors**: Increasing the `Flush` setting to 5 seconds reduces the HTTP request rate but means larger batches; combined with storage limits this helps avoid client buffer overflow while keeping memory bounded.
 - **Data durability**: Filesystem storage ensures logs aren't lost if Elasticsearch is slow or the container restarts
 - **Memory protection**: Limits prevent the sidecar from consuming excessive memory and impacting the main application
 - **Backpressure handling**: When limits are reached, Fluent Bit pauses log reading rather than crashing
 
-### Lua Script
-This chart includes a Lua script (add_timestamp.lua) used by Fluent Bit to enrich log records by adding a UTC timestamp field if it is missing. This ensures all logs have consistent timestamp information before they are sent to Elasticsearch for indexing.
+These settings favour data durability and predictable memory usage for the sidecar.
 
-The Lua script is provided as a ConfigMap (fluent-bit-lua-scripts) and referenced in the Fluent Bit configuration to perform this log enrichment during processing.
+### Input: tail (container log capture)
+
+The sidecar uses the `tail` plugin to read logs written by LogRotate. Important settings:
+
+- `Path`: `/var/log/{{ .Values.logName }}.log` — the logfile produced by the container (set via the chart `logName` value).
+- `Tag`: `{{ .Values.tag }}` — record tag used for matching in filters/outputs.
+- `Mem_Buf_Limit`: `5MB` — per-file memory buffer for the tail input.
+- `DB`: `/var/log/flb_kube.db` — sqlite DB used to track file offsets.
+- `Refresh_Interval`: `10` — how often to check the filesystem for new files/changes.
+- `Rotate_Wait`: `5` — wait time in seconds for rotated files to be released.
+- `Ignore_Older`: `24h` — ignore files older than 24 hours.
+- `Read_from_head`: `true` — start reading from the start of files when the DB is missing.
+- `Multiline.parser`: `multiline` — reference to the multiline parser defined in `parsers.conf`.
+- `Buffer_Chunk_Size`: `512KB` — input buffer chunk size used by the tail plugin.
+- `Buffer_Max_Size`: `2MB` — maximum buffer size per file for the tail input.
+
+These values were chosen to balance throughput and memory footprint in sidecar deployments.
+
+### Filters
+
+Two filters are applied to records before sending them to Elasticsearch:
+
+- `lua` filter — runs the `add_timestamp.lua` script (mounted at `/fluent-bit/scripts/add_timestamp.lua`) to add a UTC `timestamp` field to records that lack one.
+- `modify` filter — renames `timestamp` to `@timestamp` so Elasticsearch/Logstash style time keys are populated for indexing.
+
+### Elasticsearch Output
+
+The chart configures the `es` output plugin with the following notable options (most values are injected via chart values or environment variables):
+
+- `Host`: `{{ .Values.host }}` and `Port`: `9200` — Elasticsearch endpoint (host supplied by values).
+- `http_user` / `http_passwd`: provided via environment variables `${FLUENT_ELASTICSEARCH_USER}` and `${FLUENT_ELASTICSEARCH_PASSWORD}` (mounted from the chart's `fluentbit-credentials` secret).
+- `Index`: `{{ .Values.index }}` — base index name.
+- `Logstash_Prefix`: `{{ .Values.prefix }}-${FLUENT_APP_NAME}` — final index name is composed of the prefix and the application name provided at deploy time.
+- `Logstash_Format`: `On` and `Logstash_DateFormat`: `%Y.%m.%d` — use Logstash-style index names with a date suffix.
+- `Time_Key`: `@timestamp` — use the `@timestamp` field for event time (populated by the lua script / rename filter).
+- `Retry_Limit`: `False` — retry indefinitely (subject to other buffering limits).
+- `tls`: `Off` — TLS is disabled by default in this chart; ensure your ES endpoint security is compatible with this setting or update the chart values.
+
+Note: the `Buffer_Size` option for the ES output is not set in the chart's ConfigMap; the output plugin will use its default buffer size unless you explicitly add `Buffer_Size` to the `fluent-bit.conf` in the chart.
+
+These output settings are tuned to avoid HTTP client buffer overflow and to preserve log timestamps for correct indexing.
