@@ -6,7 +6,7 @@ metadata:
 data:
   fluent-bit.conf: |
     [SERVICE]
-        Flush                     2
+        Flush                     5
         Daemon                    Off
         Parsers_File              parsers.conf
         Log_Level                 info
@@ -30,6 +30,8 @@ data:
         Ignore_Older         24h
         Read_from_head    true
         Multiline.parser  multiline
+        Buffer_Chunk_Size   512KB
+        Buffer_Max_Size     2MB
     [FILTER]
         Name              lua
         Match             *
@@ -55,7 +57,6 @@ data:
         Suppress_Type_Name  On
         Type                _doc
         Time_Key            @timestamp
-        Buffer_Size         1MB
   parsers.conf: |
     [MULTILINE_PARSER]
         Name          multiline
