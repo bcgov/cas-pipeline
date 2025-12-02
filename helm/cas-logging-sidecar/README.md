@@ -133,8 +133,8 @@ The sidecar uses the `tail` plugin to read logs written by LogRotate. Important 
 - `Ignore_Older`: `24h` — ignore files older than 24 hours.
 - `Read_from_head`: `true` — start reading from the start of files when the DB is missing.
 - `Multiline.parser`: `multiline` — reference to the multiline parser defined in `parsers.conf`.
-- `Buffer_Chunk_Size`: `512KB` — input buffer chunk size used by the tail plugin.
-- `Buffer_Max_Size`: `2MB` — maximum buffer size per file for the tail input.
+- `Buffer_Chunk_Size`: `256KB` — input buffer chunk size used by the tail plugin.
+- `Buffer_Max_Size`: `512KB` — maximum buffer size per file for the tail input.
 
 These values were chosen to balance throughput and memory footprint in sidecar deployments.
 
@@ -156,8 +156,8 @@ The chart configures the `es` output plugin with the following notable options (
 - `Logstash_Format`: `On` and `Logstash_DateFormat`: `%Y.%m.%d` — use Logstash-style index names with a date suffix.
 - `Time_Key`: `@timestamp` — use the `@timestamp` field for event time (populated by the lua script / rename filter).
 - `Retry_Limit`: `False` — retry indefinitely (subject to other buffering limits).
+- `Buffer_Size`: `4MB` — memory buffer for the Elasticsearch output plugin to improve throughput.
 - `tls`: `Off` — TLS is disabled by default in this chart; ensure your ES endpoint security is compatible with this setting or update the chart values.
 
-Note: the `Buffer_Size` option for the ES output is not set in the chart's ConfigMap; the output plugin will use its default buffer size unless you explicitly add `Buffer_Size` to the `fluent-bit.conf` in the chart.
 
 These output settings are tuned to avoid HTTP client buffer overflow and to preserve log timestamps for correct indexing.

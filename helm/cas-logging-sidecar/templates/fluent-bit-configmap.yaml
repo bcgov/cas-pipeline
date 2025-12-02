@@ -30,8 +30,8 @@ data:
         Ignore_Older         24h
         Read_from_head    true
         Multiline.parser  multiline
-        Buffer_Chunk_Size   512KB
-        Buffer_Max_Size     2MB
+        Buffer_Chunk_Size   256KB
+        Buffer_Max_Size     512KB
     [FILTER]
         Name              lua
         Match             *
@@ -57,6 +57,7 @@ data:
         Suppress_Type_Name  On
         Type                _doc
         Time_Key            @timestamp
+        Buffer_Size         4MB
   parsers.conf: |
     [MULTILINE_PARSER]
         Name          multiline
