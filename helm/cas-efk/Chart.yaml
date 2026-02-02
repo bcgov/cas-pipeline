@@ -3,5 +3,5 @@ name: cas-efk
 description: A CAS chart for deploying the EFK stack
 
 type: application
-version: 0.0.1
-appVersion: "8.4.3"
+version: 0.1.0
+appVersion: "8.19.10"
