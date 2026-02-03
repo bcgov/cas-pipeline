@@ -2,7 +2,7 @@
 elasticSearchVolume: elasticsearch-data
 elasticsearch:
   image: docker.elastic.co/elasticsearch/elasticsearch
-  version: 8.4.3
+  version: 8.19.10
   replicas: 3
   host: elasticsearch
   port:
@@ -20,7 +20,7 @@ elasticsearch:
 
 kibana:
   image: docker.elastic.co/kibana/kibana
-  version: 8.4.3
+  version: 8.19.10
   port: 5601
   cpuRequest: 10m
   memoryRequest: 500Mi
