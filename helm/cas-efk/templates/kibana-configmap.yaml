@@ -8,6 +8,9 @@ metadata:
     "app.kubernetes.io/part-of": efk-stack
 data:
   kibana.yml: |
+    server.host: "0.0.0.0"
+    server.shutdownTimeout: "5s"
+    server.publicBaseUrl: "https://{{ .Values.kibana.route }}"
     elasticsearch.username: "kibana_system"
     elasticsearch.password: ${ES_PASSWORD}
     elasticsearch.hosts: ["http://elasticsearch:9200"]
