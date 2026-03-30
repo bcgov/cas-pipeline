@@ -149,7 +149,7 @@ rules:
       - delete
       - watch
       - list
-  - apigroups:
+  - apiGroups:
       - batch
     resources:
       - jobs/status
@@ -221,6 +221,7 @@ rules:
       - events
     verbs:
       - list
+      - watch
   - apiGroups:
       - autoscaling
     resources:
