@@ -87,3 +87,7 @@ This repo contains a Helm chart that contains a job that will import and run Ter
 #### `~/helm/terraform-bucket-provision/terraform`
 
 In tandem with the Helm chart is a Terraform module that creates GCP storage buckets, service accounts to access those buckets (admins and viewers) and injects those credentials into OpenShift for usage. These modules are pulled in via a configMap which pulls all files from this charts `/terraform` directory. These are bundled with the chart as the way we use Terraform is currently identical in our CAS projects.
+
+## Google Cloud based Malware Scanner
+
+The cloudrun-malware-scanner, currently used in BCIERS, was previously located in the `gcloud/malware-scanning` directory in this repository. It has been moved into it's own repo, forked from the source, located at [bcgov/cas-clamav-scanner](https://github.com/bcgov/cas-clamav-scanner).
