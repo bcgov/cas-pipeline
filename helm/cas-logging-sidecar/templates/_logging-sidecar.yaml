@@ -8,6 +8,12 @@
       memory: 32Mi
       cpu: 20m
   image: ghcr.io/bcgov/cas-log-capture-sidecar:latest
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
   env:
     - name: POD_NAME
       valueFrom:
@@ -29,7 +35,13 @@
     requests:
       memory: 8Mi
       cpu: 20m
-  image: skymatic/logrotate
+  image: skymatic/logrotate:latest
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
   command:
     - "/bin/sh"
     - "-c"
@@ -48,6 +60,12 @@
       memory: 25Mi
       cpu: 30m
   image: fluent/fluent-bit:latest
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
   env:
     # "appName": The name of the application that is being logged.
     # Added to the Elastic index name to make it easier to search for logs. Example: "frontend"
