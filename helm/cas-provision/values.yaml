@@ -102,6 +102,9 @@ djangoSuperUser:
     dev:
       username: ~
       password: ~
+    test:
+      username: ~
+      password: ~
 
 bccr:
   obps:

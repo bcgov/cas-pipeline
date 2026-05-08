@@ -1,4 +1,4 @@
-{{- if hasSuffix "-dev" .Release.Namespace }}
+{{- if or (hasSuffix "-dev" .Release.Namespace) (hasSuffix "-test" .Release.Namespace)}}
 {{- if hasPrefix .Values.namespacePrefixes.obps .Release.Namespace }}
 kind: Secret
 apiVersion: v1
@@ -7,7 +7,12 @@ metadata:
   labels: {{ include "cas-provision.labels" . | nindent 4 }}
 type: Opaque
 stringData:
+  {{- if hasSuffix "-test" .Release.Namespace }}
+  username: {{ .Values.djangoSuperUser.obps.test.username }}
+  password: {{ .Values.djangoSuperUser.obps.test.password }}
+  {{- else }}
   username: {{ .Values.djangoSuperUser.obps.dev.username }}
   password: {{ .Values.djangoSuperUser.obps.dev.password }}
+  {{- end }}
 {{- end }}
 {{- end }}
