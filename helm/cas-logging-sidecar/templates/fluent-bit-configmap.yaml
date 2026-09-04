@@ -51,7 +51,7 @@ data:
         http_passwd         ${FLUENT_ELASTICSEARCH_PASSWORD}
         Index               {{ .Values.index }}
         Logstash_Prefix     {{ .Values.prefix }}-${FLUENT_APP_NAME}
-        Logstash_DateFormat %Y.%m.%d
+        Logstash_DateFormat %Y.%m
         Logstash_Format     On
         Retry_Limit         False
         Suppress_Type_Name  On
