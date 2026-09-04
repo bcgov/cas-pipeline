@@ -153,7 +153,9 @@ The chart configures the `es` output plugin with the following notable options (
 - `http_user` / `http_passwd`: provided via environment variables `${FLUENT_ELASTICSEARCH_USER}` and `${FLUENT_ELASTICSEARCH_PASSWORD}` (mounted from the chart's `fluentbit-credentials` secret).
 - `Index`: `{{ .Values.index }}` — base index name.
 - `Logstash_Prefix`: `{{ .Values.prefix }}-${FLUENT_APP_NAME}` — final index name is composed of the prefix and the application name provided at deploy time.
-- `Logstash_Format`: `On` and `Logstash_DateFormat`: `%Y.%m.%d` — use Logstash-style index names with a date suffix.
+- `Logstash_Format`: `On` and `Logstash_DateFormat`: `%Y.%m` — use Logstash-style index names with a date suffix.
+  > [!IMPORTANT]
+  > As of `0.6.0`, the `Logstash_DateFormat` is set to `%Y.%m` to avoid daily index rotation. Daily rotation created [oversharding issues in our Elasticsearch cluster](https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/size-shards).
 - `Time_Key`: `@timestamp` — use the `@timestamp` field for event time (populated by the lua script / rename filter).
 - `Retry_Limit`: `False` — retry indefinitely (subject to other buffering limits).
 - `Buffer_Size`: `4MB` — memory buffer for the Elasticsearch output plugin to improve throughput.
