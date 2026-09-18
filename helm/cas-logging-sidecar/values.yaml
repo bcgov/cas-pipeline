@@ -1,8 +1,6 @@
 host: ~
-index: ~
 prefix: ~
 tag: ~
-logName: cas-log
 
 collector:
   imageTag: 0.58.X-alpine
