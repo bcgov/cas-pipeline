@@ -1,6 +1,7 @@
-# CAS Logging Sidecar
+# CAS Logging Sidecar using Vector (Sidecar Collector and Namespace Gateway)
 
-This library chart is a template used to deploy a logging sidecar to a pod. The sidecar utilizes Fluent Bit and LogRotate to capture logs from a container within OpenShift and write them to ElasticSearch. The chart includes a service account, role, and role binding that are used to grant the service account access to the logs.
+This chart is a combination of a template used to deploy a logging sidecar to a pod and a gateway in a namespace to aggregate logs from multiple pods before sending them to Elasticsearch.
+The sidecar utilizes Vector to capture logs from logs `tee`d to a file from the application container's stdout, with Logrotate is used to ensure the logfile is rotated and does not grow forever. The gateway then receives logs from the sidecar, enriches them with any needed metadata (timestamps), filters unneeded log info (e.g. heartbeats) and sends them to Elasticsearch.
 
 See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for more information about the EFK stack the logs are sent to.
 
