@@ -3,3 +3,9 @@ index: ~
 prefix: ~
 tag: ~
 logName: cas-log
+
+# The values below are specifically for the Vector Gateway, utilizing the Vector Helm Chart. Anything above is used for our custom Log Collector Sidecar.
+vector:
+  nameOverride: "vector-gateway"
+  role: "Aggregator"
+  replicas: 1
