@@ -45,6 +45,9 @@ Context needed for this templated, passed as a dict:
   command: ["/bin/sh", "-c"]
   args:
     - exec vector --config /etc/sidecar/vector.yaml
+  env:
+    - name: APP_NAME
+      value: {{ .appName }}
   resources:
     {{- toYaml .Values.collector.resources | nindent 4 }}
   volumeMounts:

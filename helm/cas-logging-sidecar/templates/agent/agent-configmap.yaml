@@ -22,10 +22,19 @@ data:
           start_pattern: "^Error|^\{"
           condition_pattern: "\s|^at\s|^\[?\d{4}-\d{2}-\d{2}|\d{1,3}(\.\d{1,3}){3}"
           mode: "continue_through"
+
+    transformers:
+      add_app_metadata:
+        type: "remap"
+        inputs: ["app_logs"]
+        source: |
+          .app_name = get_env_var!("APP_NAME")
+          .tag = {{ .Values.tag | quote }}
+
     sinks:
       to_aggregator:
         type: "vector"
-        inputs: ["app_logs"]
+        inputs: ["add_app_metadata"]
         routing:
           endpoints:
             - "vector-{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
