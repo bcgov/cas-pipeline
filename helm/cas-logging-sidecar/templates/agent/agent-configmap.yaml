@@ -33,7 +33,7 @@ data:
     sinks:
       to_aggregator:
         type: "vector"
-        inputs: ["app_logs"]
+        inputs: ["add_app_metadata"]
         routing:
           endpoints:
             - "vector-{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
