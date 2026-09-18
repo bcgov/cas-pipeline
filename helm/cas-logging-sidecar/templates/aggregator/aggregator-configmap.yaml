@@ -8,6 +8,17 @@ data:
     api:
       enabled: true
       address: 0.0.0.0:8686
+    sources:
+      vector:
+        address: 0.0.0.0:6000
+        type: vector
+        version: "2"
+    transforms:
+      add_missing_timestamp:
+        type: remap
+        inputs: [vector]
+        source: |
+          .@timestamp = parse_timestamp(.timestamp, "%Y-%m-%dT%H:%M:%SZ") ?? now()
     sinks:
       stdout:
         type: console
