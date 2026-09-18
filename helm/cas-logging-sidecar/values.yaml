@@ -9,3 +9,12 @@ vector:
   nameOverride: "vector-gateway"
   role: "Aggregator"
   replicas: 1
+
+  service:
+    ports:
+      - name: vector
+        port: 6000
+        protocol: TCP
+
+  dataDir: "/vector-data-dir"
+  existingConfigMaps: ["vector-aggregator-logging-config"]

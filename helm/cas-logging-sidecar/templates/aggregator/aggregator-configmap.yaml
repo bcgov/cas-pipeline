@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-aggregator-logging-config
+  namespace: {{ .Release.Namespace }}
+data:
+  vector-aggregator.yaml: |
+    api:
+      enabled: true
+      address: 0.0.0.0:8686
+    sinks:
+      stdout:
+        type: console
+        inputs: [vector]
+        encoding:
+          codec: json
