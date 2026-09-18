@@ -12,8 +12,16 @@ data:
         type: "file"
         include:
           - "/var/log/app/app.log"
+          - "/var/log/app/app.log.*"
         read_from: "beginning"
 
+        # Fingerprint strategy prevents re-reading rotated files
+        fingerprint.strategy: "device_and_inode"
+        multiline:
+          timeout_ms: 1000
+          start_pattern: "^Error|^\{"
+          condition_pattern: "\s|^at\s|^\[?\d{4}-\d{2}-\d{2}|\d{1,3}(\.\d{1,3}){3}"
+          mode: "continue_through"
     sinks:
       to_aggregator:
         type: "vector"
@@ -23,3 +31,13 @@ data:
             - "vector-{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
         acknowledgements:
           enabled: true
+  logrotate.conf: |
+    /var/log/app/app.log {
+        size 25M
+        missingok
+        notifempty
+        copytruncate
+        rotate 5
+        compress
+        delaycompress
+    }

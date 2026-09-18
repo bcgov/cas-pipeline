@@ -28,6 +28,17 @@ Context needed for this templated, passed as a dict:
   values: The `.Values` object from the Helm chart. (`.` global context is not avaiable)
 */}}
 {{- define "vector-collector.container" -}}
+- name: logrotate
+  image: {{ .Values.logRotate.image }}:{{ .Values.logRotate.imageTag }}
+  restartPolicy: Always
+  resources:
+    {{- toYaml .Values.logRotate.resources | nindent 4 }}
+  command:
+    - "/bin/sh"
+    - "-c"
+    - "while true; do logrotate -s /var/log/logrotate.status -f /etc/sidecar/logrotate.conf; sleep 300; done"
+  volumeMounts:
+    {{- include "vector-collector.sidecarVolumeMounts" . | nindent 4 }}
 - name: vector-collector
   image: timberio/vector:{{ .Values.collector.imageTag }}
   restartPolicy: Always
