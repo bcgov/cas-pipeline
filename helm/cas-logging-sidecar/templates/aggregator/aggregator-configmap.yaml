@@ -25,3 +25,15 @@ data:
         inputs: [vector]
         encoding:
           codec: json
+      elasticsearch:
+        endpoints: ["http://{{ .Values.host }}:9200"]
+        auth:
+          user: "SECRET[backend_env.username]"
+          password: "SECRET[backend_env.password]"
+        bulk:
+          # prefix comes from the parent helm chart values.
+          # app_name is Vector Template syntax enclosed in backticks to avoid helm template interpolation.
+          index: "{{ .Values.prefix }}-{{`{{ app_name }}`}}-%Y.%m"
+        buffer:
+          max_size: 4MB
+          type: memory
