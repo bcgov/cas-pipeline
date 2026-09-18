@@ -33,6 +33,18 @@ vector:
       - name: vector
         port: 6000
         protocol: TCP
+  extraVolumes:
+    - name: elastic-secrets
+      secret:
+        secretName: elastic-credentials
+  extraVolumeMounts:
+    - name: elastic-secrets
+      mountPath: "/var/run/secrets/elastic"
+      readOnly: true
+  secret:
+    backend_env:
+      type: "directory"
+      path: /var/run/secrets/elastic
 
   dataDir: "/vector-data-dir"
   existingConfigMaps: ["vector-aggregator-logging-config"]
