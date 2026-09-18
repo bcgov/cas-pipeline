@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-vector-collector-config
+  namespace: {{ .Release.Namespace }}
+data:
+  vector.yaml: |
+    data_dir: "/tmp/vector"
+
+    sources:
+      app_logs:
+        type: "file"
+        include:
+          - "/var/log/app/app.log"
+        read_from: "beginning"
+
+    sinks:
+      to_aggregator:
+        type: "vector"
+        inputs: ["app_logs"]
+        routing:
+          endpoints:
+            - "vector-{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
+        acknowledgements:
+          enabled: true

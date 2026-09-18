@@ -4,6 +4,15 @@ prefix: ~
 tag: ~
 logName: cas-log
 
+collector:
+  imageTag: 0.58.X-alpine
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 30m
+      memory: 32Mi
+
 # The values below are specifically for the Vector Gateway, utilizing the Vector Helm Chart. Anything above is used for our custom Log Collector Sidecar.
 vector:
   nameOverride: "vector-gateway"
