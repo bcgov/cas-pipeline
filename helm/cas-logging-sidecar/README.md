@@ -151,7 +151,6 @@ ENTRYPOINT ["/usr/local/bin/kube-log-runner", "-also-stdout", "-log-file=/var/lo
 CMD ["node", "server.js"]
 ```
 
-
 ### Example use
 
 Using an image with the `kube-log-runner` method above.
@@ -233,88 +232,78 @@ spec:
 
 ## Inputs
 
-### `_logging-sidecar.yaml` Parameters list
+### `_collector-sidecar.tpl`/`vector-collector.container` parameters list
 
-| Parameter | Description | Example |
-| --- | --- | --- |
-| `"containerToSidecar"` | The container that the sidecar should log for. | `"cas-cif-frontend"` |
-| `"logName"` | The name for the output logfile. **NOTE**: This must match the logname used in `values.yaml`. | `.Values.logName` |
+| Parameter | Description                                      | Example              |
+| --------- | ------------------------------------------------ | -------------------- |
+| `"app"`   | The name of the application, as sent to Elastic. | `"cas-cif-frontend"` |
+
+> [!NOTE]
+> The name format used is `{{ .Values.prefix }}-{{ app_name }}-%Y.%m`. Unlike previous versions of this chart, it is the only parameter required in the templates.
+>
+> E.g. `prefix=cas-prod-logs` + `appName=backend` + (`%Y.%m` is the current year and month) = `cas-prod-logs-backend-26-09`.
 
 ### `values.yaml` list
 
-| Value | Usage location | Description                                                                                                                                           | Example                                        |
-| --- | --- |-------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
-| `logName` | `fluent-bit-configmap.yaml`, `logrotate-configmap.yaml` | The name for the output logfile.                                                                                                                      | `cif-frontend-log`                             |
-| `host` | `fluent-bit-configmap.yaml` | ElasticSearch host to send logs to.                                                                                                                   | `elasticsearch.abc123-tools.svc.cluster.local` |
-| `index` | `fluent-bit-configmap.yaml` | Index name.                                                                                                                                           | `cif-logs`                                     |
-| `prefix` | `fluent-bit-configmap.yaml` | The index name is composed using a prefix and the date. The last string appended belongs to the date when the data is being generated.                | `cif-logs`                                     |
-| `tag` | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin.                                                                                           | `oc-cif`                                       |
-| `appName`  | `fluent-bit` container                   | The name of the application that is being logged. Added to the Elastic index name to make it easier to search for logs. **Note:** Must be lowercase only. | `frontend` or `test-app-name`                                 |
+#### Required values
 
-## Fluent Bit Configuration
+| Value    | Usage location              | Description                                                                                                                            | Example                                        |
+| -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `host`   | `fluent-bit-configmap.yaml` | ElasticSearch host to send logs to.                                                                                                    | `elasticsearch.abc123-tools.svc.cluster.local` |
+| `prefix` | `fluent-bit-configmap.yaml` | The index name is composed using a prefix and the date. The last string appended belongs to the date when the data is being generated. | `cif-logs`                                     |
+| `tag`    | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin.                                                                            | `oc-cif`                                       |
 
-### Storage and Buffering Settings
 
-The Fluent Bit configuration includes several storage parameters that are critical for reliable log delivery and preventing data loss:
+#### `collector`, `logRotate`, `vector`(gateway) values
 
-| Parameter | Value | Purpose |
-| --- | --- | --- |
-| `Flush` | `5` | Sends data to Elasticsearch every 5 seconds, creating larger but less frequent batches to balance throughput and reduce overhead. |
-| `storage.type` | `filesystem` | Persists chunks to disk instead of memory, preventing log loss on container restarts |
-| `storage.path` | `/var/log/flb-storage/` | Directory where buffered chunks are stored |
-| `storage.sync` | `normal` | Balanced approach for syncing data to disk (performance vs safety) |
-| `storage.checksum` | `off` | Disabled for better performance in sidecar containers |
-| `storage.max_chunks_up` | `128` | Limits chunks in memory (~256MB max) to prevent memory exhaustion |
-| `storage.backlog.mem_limit` | `5M` | Additional safety net to cap backlog memory usage. |
+These are set to sensible defaults. The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output.
 
-**Why these matter:**
-- **Prevents buffer overflow errors**: Increasing the `Flush` setting to 5 seconds reduces the HTTP request rate but means larger batches; combined with storage limits this helps avoid client buffer overflow while keeping memory bounded.
-- **Data durability**: Filesystem storage ensures logs aren't lost if Elasticsearch is slow or the container restarts
-- **Memory protection**: Limits prevent the sidecar from consuming excessive memory and impacting the main application
-- **Backpressure handling**: When limits are reached, Fluent Bit pauses log reading rather than crashing
+For `logRotate`, it can also be kept very small, and only runs every 300 seconds (5 minutes). This rotation time is part of the run command in the logRotate sidecar container.
 
-These settings favour data durability and predictable memory usage for the sidecar.
+The `vector` values cover those specific to the aggregator gateway. Our Elastic instance's details are added as volume secrets to the pods and used by `aggregator-configmap.yaml`.
 
-### Input: tail (container log capture)
+##### Further documentation
 
-The sidecar uses the `tail` plugin to read logs written by LogRotate. Important settings:
+- [LogRotate documentation](https://github.com/logrotate/logrotate)
+- [Vector documentation for resource allocation](https://vector.dev/docs/setup/going-to-prod/sizing/)
+- `gateway` takes its defaults from the [source chart's `value.yaml`](https://github.com/vectordotdev/helm-charts/blob/develop/charts/vector/values.yaml) using `role: "Aggregator"`.
+- [All helm value options for the Vector helm chart](https://github.com/vectordotdev/helm-charts/tree/develop/charts/vector#all-configuration-options).
 
-- `Path`: `/var/log/{{ .Values.logName }}.log` — the logfile produced by the container (set via the chart `logName` value).
-- `Tag`: `{{ .Values.tag }}` — record tag used for matching in filters/outputs.
-- `Mem_Buf_Limit`: `5MB` — per-file memory buffer for the tail input.
-- `DB`: `/var/log/flb_kube.db` — sqlite DB used to track file offsets.
-- `Refresh_Interval`: `10` — how often to check the filesystem for new files/changes.
-- `Rotate_Wait`: `5` — wait time in seconds for rotated files to be released.
-- `Ignore_Older`: `24h` — ignore files older than 24 hours.
-- `Read_from_head`: `true` — start reading from the start of files when the DB is missing.
-- `Multiline.parser`: `multiline` — reference to the multiline parser defined in `parsers.conf`.
-- `Buffer_Chunk_Size`: `256KB` — input buffer chunk size used by the tail plugin.
-- `Buffer_Max_Size`: `512KB` — maximum buffer size per file for the tail input.
+## Configmaps
 
-These values were chosen to balance throughput and memory footprint in sidecar deployments.
+### Vector Sidecar
 
-### Filters
+`templates/agent/agent-configmap.yaml`
 
-Two filters are applied to records before sending them to Elasticsearch:
+#### Vector (Agent) Collector
 
-- `lua` filter — runs the `add_timestamp.lua` script (mounted at `/fluent-bit/scripts/add_timestamp.lua`) to add a UTC `timestamp` field to records that lack one.
-- `modify` filter — renames `timestamp` to `@timestamp` so Elasticsearch/Logstash style time keys are populated for indexing.
+`data>vector.yaml`
 
-### Elasticsearch Output
+The collector is configured as a Vector Agent to source from a log file at `/var/log/app/app.log` (as well as `app.log.*` to handle rotated logs). It is able to understand and keep track of files that are rotated by the `logRotate` container so no data is lost. It uses a pattern to handle multiline output from NextJS. It adds additional information from the environment (the app name) to the metadata, which is then sent to the Vector Gateway.
 
-The chart configures the `es` output plugin with the following notable options (most values are injected via chart values or environment variables):
+#### Log Rotate
 
-- `Host`: `{{ .Values.host }}` and `Port`: `9200` — Elasticsearch endpoint (host supplied by values).
-- `http_user` / `http_passwd`: provided via environment variables `${FLUENT_ELASTICSEARCH_USER}` and `${FLUENT_ELASTICSEARCH_PASSWORD}` (mounted from the chart's `fluentbit-credentials` secret).
-- `Index`: `{{ .Values.index }}` — base index name.
-- `Logstash_Prefix`: `{{ .Values.prefix }}-${FLUENT_APP_NAME}` — final index name is composed of the prefix and the application name provided at deploy time.
-- `Logstash_Format`: `On` and `Logstash_DateFormat`: `%Y.%m` — use Logstash-style index names with a date suffix.
+`data>logrotate.conf`
+
+LogRotate handles rotating log files when they get large. It is configured to rotate when the file reaches 25 megabytes, by copying to a new file, then removing existing data from the existing file (which Vector can handle). It keeps 5 copies of old logs, compressing old logs after a certain amount of time.
+
+### Vector (Aggregator) Gateway
+
+`templates/aggregator/aggregator-configmap.yaml`:`data.'vector-aggregator.yaml'`
+
+The gateway is configured as a Vector Aggregator to source from other Vector instances (the collector agents), add a timestamp (if missing), then send to our common ElasticSearch instance (credentials and some config coming from secrets).
+
+Additional configmaps could be added to the `vector.existingConfigMaps` array in the `values.yaml`. See the [multiple file configuration documentation in Vector](https://vector.dev/docs/reference/configuration/#multiple-files)
+
+#### Elasticsearch Output
+
+The aggregator config map configures the ElasticSearch sink with the following notable options (most values are injected via chart values or environment variables):
+
+- `enpoints`: `{{ .Values.host }}` and `Port`: `9200` — Elasticsearch endpoint (host supplied by values).
+- `auth.{user,password}`: provided via volume mounted secrets (from `values.vector.secret.backend_env`). They are mounted from a pre-deployed secret in OpenShift, named `elastic-credentials`, with the keys `username` and `password`.
+- `Index`: Index written to in Elastic. Takes a single prefix from `.Values.prefix`, appends a per application `app_name` from parameters supplied to each collector, then postfixes with `%Y.%m` date.
   > [!IMPORTANT]
   > As of `0.6.0`, the `Logstash_DateFormat` is set to `%Y.%m` to avoid daily index rotation. Daily rotation created [oversharding issues in our Elasticsearch cluster](https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/size-shards).
-- `Time_Key`: `@timestamp` — use the `@timestamp` field for event time (populated by the lua script / rename filter).
-- `Retry_Limit`: `False` — retry indefinitely (subject to other buffering limits).
-- `Buffer_Size`: `4MB` — memory buffer for the Elasticsearch output plugin to improve throughput.
-- `tls`: `Off` — TLS is disabled by default in this chart; ensure your ES endpoint security is compatible with this setting or update the chart values.
-
+- `buffer.{max_size,type}`: memory buffer for the Elasticsearch sink to improve throughput.
 
 These output settings are tuned to avoid HTTP client buffer overflow and to preserve log timestamps for correct indexing.
