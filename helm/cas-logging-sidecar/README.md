@@ -151,6 +151,66 @@ ENTRYPOINT ["/usr/local/bin/kube-log-runner", "-also-stdout", "-log-file=/var/lo
 CMD ["node", "server.js"]
 ```
 
+### Crunchy Postgres Operator
+
+Following the example from [Crunchy](https://www.crunchydata.com/blog/log-export-examples-using-crunchy-postgres-for-kubernetes), the operator already outputs to both stdout and a log file. The sidecars can be added with built-in features of the operator. The `vector-collector.[loggingVolumes, applicationVolumeMounts, container]` templates can be used with the operator's `PostgresCluster.spec.instances` to add the sidecars to all of the Postgres pods.
+
+> [!TIP]
+> More information about Crunchy's sidecar usage [is in the docs under the "Custom Sidecar Containers" heading](https://access.crunchydata.com/documentation/postgres-operator/5.2.0/tutorial/customize-cluster/)
+
+```helm
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: sidecar-hippo
+spec:
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
+  postgresVersion: 14
+  instances:
+    - name: instance1
+      containers:
+      - name: testcontainer
+        image: mycontainer1:latest
+      - name: testcontainer2
+        image: mycontainer1:latest
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
+  backups:
+    pgbackrest:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
+      repos:
+      - name: repo1
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: 1Gi
+  proxy:
+    pgBouncer:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbouncer:ubi8-1.17-1
+      containers:
+      - name: bouncertestcontainer1
+        image: mycontainer1:latest
+```
+
+<!--   1. Volumes to hold the logs and configsMaps: `{{- include "vector-collector.loggingVolumes" . }}`
+1. A volumeMount to mount the log storage to the application: `{{- include "vector-collector.applicationVolumeMounts" . }}`, which also mounts to the sidecar containers. Logs are to be written to `/var/log/app/app.log`.
+1. initContainers to run the sidecar containers: `{{- include "vector-collector.container" (dict "Values" .Values "appName" "APPLICATION_NAME") | nindent 8 }}`. These use `initContainer[].restartPolicy: Always` [to run as a sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/)
+-->
+
+<!--
+Might need to extend the chart to include some "if mounts/volumes/additionalConfig" logic, in order to handle different application configs. Stage 2? Set up a stack of changes? First is all this, then the next has Filters, Transforms, and enhanced Enrichment, third has Postgres?
+
+Because Vector can hanle multiple configs, it should be easy to set up superceding configs when we want to "overwrite" defaults: https://vector.dev/docs/reference/configuration/#multiple-files
+-->
+
+
 ### Example use
 
 Using an image with the `kube-log-runner` method above.
