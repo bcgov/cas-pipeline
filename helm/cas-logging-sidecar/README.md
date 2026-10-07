@@ -307,3 +307,23 @@ The aggregator config map configures the ElasticSearch sink with the following n
 - `buffer.{max_size,type}`: memory buffer for the Elasticsearch sink to improve throughput.
 
 These output settings are tuned to avoid HTTP client buffer overflow and to preserve log timestamps for correct indexing.
+
+## Vector enrichment, filters and transforms
+
+Vector being used allows us to use its langauge to add filters and transforms to our log pipeline. With our setup, filters and transforms should be applied at the _aggregator_ level, letting the _collector sidecar_ be as lightweight as possible. Enrichment can be done on the _collector_ which is as close to the log source as possible.
+
+### Enrichment example
+
+https://vector.dev/docs/reference/configuration/pipeline-components/
+Adding app name to log data from cas-bciers-frontend nextjs.
+
+### Transforms
+
+Changing single line logs from nextjs to multi-line logs.
+
+#### Filters
+
+Filtering out heartbeat logs from cas-bciers-backend, postgres.
+
+> [!NOTE]
+> At this point, we won't keep the filtered heartbeats. But we could start using them for metrics/telemetry in the future, as Vector can process and understand that data. ElasticSearch _could_ be configured to handle it, but more research would be needed to determine the best approach.
