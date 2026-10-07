@@ -198,14 +198,17 @@ spec:
 | `prefix` | `fluent-bit-configmap.yaml` | The index name is composed using a prefix and the date. The last string appended belongs to the date when the data is being generated. | `cif-logs`                                     |
 | `tag`    | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin.                                                                            | `oc-cif`                                       |
 
+#### `collector`, `logRotate`, `gateway`, `vector` values
 
-#### `collector`, `logRotate`, `vector`(gateway) values
+These are set to sensible defaults.
 
-These are set to sensible defaults. The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output.
+4The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output.
 
 For `logRotate`, it can also be kept very small, and only runs every 300 seconds (5 minutes). This rotation time is part of the run command in the logRotate sidecar container.
 
-The `vector` values cover those specific to the aggregator gateway. Our Elastic instance's details are added as volume secrets to the pods and used by `aggregator-configmap.yaml`.
+The `gateway` values are used to add supplemental logging pipeline transforms to the gateway. By default, a transform is used to add timestamp data where it's missing (`add_missing_timestamp`), which is the default input for the elastic sink. `gateway.extraTransforms` and `gateway.sinkInputs` are used to change away from the default pipeline, see the [documentation on filters and transforms below](#vector-enrichment-filters-and-transforms).
+
+The `vector` values cover configuration those specific to the aggregator gateway, as defined by the upstream Vector chart dependency. Our Elastic instance's details are added as volume secrets to the pods and used by `aggregator-configmap.yaml`.
 
 ##### Further documentation
 
@@ -252,3 +255,97 @@ The aggregator config map configures the ElasticSearch sink with the following n
 - `buffer.{max_size,type}`: memory buffer for the Elasticsearch sink to improve throughput.
 
 These output settings are tuned to avoid HTTP client buffer overflow and to preserve log timestamps for correct indexing.
+
+## Vector enrichment, filters and transforms
+
+Vector being used allows us to use its langauge to add filters and transforms to our log pipeline. With our setup, filters and transforms should be applied at the _aggregator_ level, letting the _collector sidecar_ be as lightweight as possible. Enrichment can be done on the _collector_ which is as close to the log source as possible.
+
+Vectors `sources`, `transforms`, and `sinks` operate as a directed acyclic graph (DAG, just like Airflow). For our Vector Gateway, for inputs there is a common one for our sidecar collectors, and sink is always to our Elastic instance. Transforms are where we can remap the logs before they go to Elastic. The transform included in this chart adds timestamps. Adding no configuration to `gateway` in the `values.yaml` file will result in the default flow below.
+
+```yaml
+gateway:
+    extraTransforms: {}
+    sinkInputs: []
+```
+
+```mermaid
+flowchart LR
+    subgraph inputs
+        sc[\Sidecar Collectors\]
+    end
+
+    subgraph transforms
+        sc --> ts[Add Missing Timestamp]
+    end
+
+    subgraph sinks
+        ts --> es[/Send to Elastic/]
+    end
+```
+
+### Advanced filter and transform example
+
+The following is an exaggerated example of a series of transforms applied to the logs. More advanced transforms could potentially convert the filtered heartbeat logs into metrics. [Vector Remap Language (VRL)](https://vector.dev/docs/reference/vrl/) can be used in most cases to handle remapping, though other transformers/languages are available.
+
+```yaml
+gateway:
+    extraTransforms:
+        filter_heartbeats:
+            type: filter
+            inputs: ["add_missing_timestamp"]
+            condition: '!match(.message, r"heartbeat") || .app_name != "verbose-app"'
+
+        split_django_gunicorn:
+            type: remap
+            inputs: ["filter_heartbeats"]
+            source: |
+                # VRL to add differentiate between Gunicorn and Django logs
+
+        prepend_app_name:
+            type: remap
+            inputs: ["add_missing_timestamp"]
+            source: |
+                # VRL to prepend appname into node logs from metadata
+
+        multiline_node:
+            type: remap
+            inputs: ["prepend_app_name"]
+            source: |
+                # VRL matching legacy handling of multiline node log output
+
+    sinkInputs: ["filter_hearbeats", "split_django_gunicorn", "multiline_node"]
+```
+
+```mermaid
+flowchart LR
+    subgraph inputs
+        sc[\"`*vector*<br>Sidecar Collectors`"\]
+    end
+
+    subgraph transforms
+        sc --> ts["`*add_missing_timestamp*`"]
+        ts --> fh["`*filter_heartbeats*<br>Filter Heartbeats`"]
+        ts --> sd["`*split_django_gunicorn*<br>Split Django and Gunicorn errors distinctly`"]
+        ts --> an["`*prepend_app_name*<br>Prepend app to Node logs`"] --> nm["`*multiline_node*<br>Format multiline Node logs`"]
+    end
+
+    subgraph sinks
+        fh & sd & nm --> es[/"`*elasticsearch*<br>Send to Elastic`"/]
+    end
+```
+
+### Enrichment example
+
+https://vector.dev/docs/reference/configuration/pipeline-components/
+Adding app name to log data from cas-bciers-frontend nextjs.
+
+### Transforms
+
+Changing single line logs from nextjs to multi-line logs.
+
+#### Filters
+
+Filtering out heartbeat logs from cas-bciers-backend, postgres.
+
+> [!NOTE]
+> At this point, we won't keep the filtered heartbeats. But we could start using them for metrics/telemetry in the future, as Vector can process and understand that data. ElasticSearch _could_ be configured to handle it, but more research would be needed to determine the best approach.
