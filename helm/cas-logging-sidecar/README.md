@@ -1,5 +1,8 @@
 # CAS Logging Sidecar using Vector (Sidecar Collector and Namespace Gateway)
 
+> [!WARNING]
+> This documentation is for chart version `0.7.0` and newer. `0.7.0` changes from FluentBit to Vector, introducing a major shift, changing the usage pattern from _sidecars_ to _sidecars plus gateway_. Please see the [documentation for the branch tagged `0.6.0`](https://github.com/bcgov/cas-pipeline/tree/cas-logging-sidecar-0.6.0/helm/cas-logging-sidecar) for older versions.
+
 This chart is a combination of a template used to deploy a logging sidecar to a pod and a gateway in a namespace to aggregate logs from multiple pods before sending them to Elasticsearch.
 The sidecar utilizes Vector to capture logs from logs `tee`d to a file from the application container's stdout, with Logrotate is used to ensure the logfile is rotated and does not grow forever. The gateway then receives logs from the sidecar, enriches them with any needed metadata (timestamps), filters unneeded log info (e.g. heartbeats) and sends them to Elasticsearch.
 
@@ -7,52 +10,151 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
 
 ## Usage
 
-0. Add the library chart to your project. This can be done by adding the following to your `Chart.yaml` file:
+1. Add the library chart to your project. This can be done by adding the following to your `Chart.yaml` file:
 
-    ```yaml
-    dependencies:
-      - name: cas-logging-sidecar
-        repository: https://bcgov.github.io/cas-pipeline/
-        version: 0.1.0
-    ```
+   ```yaml
+   dependencies:
+     - name: cas-logging-sidecar
+       repository: https://bcgov.github.io/cas-pipeline/
+       version: 0.7.0
+   ```
 
-1. You will need determine the following parameters and add them into your values.yaml file (These will be under the `cas-logging-sidecar` or whatever you named the subchart in your file):
+1. You will need to determine the following parameters and add them into your values.yaml file (These will be under the `cas-logging-sidecar` or whatever you named the subchart in your file):
 
-    ```yaml
-      host: ~
-      index: ~
-      prefix: ~
-      tag: ~
-      logName: ~
-    ```
+   ```yaml
+   host: ~
+   prefix: ~
+   tag: ~
+   ```
 
-    > *Note*: These parameters are used in the configmaps for Fluent Bit and Logrotate.
+   > [!NOTE]
+   > These parameters are used in the configmaps for Vector's sidecar collector and namespace gateway.
 
-2. Associate the service account from the chart with the pod's template.
+   > [!TIP]
+   > There are additional values parameters for configuring the sidecar's Vector collector and LogRotate, primarily their resource requests and limits. See the defaults under `collector` and `logRotate` in the `values.yaml` file for more details.
+   >
+   > Further values under `vector` in the `values.yaml` file are for configuring the Vector aggregator gateway. These defaults should work for most instances.
 
-    ```text
-    spec.template.spec.serviceAccountName: {{ .Release.Name }}-pod-logger
-    ```
+1. The sidecar to collect the logs from an application pod's logfile is templated into three main pieces:
+   1. Volumes to hold the logs and configsMaps: `{{- include "vector-collector.loggingVolumes" . }}`
+   1. A volumeMount to mount the log storage to the application: `{{- include "vector-collector.applicationVolumeMounts" . }}`, which also mounts to the sidecar containers. Logs are to be written to `/var/log/app/app.log`.
+   1. initContainers to run the sidecar containers: `{{- include "vector-collector.container" (dict "Values" .Values "appName" "APPLICATION_NAME") | nindent 8 }}`. These use `initContainer[].restartPolicy: Always` [to run as a sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/)
 
-3. `{{- include }}` the sidecar container and volumes into your deployment file. This must be passed the following paramters: `.podToSidecar`, `.containerToSidecar`, `.logName`, `.tag`. This is done using a dict in the include statement, for example:
+   > [!NOTE]
+   > The `appName` parameter is used to create the index named in Elasticsearch. The name format used is `{{ .Values.prefix }}-{{ app_name }}-%Y.%m`. Unlike previous versions of this chart, it is the only parameter required in the templates.
+   >
+   > E.g. `prefix=cas-prod-logs` + `appName=backend` + (`%Y.%m` is the current year and month) = `cas-prod-logs-backend-26-09`.
 
-    ```text
-    spec.template.spec.containers:
-    {{- include "cas-logging-sidecar.containers" (dict 
-        "containerToSidecar" "cas-cif-frontend"
-        "logName" .Values.logName
-        "host" "elasticsearch.abc123-namespace.svc.cluster.local") | nindent 8 }}
+   > [!IMPORTANT]
+   > In order to use the sidecar, an application pod must output its logs to a file (`/var/log/app/app.log` by default). For OpenShift, the logs should _also_ be output to the console (`STDERR`/`STDOUT`). Some applications, like DjangoNinja + Gunicorn or the CrunchyDB PostgreSQL Operator can be configured to output logs to both console and a file. Some, like Next.js, output logs only to the console. See [Logging Simultaneously to Console and File](#logging-simultaneously-to-console-and-file) for more templates and examples.
 
-    spec.template.spec.volumes:
-    {{- include "cas-logging-sidecar.volumes" (dict
-      "releaseName" "cas-cif"
-      ) | nindent 8 }}
-    ```
+### Logging Simultaneously to Console and File
 
-    > *Note*: You can use `.Values.abc` if you want to use the values from your values.yaml file.
-    > If the value comes from the dependency chart, such as the host, you will need to use `(index .Values "cas-logging-sidecar" "host")`. This is due to this dependency chart using hyphens in the name.
+The sidecar tails a log file before sending it along. Below are some instructions on how to configure certain frameworks and applications to output logs to both the console (for OpenShift) and a file (for the sidecar).
+
+#### `tee` output
+
+_This way is not recommended for production use_. It can cause issues with `PID1` due to a separate process being spawned to handle the `tee` pipe. You can `| tee -a /var/log/app/app.log` on the command run in your deployment template to output logs to both console and file.
+
+> [!TIP]
+> There is a partial template available to use `{{- include "vector-collector.tee" . }}` that sets up a `tee` pipe to split logs between a file and stdout.
+
+#### DjangoNinja run by Gunicorn
+
+Gunicorn and Django-Ninja can output logs directly to a file, meaning `tee` is not needed for this setup. If Gunicorn is used, it can capture Django's console output and feed it into a single log file, rather than each having its own log file.
+
+> [!NOTE]
+> Uses [WatchedFileHandler](https://docs.python.org/3/library/logging.handlers.html#watchedfilehandler), as it supports the external `logrotate` managing the log file rotation.
+
+##### Gunicorn's `gunicorn.conf.py`
+
+Gunicorn will pull configuration from a `gunicorn.conf.py` file in the same directory that it's run in. Create or update this file with the following content to add log file output to the defaults. See [Gunicorn's logging documentation](https://gunicorn.org/reference/settings/#logging) for more details.
+
+```python
+# gunicorn.conf.py
+capture_output = True  # Capture stdout/stderr from Django
+
+logconfig_dict = {
+    "version": 1,
+    "root": {"level": "INFO", "handlers": ["console", "logfile"]},
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "generic",
+            "stream": "ext://sys.stdout",
+        },
+        "logfile": {
+            "class": "logging.handlers.WatchedFileHandler",
+            "formatter": "generic",
+            "args": ("/var/log/app/app.log",),
+        },
+    },
+}
+```
+
+##### Django's `settings.py`
+
+If not capturing Django's logs with Gunicorn, in Django's `settings.py` add the `handlers` logging configuration to be consistent with the `handlers.console` settings. Then add to the `loggers` config to use the `file` handler. See Django's [logging](https://docs.djangoproject.com/en/6.0/topics/logging/#examples) and [handlers](https://docs.djangoproject.com/en/6.0/ref/logging/#handlers) documentation.
+
+```python
+# Django's settings.py
+LOGGING = {
+    # version, format, defaults, etc...
+    "handlers": {
+        "file": {
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": "/var/log/app/django.log",
+        }
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+        }
+    },
+}
+```
+
+#### kube-log-runner
+
+Some applications _only_ output to console. We can wrap them in Kubernete's `kube-log-runner` to capture their output and split them to console and file. Unlike `tee`, this handles SIGTERM/SIGKILL and process pruning. `kube-log-runner` also works with many distroless and hardened images that don't include a shell.
+
+Basic kube logger:
+https://dl.k8s.io/v1.29.0/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner
+Add links to https://kubernetes.io/docs/concepts/cluster-administration/system-logs/ when talking about `kube-log-runner`.
+
+1. Add the `kube-log-runner` binary to your Dockerfile: `https://dl.k8s.io/{version}/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner`, where `{version}` is the Kubernetes version you are using. For OpenShift 4.18, use `v1.31.0` (use `oc version` while logged in to see the Kubernetes Version). If using multi-stage builds, do this in the "builder" stage, and copy it to the final image.
+1. Mark the `kube-log-runner` binary as executable: `RUN chmod +x /usr/local/bin/kube-log-runner`
+1. Use `kube-log-runner` as your `ENTRYPOINT`. To output logs to console and to the expected file, use the `-also-stdout` and `-log-file=/var/log/app/app.log` options. **Important:** `kube-log-runner` uses single dash (`-`) for its options!
+1. Use `CMD` to specify your application command. `kube-log-runner` will wrap this in the same way `dumb-init` does.
+
+> [!TIP]
+> For more information on `kube-log-runner`, see the [klogs documentation](https://kubernetes.io/docs/concepts/cluster-administration/system-logs/) and the [kube-log-runner repo](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/component-base/logs/kube-log-runner/README.md)
+
+##### NextJS
+
+```Dockerfile
+# 1. Download kube-log-runner. If using multi-stage builds, do this in the the "builder" equivalent stage.
+# v1.31.0 matches Kubernetes version used in OpenShift v4.18.
+ENV KUBE_VERSION=v1.31.0
+ENV KUBE_ARCH=amd64
+
+ADD https://dl.k8s.io/${KUBE_VERSION}/bin/linux/${KUBE_ARCH}/kube-log-runner /usr/local/bin/kube-log-runner
+# 2. Make the kube-log-runner binary executable.
+RUN chmod +x /usr/local/bin/kube-log-runner
+
+COPY --from=builder /usr/local/bin/kube-log-runner /usr/local/bin/kube-log-runner
+
+# 3. Use `kube-log-runner` as the `ENTRYPOINT`.
+ENTRYPOINT ["/usr/local/bin/kube-log-runner", "-also-stdout", "-log-file=/var/log/app/app.log"]
+
+# 4. Use `CMD` to specify the default command to run, which `kube-log-runner` wraps.
+CMD ["node", "server.js"]
+```
+
 
 ### Example use
+
+Using an image with the `kube-log-runner` method above.
 
 ```text
 # templates/cas-frontend-deployment.yaml
@@ -63,18 +165,70 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: {{ .Release.Name }}-pod-logger
       containers:
         - name: cas-frontend
-          image: cas-frontend:latest
+          image: kube-log-runner--cas-frontend:latest
           ports:
             - containerPort: 80
-        {{- include "cas-logging-sidecar.containers" (dict 
-            "containerToSidecar" .Spec.Template.Spec.Containers.0.Name
-            "logName" .Values.logName
-            "host" (index .Values "cas-logging-sidecar" "host")  ) | nindent 8 }}
+          volumeMounts:
+            {{- include "vector-collector.applicationVolumeMounts" . | nindent 12 }} # REQUIRED
+      initContainers:
+        {{- include "vector-collector.container" (dict "Values" .Values "appName" "cas-frontend") | nindent 8 }} # REQUIRED
       volumes:
-        {{- include "cas-logging-sidecar.volumes" . | nindent 8 }}
+        {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
+```
+
+#### Deployable Test Application
+
+This is a self-contained test application that uses the logging sidecar.
+
+```yaml
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: test-log-generator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app-name: test-log-generator
+    helm.sh/chart: {{ .Chart.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: testgenerator
+          image: "busybox:latest"
+          command:
+            - /bin/sh
+            - "-c"
+            - |
+              {
+                echo "=== Starting Log Generator Test Loop ==="
+                while true; do
+                  echo "$(date '+%Y-%m-%d %H:%M:%S') [INFO] This is a standard STDOUT log message for testing Elastic forwarding."
+                  sleep 3
+
+                  echo "$(date '+%Y-%m-%d %H:%M:%S') [ERROR] This is a synthetic error log message!"
+                  sleep 5
+                done
+              }
+              {{- include "vector-collector.tee" . | nindent 14 }} # Log to file and console
+          resources:
+            limits:
+              cpu: 50m
+              memory: 32Mi
+            requests:
+              cpu: 10m
+              memory: 16Mi
+          imagePullPolicy: Always
+          volumeMounts:
+            {{- include "vector-collector.applicationVolumeMounts" . | nindent 12 }} # REQUIRED
+      initContainers:
+        {{- include "vector-collector.container" (dict "Values" .Values "appName" "testgenerator") | nindent 8 }}  # REQUIRED
+      volumes:
+        {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
 ```
 
 ## Inputs
