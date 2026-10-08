@@ -24,6 +24,9 @@ linter:
 deployer:
   namespace: "" # The namespace where the deployer should be created
 
+makeitsoDeployer:
+  namespace: "" # The namespace where the makeitso deployer should be created
+
 eccc:
   host: ""
   username: ""
