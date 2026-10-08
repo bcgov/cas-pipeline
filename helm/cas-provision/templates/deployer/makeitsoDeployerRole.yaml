@@ -78,6 +78,7 @@ rules:
       - create
       - update
       - patch
+      - watch
   - apiGroups:
       - apps
     attributeRestrictions: null
@@ -89,6 +90,7 @@ rules:
       - delete
       - update
       - patch
+      - watch
   - apiGroups:
       - apps
     attributeRestrictions: null
@@ -110,6 +112,7 @@ rules:
       - update
       - patch
       - delete
+      - watch
   - apiGroups:
       - template.openshift.io
     attributeRestrictions: null
@@ -117,16 +120,6 @@ rules:
       - processedtemplates
     verbs:
       - create
-  - apiGroups:
-      - route.openshift.io
-    attributeRestrictions: null
-    resources:
-      - routes
-    verbs:
-      - get
-      - create
-      - update
-      - patch
   - apiGroups:
       - route.openshift.io
       - ""
@@ -178,6 +171,7 @@ rules:
       - update
       - patch
       - delete
+      - watch
   - apiGroups:
       - "rbac.authorization.k8s.io"
       - "authorization.openshift.io"
@@ -191,6 +185,7 @@ rules:
       - update
       - patch
       - delete
+      - watch
   - apiGroups:
       - extensions
       - apps
@@ -204,6 +199,7 @@ rules:
       - update
       - patch
       - delete
+      - watch
   - apiGroups:
       - networking.k8s.io
     resources:
@@ -215,6 +211,7 @@ rules:
       - update
       - patch
       - delete
+      - watch
   - apiGroups:
       - ""
     resources:
@@ -233,6 +230,7 @@ rules:
       - update
       - patch
       - delete
+      - watch
   - apiGroups:
       - artifactory.devops.gov.bc.ca
     resources:
@@ -251,3 +249,4 @@ rules:
       - update
       - patch
       - delete
+      - watch
