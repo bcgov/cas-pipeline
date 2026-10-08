@@ -3,7 +3,7 @@ prefix: ~
 tag: ~
 
 collector:
-  imageTag: 0.58.X-alpine
+  imageTag: 0.59.X-alpine
   resources:
     limits:
       memory: 128Mi

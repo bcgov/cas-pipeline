@@ -1,14 +1,12 @@
 apiVersion: v2
 name: cas-logging-sidecar
-description: A Helm chart to deploy Logging Sidecars to CAS applications.
+description: A Helm chart to deploy Vector for CAS applications. Provisions a single Vector Gateway and provides templates for Vector collector sidecars to connect to the Gatway.
 
 type: application
-version: 0.6.0
-appVersion: "1.16.0"
-
-# This chart should take a list of applications in the values that the sidecars are associated with. The destination of the logs should also be specified in the values
+version: 0.7.0
+appVersion: "0.59.0"
 
 dependencies:
   - name: vector
     repository: https://helm.vector.dev
-    version: 0.58.0
+    version: 0.59.0
