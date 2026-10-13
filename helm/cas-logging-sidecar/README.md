@@ -59,67 +59,9 @@ _This way is not recommended for production use_. It can cause issues with `PID1
 > [!TIP]
 > There is a partial template available to use `{{- include "vector-collector.tee" . }}` that sets up a `tee` pipe to split logs between a file and stdout.
 
-#### DjangoNinja run by Gunicorn
-
-Gunicorn and Django-Ninja can output logs directly to a file, meaning `tee` is not needed for this setup. If Gunicorn is used, it can capture Django's console output and feed it into a single log file, rather than each having its own log file.
-
-> [!NOTE]
-> Uses [WatchedFileHandler](https://docs.python.org/3/library/logging.handlers.html#watchedfilehandler), as it supports the external `logrotate` managing the log file rotation.
-
-##### Gunicorn's `gunicorn.conf.py`
-
-Gunicorn will pull configuration from a `gunicorn.conf.py` file in the same directory that it's run in. Create or update this file with the following content to add log file output to the defaults. See [Gunicorn's logging documentation](https://gunicorn.org/reference/settings/#logging) for more details.
-
-```python
-# gunicorn.conf.py
-capture_output = True  # Capture stdout/stderr from Django
-
-logconfig_dict = {
-    "version": 1,
-    "root": {"level": "INFO", "handlers": ["console", "logfile"]},
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "generic",
-            "stream": "ext://sys.stdout",
-        },
-        "logfile": {
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "generic",
-            "args": ("/var/log/app/app.log",),
-        },
-    },
-}
-```
-
-> [!WARNING]
-> A [bug in Gunicorn](https://github.com/benoitc/gunicorn/issues/3209) (still present as of [26.2.2](https://github.com/benoitc/gunicorn/releases/tag/26.2.2)) causes `capture_output` to do nothing when paired with `logconfig_dict`. Use Django's loggging to compensate for this. 
-
-##### Django's `settings.py`
-
-If not capturing Django's logs with Gunicorn, in Django's `settings.py` add the `handlers` logging configuration to be consistent with the `handlers.console` settings. Then add to the `loggers` config to use the `file` handler. See Django's [logging](https://docs.djangoproject.com/en/6.0/topics/logging/#examples) and [handlers](https://docs.djangoproject.com/en/6.0/ref/logging/#handlers) documentation.
-
-```python
-# Django's settings.py
-LOGGING = {
-    # version, format, defaults, etc...
-    "handlers": {
-        "logfile": {
-            "class": "logging.handlers.WatchedFileHandler",
-            "filename": "/var/log/app/app.log",
-        }
-    },
-    "loggers": {
-        "django": {
-            "handlers": [ `other handlers...`, "logfile"],
-        }
-    },
-}
-```
-
 #### kube-log-runner
 
-Some applications _only_ output to console. We can wrap them in Kubernete's `kube-log-runner` to capture their output and split them to console and file. Unlike `tee`, this handles SIGTERM/SIGKILL and process pruning. `kube-log-runner` also works with many distroless and hardened images that don't include a shell.
+We can wrap them in Kubernete's `kube-log-runner` to capture console output and split them to console and file. Unlike `tee`, this handles SIGTERM/SIGKILL and process pruning. `kube-log-runner` also works with many distroless and hardened images that don't include a shell.
 
 Basic kube logger:
 https://dl.k8s.io/v1.29.0/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner
@@ -133,7 +75,7 @@ Add links to https://kubernetes.io/docs/concepts/cluster-administration/system-l
 > [!TIP]
 > For more information on `kube-log-runner`, see the [klogs documentation](https://kubernetes.io/docs/concepts/cluster-administration/system-logs/) and the [kube-log-runner repo](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/component-base/logs/kube-log-runner/README.md)
 
-##### NextJS
+##### Example Dockerfile
 
 ```Dockerfile
 # 1. Download kube-log-runner. If using multi-stage builds, do this in the the "builder" equivalent stage.
