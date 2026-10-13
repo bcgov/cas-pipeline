@@ -92,6 +92,9 @@ logconfig_dict = {
 }
 ```
 
+> [!WARNING]
+> A [bug in Gunicorn](https://github.com/benoitc/gunicorn/issues/3209) (still present as of [26.2.2](https://github.com/benoitc/gunicorn/releases/tag/26.2.2)) causes `capture_output` to do nothing when paired with `logconfig_dict`. Use Django's loggging to compensate for this. 
+
 ##### Django's `settings.py`
 
 If not capturing Django's logs with Gunicorn, in Django's `settings.py` add the `handlers` logging configuration to be consistent with the `handlers.console` settings. Then add to the `loggers` config to use the `file` handler. See Django's [logging](https://docs.djangoproject.com/en/6.0/topics/logging/#examples) and [handlers](https://docs.djangoproject.com/en/6.0/ref/logging/#handlers) documentation.
@@ -101,14 +104,14 @@ If not capturing Django's logs with Gunicorn, in Django's `settings.py` add the 
 LOGGING = {
     # version, format, defaults, etc...
     "handlers": {
-        "file": {
+        "logfile": {
             "class": "logging.handlers.WatchedFileHandler",
-            "filename": "/var/log/app/django.log",
+            "filename": "/var/log/app/app.log",
         }
     },
     "loggers": {
         "django": {
-            "handlers": ["file"],
+            "handlers": [ `other handlers...`, "logfile"],
         }
     },
 }
