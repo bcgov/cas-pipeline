@@ -34,11 +34,13 @@ data:
         {{- end }}
 
     sinks:
+      {{- if .Values.gateway.debugLogsToConsole }}
       stdout:
         type: console
         inputs: [vector]
         encoding:
           codec: json
+      {{- end }}
       elasticsearch:
         type: elasticsearch
           inputs:
