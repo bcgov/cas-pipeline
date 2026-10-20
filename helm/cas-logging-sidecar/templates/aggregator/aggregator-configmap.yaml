@@ -28,11 +28,13 @@ data:
         {{- end }}
 
     sinks:
+      {{- if .Values.gateway.debugLogsToConsole }}
       stdout:
         type: console
         inputs: [vector]
         encoding:
           codec: json
+      {{- end }}
       elasticsearch:
           inputs: {{ $activeSinkInputs | toJson }}
         endpoints: ["http://{{ .Values.host }}:9200"]
