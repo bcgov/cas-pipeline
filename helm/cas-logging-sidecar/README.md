@@ -206,7 +206,7 @@ These are set to sensible defaults.
 
 For `logRotate`, it can also be kept very small, and only runs every 300 seconds (5 minutes). This rotation time is part of the run command in the logRotate sidecar container.
 
-The `gateway` values are used to add supplemental logging pipeline transforms to the gateway. By default, a transform is used to add timestamp data where it's missing (`add_missing_timestamp`), which is the default input for the elastic sink. `gateway.extraTransforms` and `gateway.sinkInputs` are used to change away from the default pipeline, see the [documentation on filters and transforms below](#vector-enrichment-filters-and-transforms).
+The `gateway` values are used to add supplemental logging pipeline transforms to the gateway. By default, a transform is used to add timestamp data where it's missing (`add_missing_timestamp`), which is the default input for the elastic sink. `gateway.extraTransforms` and `gateway.sinkInputs` are used to change away from the default pipeline, see the [documentation on filters and transforms below](#vector-enrichment-filters-and-transforms). `gateway.debugLogsToConsole` allows for logs from input to be passed directly to the gateway's console without transforms, disabled by default.
 
 The `vector` values cover configuration those specific to the aggregator gateway, as defined by the upstream Vector chart dependency. Our Elastic instance's details are added as volume secrets to the pods and used by `aggregator-configmap.yaml`.
 
