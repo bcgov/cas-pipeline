@@ -16,7 +16,8 @@ data:
         read_from: "beginning"
 
         # Fingerprint strategy prevents re-reading rotated files
-        fingerprint.strategy: "device_and_inode"
+        fingerprint:
+          strategy: "device_and_inode"
         multiline:
           timeout_ms: 1000
           start_pattern: "^Error|^\{"
@@ -37,7 +38,7 @@ data:
         inputs: ["add_app_metadata"]
         routing:
           endpoints:
-            - "vector-{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
+            - "{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
         acknowledgements:
           enabled: true
   logrotate.conf: |

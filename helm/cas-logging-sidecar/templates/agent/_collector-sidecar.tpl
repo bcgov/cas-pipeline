@@ -52,7 +52,7 @@ Context needed for this templated, passed as a dict:
     {{- toYaml .Values.collector.resources | nindent 4 }}
   volumeMounts:
     {{- include "vector-collector.sidecarVolumeMounts" . | nindent 4 }}
-    - name: data
+    - name: vector-tmp-data
       mountPath: /tmp/vector
       readOnly: false
 {{- end -}}
@@ -75,6 +75,6 @@ Creates the volumes required for the log file and Vector collector.
 - name: vector-collector-logging-config
   configMap:
     name: {{ .Release.Name }}-vector-collector-config
-- name: data
+- name: vector-tmp-data
   emptyDir: {}
 {{- end -}}
