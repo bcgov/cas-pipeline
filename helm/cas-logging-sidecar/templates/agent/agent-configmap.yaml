@@ -36,7 +36,7 @@ data:
         inputs: ["add_app_metadata"]
         routing:
           endpoints:
-            - "vector-{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
+            - "{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
         acknowledgements:
           enabled: true
   logrotate.conf: |
