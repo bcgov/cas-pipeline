@@ -28,7 +28,7 @@ data:
         source: |
           .app_name = get_env_var!("APP_NAME")
           .tag = {{ .Values.tag | quote }}
-          .@timestamp = parse_timestamp(.timestamp ?? now(), "%Y-%m-%dT%H:%M:%SZ")
+          .@timestamp = parse_timestamp(.timestamp, "%Y-%m-%dT%H:%M:%SZ") ?? now()
 
     sinks:
       to_aggregator:
