@@ -227,7 +227,7 @@ The `vector` values cover configuration those specific to the aggregator gateway
 
 `data>vector.yaml`
 
-The collector is configured as a Vector Agent to source from a log file at `/var/log/app/app.log` (as well as `app.log.*` to handle rotated logs). It is able to understand and keep track of files that are rotated by the `logRotate` container so no data is lost. It uses a pattern to handle multiline output from NextJS. It adds additional information from the environment (the app name) to the metadata, which is then sent to the Vector Gateway.
+The collector is configured as a Vector Agent to source from a log file at `/var/log/app/app.log` (as well as `app.log.*` to handle rotated logs). It is able to understand and keep track of files that are rotated by the `logRotate` container so no data is lost. It uses a pattern to handle multiline output from NextJS. It adds additional information from the environment (the app name) and a timestamp (if missing) to the metadata, which is then sent to the Vector Gateway.
 
 #### Log Rotate
 
@@ -239,7 +239,7 @@ LogRotate handles rotating log files when they get large. It is configured to ro
 
 `templates/aggregator/aggregator-configmap.yaml`:`data.'vector-aggregator.yaml'`
 
-The gateway is configured as a Vector Aggregator to source from other Vector instances (the collector agents), add a timestamp (if missing), then send to our common ElasticSearch instance (credentials and some config coming from secrets).
+The gateway is configured as a Vector Aggregator to source from other Vector instances (the collector agents), then send to our common ElasticSearch instance (credentials and some config coming from secrets).
 
 Additional configmaps could be added to the `vector.existingConfigMaps` array in the `values.yaml`. See the [multiple file configuration documentation in Vector](https://vector.dev/docs/reference/configuration/#multiple-files)
 
@@ -260,7 +260,7 @@ These output settings are tuned to avoid HTTP client buffer overflow and to pres
 
 Vector being used allows us to use its langauge to add filters and transforms to our log pipeline. With our setup, filters and transforms should be applied at the _aggregator_ level, letting the _collector sidecar_ be as lightweight as possible. Enrichment can be done on the _collector_ which is as close to the log source as possible.
 
-Vectors `sources`, `transforms`, and `sinks` operate as a directed acyclic graph (DAG, just like Airflow). For our Vector Gateway, for inputs there is a common one for our sidecar collectors, and sink is always to our Elastic instance. Transforms are where we can remap the logs before they go to Elastic. The transform included in this chart adds timestamps. Adding no configuration to `gateway` in the `values.yaml` file will result in the default flow below.
+Vectors `sources`, `transforms`, and `sinks` operate as a directed acyclic graph (DAG, just like Airflow). For our Vector Gateway, for inputs there is a common one for our sidecar collectors, and sink is always to our Elastic instance. Transforms are where we can remap the logs before they go to Elastic. Adding no configuration to `gateway` in the `values.yaml` file will result in the default flow below.
 
 ```yaml
 gateway:
@@ -275,11 +275,11 @@ flowchart LR
     end
 
     subgraph transforms
-        sc --> ts[Add Missing Timestamp]
+        none
     end
 
     subgraph sinks
-        ts --> es[/Send to Elastic/]
+        sc --> es[/Send to Elastic/]
     end
 ```
 
@@ -292,7 +292,7 @@ gateway:
     extraTransforms:
         filter_heartbeats:
             type: filter
-            inputs: ["add_missing_timestamp"]
+            inputs: ["vector"]
             condition: '!match(.message, r"heartbeat") || .app_name != "verbose-app"'
 
         split_django_gunicorn:
@@ -303,7 +303,7 @@ gateway:
 
         prepend_app_name:
             type: remap
-            inputs: ["add_missing_timestamp"]
+            inputs: ["vector"]
             source: |
                 # VRL to prepend appname into node logs from metadata
 
