@@ -6,10 +6,10 @@ collector:
   imageTag: 0.59.X-alpine
   resources:
     limits:
-      memory: 256Mi
+      memory: 384Mi
     requests:
       cpu: 30m
-      memory: 32Mi
+      memory: 64Mi
 logRotate:
   image: skymatic/logrotate
   imageTag: latest
