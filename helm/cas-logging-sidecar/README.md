@@ -64,10 +64,10 @@ _This way is not recommended for production use_. It can cause issues with `PID1
 We can wrap them in Kubernete's `kube-log-runner` to capture console output and split them to console and file. Unlike `tee`, this handles SIGTERM/SIGKILL and process pruning. `kube-log-runner` also works with many distroless and hardened images that don't include a shell.
 
 Basic kube logger:
-https://dl.k8s.io/v1.29.0/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner
+https://dl.k8s.io/v1.37.0/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner
 Add links to https://kubernetes.io/docs/concepts/cluster-administration/system-logs/ when talking about `kube-log-runner`.
 
-1. Add the `kube-log-runner` binary to your Dockerfile: `https://dl.k8s.io/{version}/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner`, where `{version}` is the Kubernetes version you are using. For OpenShift 4.18, use `v1.31.0` (use `oc version` while logged in to see the Kubernetes Version). If using multi-stage builds, do this in the "builder" stage, and copy it to the final image.
+1. Add the `kube-log-runner` binary to your Dockerfile: `https://dl.k8s.io/{version}/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner`, where `{version}` is a pinned Kubernetes version. As of writing, latest stable is `v1.37.1` (see the [Kubernetes Binaries](https://dl.k8s.io/) page for versions). To use `kube-log-runner`'s inbuilt log rotation version `v1.34` or newer is required. **NOTE**: As this is a standalone package, it *does not* need to match OpenShift's Kubernetes version. If using multi-stage builds, do this in the "builder" stage, and copy it to the final image.
 1. Mark the `kube-log-runner` binary as executable: `RUN chmod +x /usr/local/bin/kube-log-runner`
 1. Use `kube-log-runner` as your `ENTRYPOINT`. To output logs to console and to the expected file, use the `-also-stdout` and `-log-file=/var/log/app/app.log` options. **Important:** `kube-log-runner` uses single dash (`-`) for its options!
 1. Use `CMD` to specify your application command. `kube-log-runner` will wrap this in the same way `dumb-init` does.
