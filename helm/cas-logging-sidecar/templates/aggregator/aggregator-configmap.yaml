@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # This is currently a static in order to match with `.Values.vector.existingConfigMaps`
+  name: vector-aggregator-logging-config
+  namespace: {{ .Release.Namespace }}
+data:
+  vector-aggregator.yaml: |
+    secret:
+      elastic_credentials:
+        type: directory
+        path: "/var/run/secrets/elastic"
+        remove_trailing_whitespace: true
+    api:
+      enabled: true
+      address: 0.0.0.0:8686
+    sources:
+      vector:
+        address: 0.0.0.0:6000
+        type: vector
+        version: "2"
+    transforms:
+      add_missing_timestamp:
+        type: remap
+        inputs: [vector]
+        source: |
+          .@timestamp = parse_timestamp(.timestamp, "%Y-%m-%dT%H:%M:%SZ") ?? now()
+    sinks:
+      stdout:
+        type: console
+        inputs: [vector]
+        encoding:
+          codec: json
+      elasticsearch:
+        type: elasticsearch
+          inputs:
+          {{ $activeSinkInputs | toYaml | nindent 12 }}
+        endpoints:
+          - "http://{{ .Values.host }}:9200"
+        auth:
+          user: "SECRET[elastic_credentials.username]"
+          password: "SECRET[elastic_credentials.password]"
+        bulk:
+          # prefix comes from the parent helm chart values.
+          # app_name is Vector Template syntax enclosed in backticks to avoid helm template interpolation.
+          index: "{{ .Values.prefix }}-{{`{{ app_name }}`}}-%Y.%m"

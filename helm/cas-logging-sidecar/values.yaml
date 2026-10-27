@@ -1,5 +1,48 @@
 host: ~
-index: ~
 prefix: ~
 tag: ~
-logName: cas-log
+
+collector:
+  imageTag: 0.59.X-alpine
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 30m
+      memory: 32Mi
+logRotate:
+  image: skymatic/logrotate
+  imageTag: latest
+  resources:
+    limits:
+      memory: 32Mi
+    requests:
+      memory: 8Mi
+      cpu: 20m
+
+# The values below are specifically for the Vector Gateway, utilizing the Vector Helm Chart. Anything above is used for our custom Log Collector Sidecar.
+vector:
+  nameOverride: "vector-gateway"
+  role: "Aggregator"
+  replicas: 1
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 2
+
+  service:
+    ports:
+      - name: vector
+        port: 6000
+        protocol: TCP
+  extraVolumes:
+    - name: elastic-secrets
+      secret:
+        secretName: elastic-credentials
+  extraVolumeMounts:
+    - name: elastic-secrets
+      mountPath: "/var/run/secrets/elastic"
+      readOnly: true
+
+  dataDir: "/vector-data-dir"
+  existingConfigMaps: ["vector-aggregator-logging-config"]
