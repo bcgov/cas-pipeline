@@ -182,7 +182,7 @@ Following the example from [Crunchy](https://www.crunchydata.com/blog/log-export
 > [!TIP]
 > More information about Crunchy's sidecar usage [is in the docs under the "Custom Sidecar Containers" heading](https://access.crunchydata.com/documentation/postgres-operator/5.2.0/tutorial/customize-cluster/)
 
-A template partial is included in this chart.
+A template partial is included in this chart. If there are multiple helm charts using the `cas-logging-sidecar` chart as a dependency, ensure there is only one *aggregator* deployed amongst them. For example, `cas-obps-postgres` and `cas-bciers` might both use this dep for the sidecar templates, but only one should have `gateway.deploy` set as `true`.
 
 #### Partial template usage
 

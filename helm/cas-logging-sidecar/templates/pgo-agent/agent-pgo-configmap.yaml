@@ -1,3 +1,5 @@
+{{- $gatewayServiceName := .Values.collector.gatewayServiceOverride | default "{{ .Release.Name }}-vector-gateway" }}
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -40,6 +42,6 @@ data:
         inputs: ["add_app_metadata"]
         routing:
           endpoints:
-            - "{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
+            - "{{ $gatewayServiceName }}.{{ .Release.Namespace }}.svc.cluster.local:6000"
         acknowledgements:
           enabled: true
