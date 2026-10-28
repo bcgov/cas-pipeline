@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-vector-pgo-collector-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: Agent
+    app.kubernetes.io/instance: vector
+    app.kubernetes.io/name: vector
+    app.kubernetes.io/version: 0.26.0-distroless-libc
+data:
+  vector-pgo.yaml: |
+    data_dir: /pgdata
+    sources:
+      postgres_logs:
+        type: file
+        ignore_older_secs: 600
+        include: ["/pgdata/*/log/postgresql*.log"]
+        read_from: "beginning"
+        multiline:
+          start_pattern: '^[^\s]'
+          mode: "continue_through"
+          condition_pattern: '^[\s]+'
+          timeout_ms: 1000
+    transforms:
+      error_logs:
+        type: "filter"
+        inputs: ["postgres_logs"]
+        condition: 'contains(string!(.message), "ERROR:", case_sensitive: false)'
+      add_app_metadata:
+        type: "remap"
+        inputs: ["error_logs"]
+        source: |
+          .app_name = get_env_var!("APP_NAME")
+          .tag = {{ .Values.tag | quote }}
+          .@timestamp = parse_timestamp(.timestamp ?? now(), "%Y-%m-%dT%H:%M:%SZ")
+    sinks:
+      to_aggregator:
+        type: "vector"
+        inputs: ["add_app_metadata"]
+        routing:
+          endpoints:
+            - "{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
+        acknowledgements:
+          enabled: true
