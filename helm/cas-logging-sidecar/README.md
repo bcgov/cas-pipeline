@@ -175,6 +175,42 @@ spec:
         {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
 ```
 
+### Crunchy Postgres Operator
+
+Following the example from [Crunchy](https://www.crunchydata.com/blog/log-export-examples-using-crunchy-postgres-for-kubernetes), the operator already outputs to both stdout and a log file. The sidecars can be added with built-in features of the operator. The `vector-collector.[loggingVolumes, applicationVolumeMounts, container]` templates can be used with the operator's `PostgresCluster.spec.instances` to add the sidecars to all of the Postgres pods.
+
+> [!TIP]
+> More information about Crunchy's sidecar usage [is in the docs under the "Custom Sidecar Containers" heading](https://access.crunchydata.com/documentation/postgres-operator/5.2.0/tutorial/customize-cluster/)
+
+A template partial is included in this chart.
+
+#### Partial template usage
+
+```helm
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: sidecar-hippo
+spec:
+  postgresVersion: 16
+  instances:
+    - name: pgha1-with-sidecar
+      # ...other configuration
+      # ⬇️ logging sidecar containers
+      containers:
+        {{- include "vector-pgo-collector.container" (dict "Values" .Values "appName" "cas-postgres") | nindent 8 }}
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
+  # ⬇️ `spec.config` adds files to the `postgres-config` volume, which we can then mount with the sidecar's volumeMounts.
+  config:
+    files:
+      {{- include "vector-pgo-collector.config-mount" . | nindent 6 }}
+```
+
 ## Inputs
 
 ### `_collector-sidecar.tpl`/`vector-collector.container` parameters list
