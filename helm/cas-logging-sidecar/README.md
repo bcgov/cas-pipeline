@@ -211,6 +211,72 @@ spec:
       {{- include "vector-pgo-collector.config-mount" . | nindent 6 }}
 ```
 
+#### Custom PGO sidecar
+
+```helm
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: sidecar-hippo
+spec:
+  postgresVersion: 16
+  instances:
+    - name: pgha1-with-sidecar
+      # ...other configuration
+      # ⬇️ logging sidecar containers
+      containers:
+      - name: vector-collector
+        image: {{ .Values.collector.image.repository}}:{{ .Values.collector.image.tag }}
+        restartPolicy: Always
+        args:
+          - '--config'
+          - '/etc/postgres/vector.yaml'
+        env:
+          - name: APP_NAME
+            value: pgha1
+          - name: VECTOR_SELF_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: VECTOR_SELF_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: VECTOR_SELF_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+        resources:
+          limits:
+            memory: 384Mi
+          requests:
+            cpu: 30m
+            memory: 64Mi
+        volumeMounts:
+          - name: postgres-data
+            readOnly: false
+            mountPath: /pgdata
+          - name: postgres-config
+            readOnly: false
+            mountPath: /etc/vector
+      # ⬆️ --------------------
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
+  # ⬇️ `spec.config` adds files to the `postgres-config` volume, which we can then mount with the sidecar's volumeMounts.
+  config:
+    files:
+      - configMap:
+        name: {{ .Release.Name }}-vector-pgo-collector-config
+  # ⬆️ --------------------
+```
+
 ## Inputs
 
 ### `_collector-sidecar.tpl`/`vector-collector.container` parameters list
