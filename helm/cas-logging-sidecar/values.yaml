@@ -3,7 +3,9 @@ prefix: ~
 tag: ~
 
 collector:
-  imageTag: 0.59.X-alpine
+  image:
+    repository: timberio/vector
+    tag: 0.59.X-alpine
   resources:
     limits:
       memory: 384Mi
