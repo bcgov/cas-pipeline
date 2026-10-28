@@ -304,11 +304,11 @@ spec:
 
 These are set to sensible defaults.
 
-4The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output.
+The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output. `collector.gatewayServiceOverride` is used if the sidecar collectors are being deployed in a chart instance *without* a matching vector gateway in the same instance (**NOTE**: this must be set if `gateway.deploy` is set to `false`).
 
 For `logRotate`, it can also be kept very small, and only runs every 300 seconds (5 minutes). This rotation time is part of the run command in the logRotate sidecar container.
 
-The `gateway` values are used to add supplemental logging pipeline transforms to the gateway. By default, a transform is used to add timestamp data where it's missing (`add_missing_timestamp`), which is the default input for the elastic sink. `gateway.extraTransforms` and `gateway.sinkInputs` are used to change away from the default pipeline, see the [documentation on filters and transforms below](#vector-enrichment-filters-and-transforms). `gateway.debugLogsToConsole` allows for logs from input to be passed directly to the gateway's console without transforms, disabled by default.
+The `gateway` values are used to add supplemental values to the gateway. `gateway.deploy` determines if the gateway will deploy at all (using configs from `.Values.vector` to implement the Vector chart dependency), which should be disabled if multiple parent charts use `cas-logging-sidecar` in the same namespace. By default, a transform is used to add timestamp data where it's missing (`add_missing_timestamp`), which is the default input for the elastic sink. `gateway.extraTransforms` and `gateway.sinkInputs` are used to change away from the default pipeline, see the [documentation on filters and transforms below](#vector-enrichment-filters-and-transforms). `gateway.debugLogsToConsole` allows for logs from input to be passed directly to the gateway's console without transforms, disabled by default.
 
 The `vector` values cover configuration those specific to the aggregator gateway, as defined by the upstream Vector chart dependency. Our Elastic instance's details are added as volume secrets to the pods and used by `aggregator-configmap.yaml`.
 
@@ -336,6 +336,13 @@ The collector is configured as a Vector Agent to source from a log file at `/var
 `data>logrotate.conf`
 
 LogRotate handles rotating log files when they get large. It is configured to rotate when the file reaches 25 megabytes, by copying to a new file, then removing existing data from the existing file (which Vector can handle). It keeps 5 copies of old logs, compressing old logs after a certain amount of time.
+
+### CrunchyDB Postgres Operator Variant
+
+`templates/pgo-agent/pgo-agent-configmap.yaml`
+`data>vector-pgo.yaml`
+
+This is a variant of the base sidecar config. It's been modified to be used by a sidecar in a CrunchyDB Postgres Operator deployment. Similar to the base config map, this sinks it's data to a namespaced instance of a Vector (Aggregator) Gateway. Use `.Values.collector.gatewayServiceOverride` to set the target sink, if the chart instance deploying the sidecars differs from the gateway.
 
 ### Vector (Aggregator) Gateway
 
