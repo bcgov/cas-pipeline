@@ -10,3 +10,4 @@ dependencies:
   - name: vector
     repository: https://helm.vector.dev
     version: 0.59.0
+    condition: gateway.deploy

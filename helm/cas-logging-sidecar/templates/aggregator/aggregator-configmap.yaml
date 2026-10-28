@@ -1,3 +1,4 @@
+{{- if eq .Values.gateway.deploy true }}
 {{- $defaultSinkInputs := list "vector" }}
 {{- $activeSinkInputs := .Values.gateway.sinkInputs | default $defaultSinkInputs }}
 
@@ -48,3 +49,4 @@ data:
           # prefix comes from the parent helm chart values.
           # app_name is Vector Template syntax enclosed in backticks to avoid helm template interpolation.
           index: "{{ .Values.prefix }}-{{`{{ app_name }}`}}-%Y.%m"
+{{ end }}
