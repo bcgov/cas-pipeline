@@ -42,9 +42,9 @@ Context needed for this templated, passed as a dict:
 - name: vector-collector
   image: timberio/vector:{{ .Values.collector.imageTag }}
   restartPolicy: Always
-  command: ["/bin/sh", "-c"]
   args:
-    - exec vector --config /etc/sidecar/vector.yaml
+    - '--config'
+    -'/etc/sidecar/vector.yaml'
   env:
     - name: APP_NAME
       value: {{ .appName }}
@@ -64,7 +64,6 @@ Creates the volume mounts for the application log file.
 - name: shared-logs
   mountPath: /var/log/app
 {{- end -}}
-
 
 {{/*
 Creates the volumes required for the log file and Vector collector.
