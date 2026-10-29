@@ -25,14 +25,16 @@ Creates the Vector container to collect logs as an collector from the main deplo
 Creates the logrotate container to rotate logs.
 Context needed for this templated, passed as a dict:
   appName: Name of the application.
-  values: The `.Values` object from the Helm chart. (`.` global context is not avaiable)
+  values: The `.Values` object from the Helm chart (`.` global context is not requied). If this template is used as a dependency, this should be `.Values.{depdency-chart-alias-or-name}` to pass the proper scope.
 */}}
 {{- define "vector-collector.container" -}}
+{{- $appName := .appName -}}
+{{- $values := .values }}
 - name: logrotate
-  image: {{ .Values.logRotate.image }}:{{ .Values.logRotate.imageTag }}
+  image: {{ $values.logRotate.image }}:{{ $values.logRotate.imageTag }}
   restartPolicy: Always
   resources:
-    {{- toYaml .Values.logRotate.resources | nindent 4 }}
+    {{- toYaml $values.logRotate.resources | nindent 4 }}
   command:
     - "/bin/sh"
     - "-c"
@@ -40,16 +42,31 @@ Context needed for this templated, passed as a dict:
   volumeMounts:
     {{- include "vector-collector.sidecarVolumeMounts" . | nindent 4 }}
 - name: vector-collector
-  image: {{ .Values.collector.image.repository}}:{{ .Values.collector.image.tag }}
+  image: {{ $values.collector.image.repository}}:{{ $values.collector.image.tag }}
   restartPolicy: Always
   args:
     - '--config'
     - '/etc/sidecar/vector.yaml'
   env:
     - name: APP_NAME
-      value: {{ .appName }}
+      value: {{ $appName | quote }}
+    - name: VECTOR_SELF_NODE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: spec.nodeName
+    - name: VECTOR_SELF_POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: VECTOR_SELF_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
   resources:
-    {{- toYaml .Values.collector.resources | nindent 4 }}
+    {{- toYaml $values.collector.resources | nindent 4 }}
   volumeMounts:
     {{- include "vector-collector.sidecarVolumeMounts" . | nindent 4 }}
     - name: vector-tmp-data

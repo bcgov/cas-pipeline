@@ -2,18 +2,20 @@
 Place this in the `spec.instances.containers` section in the PGO chart.
 Context needed for this templated, passed as a dict:
   appName: Name of the application.
-  values: The `.Values` object from the Helm chart. (`.` global context is not avaiable)
+  values: The `.Values` object from the Helm chart (`.` global context is not requied). If this template is used as a dependency, this should be `.Values.{depdency-chart-alias-or-name}` to pass the proper scope.
 */}}
 {{- define "vector-pgo-collector.container" -}}
+{{- $appName := .appName -}}
+{{- $values := .values }}
 - name: vector-collector
-  image: {{ .Values.collector.image.repository}}:{{ .Values.collector.image.tag }}
+  image: {{ $values.collector.image.repository}}:{{ $values.collector.image.tag }}
   restartPolicy: Always
   args:
     - '--config'
     - '/etc/postgres/vector.yaml'
   env:
     - name: APP_NAME
-      value: {{ .appName }}
+      value: {{ $appName | quote }}
     - name: VECTOR_SELF_NODE_NAME
       valueFrom:
         fieldRef:
@@ -30,7 +32,7 @@ Context needed for this templated, passed as a dict:
           apiVersion: v1
           fieldPath: metadata.namespace
   resources:
-    {{- toYaml .Values.collector.resources | nindent 4 }}
+    {{- toYaml $values.collector.resources | nindent 4 }}
   volumeMounts:
   - name: postgres-data
     readOnly: false
