@@ -16,7 +16,7 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
    dependencies:
      - name: cas-logging-sidecar
        repository: https://bcgov.github.io/cas-pipeline/
-       version: 0.7.0
+       version: 0.7.1
    ```
 
 1. You will need to determine the following parameters and add them into your values.yaml file (These will be under the `cas-logging-sidecar` or whatever you named the subchart in your file):
