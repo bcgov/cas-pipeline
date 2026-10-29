@@ -28,14 +28,14 @@ data:
       error_logs:
         type: "filter"
         inputs: ["postgres_logs"]
-        condition: 'contains(string!(.message), "ERROR:", case_sensitive: false)'
+        condition: match(string!(.message), r'(?i)(ERROR|WARNING|CRITICAL|STATEMENT):')
       add_app_metadata:
         type: "remap"
         inputs: ["error_logs"]
         source: |
           .app_name = get_env_var!("APP_NAME")
           .tag = {{ .Values.tag | quote }}
-          .@timestamp = parse_timestamp(.timestamp ?? now(), "%Y-%m-%dT%H:%M:%SZ")
+          .@timestamp = parse_timestamp!(.timestamp, "%Y-%m-%dT%H:%M:%S%.fZ") ?? now()
     sinks:
       to_aggregator:
         type: "vector"

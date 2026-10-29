@@ -9,10 +9,9 @@ Context needed for this templated, passed as a dict:
 {{- $values := .values }}
 - name: vector-collector
   image: {{ $values.collector.image.repository}}:{{ $values.collector.image.tag }}
-  restartPolicy: Always
   args:
     - '--config'
-    - '/etc/postgres/vector.yaml'
+    - '/etc/vector/vector-pgo.yaml'
   env:
     - name: APP_NAME
       value: {{ $appName | quote }}
