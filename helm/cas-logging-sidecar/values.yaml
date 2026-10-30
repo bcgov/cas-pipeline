@@ -3,13 +3,16 @@ prefix: ~
 tag: ~
 
 collector:
-  imageTag: 0.59.X-alpine
+  image:
+    repository: timberio/vector
+    tag: 0.60.X-alpine
   resources:
     limits:
       memory: 384Mi
     requests:
       cpu: 30m
       memory: 64Mi
+  gatewayServiceOverride: ~
 logRotate:
   image: skymatic/logrotate
   imageTag: latest
@@ -20,9 +23,10 @@ logRotate:
       memory: 8Mi
       cpu: 20m
 gateway:
-    extraTransforms: {}
-    sinkInputs: []
-    debugLogsToConsole: false
+  deploy: true
+  extraTransforms: {}
+  sinkInputs: []
+  debugLogsToConsole: false
 
 # The values below are specifically for the Vector Gateway, utilizing the Vector Helm Chart. Anything above is used for our custom Log Collector Sidecar.
 vector:

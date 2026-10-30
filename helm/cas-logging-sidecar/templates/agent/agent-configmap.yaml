@@ -1,8 +1,15 @@
+{{- $gatewayServiceName := .Values.collector.gatewayServiceOverride | default "{{ .Release.Name }}-vector-gateway" }}
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-vector-collector-config
   namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: Agent
+    app.kubernetes.io/instance: vector
+    app.kubernetes.io/name: vector
+    app.kubernetes.io/version: 0.26.0-distroless-libc
 data:
   vector.yaml: |
     data_dir: "/tmp/vector"
@@ -36,7 +43,7 @@ data:
         inputs: ["add_app_metadata"]
         routing:
           endpoints:
-            - "{{ .Release.Name }}-vector-gateway.{{ .Release.Namespace }}.svc.cluster.local:6000"
+            - "{{ $gatewayServiceName }}.{{ .Release.Namespace }}.svc.cluster.local:6000"
         acknowledgements:
           enabled: true
   logrotate.conf: |

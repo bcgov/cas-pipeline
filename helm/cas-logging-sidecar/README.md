@@ -16,7 +16,7 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
    dependencies:
      - name: cas-logging-sidecar
        repository: https://bcgov.github.io/cas-pipeline/
-       version: 0.7.0
+       version: 0.7.1
    ```
 
 1. You will need to determine the following parameters and add them into your values.yaml file (These will be under the `cas-logging-sidecar` or whatever you named the subchart in your file):
@@ -38,12 +38,14 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
 1. The sidecar to collect the logs from an application pod's logfile is templated into three main pieces:
    1. Volumes to hold the logs and configsMaps: `{{- include "vector-collector.loggingVolumes" . }}`
    1. A volumeMount to mount the log storage to the application: `{{- include "vector-collector.applicationVolumeMounts" . }}`, which also mounts to the sidecar containers. Logs are to be written to `/var/log/app/app.log`.
-   1. initContainers to run the sidecar containers: `{{- include "vector-collector.container" (dict "Values" .Values "appName" "APPLICATION_NAME") | nindent 8 }}`. These use `initContainer[].restartPolicy: Always` [to run as a sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/)
+   1. initContainers to run the sidecar containers: `{{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "APPLICATION_NAME") | nindent 8 }}`. These use `initContainer[].restartPolicy: Always` [to run as a sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/).
 
    > [!NOTE]
    > The `appName` parameter is used to create the index named in Elasticsearch. The name format used is `{{ .Values.prefix }}-{{ app_name }}-%Y.%m`. Unlike previous versions of this chart, it is the only parameter required in the templates.
    >
    > E.g. `prefix=cas-prod-logs` + `appName=backend` + (`%Y.%m` is the current year and month) = `cas-prod-logs-backend-26-09`.
+   >
+   > If this chart is added as a dependency `cas-logging-sidecar` in `.Values.cas-logging-sidecar` would need to change to match the `alias`, if used.
 
    > [!IMPORTANT]
    > In order to use the sidecar, an application pod must output its logs to a file (`/var/log/app/app.log` by default). For OpenShift, the logs should _also_ be output to the console (`STDERR`/`STDOUT`). Some applications, like DjangoNinja + Gunicorn or the CrunchyDB PostgreSQL Operator can be configured to output logs to both console and a file. Some, like Next.js, output logs only to the console. See [Logging Simultaneously to Console and File](#logging-simultaneously-to-console-and-file) for more templates and examples.
@@ -117,7 +119,7 @@ spec:
           volumeMounts:
             {{- include "vector-collector.applicationVolumeMounts" . | nindent 12 }} # REQUIRED
       initContainers:
-        {{- include "vector-collector.container" (dict "Values" .Values "appName" "cas-frontend") | nindent 8 }} # REQUIRED
+        {{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "cas-frontend") | nindent 8 }} # REQUIRED
       volumes:
         {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
 ```
@@ -170,9 +172,111 @@ spec:
           volumeMounts:
             {{- include "vector-collector.applicationVolumeMounts" . | nindent 12 }} # REQUIRED
       initContainers:
-        {{- include "vector-collector.container" (dict "Values" .Values "appName" "testgenerator") | nindent 8 }}  # REQUIRED
+        {{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "testgenerator") | nindent 8 }}  # REQUIRED
       volumes:
         {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
+```
+
+### Crunchy Postgres Operator
+
+Following the example from [Crunchy](https://www.crunchydata.com/blog/log-export-examples-using-crunchy-postgres-for-kubernetes), the operator already outputs to both stdout and a log file. The sidecars can be added with built-in features of the operator. The `vector-collector.[loggingVolumes, applicationVolumeMounts, container]` templates can be used with the operator's `PostgresCluster.spec.instances` to add the sidecars to all of the Postgres pods.
+
+> [!TIP]
+> More information about Crunchy's sidecar usage [is in the docs under the "Custom Sidecar Containers" heading](https://access.crunchydata.com/documentation/postgres-operator/5.2.0/tutorial/customize-cluster/)
+
+A template partial is included in this chart. If there are multiple helm charts using the `cas-logging-sidecar` chart as a dependency, ensure there is only one *aggregator* deployed amongst them. For example, `cas-obps-postgres` and `cas-bciers` might both use this dep for the sidecar templates, but only one should have `gateway.deploy` set as `true`.
+
+#### Partial template usage
+
+```helm
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: sidecar-hippo
+spec:
+  postgresVersion: 16
+  instances:
+    - name: pgha1-with-sidecar
+      # ...other configuration
+      # ⬇️ logging sidecar containers
+      containers:
+        {{- include "vector-pgo-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "cas-postgres") | nindent 8 }}
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
+  # ⬇️ `spec.config` adds files to the `postgres-config` volume, which we can then mount with the sidecar's volumeMounts.
+  config:
+    files:
+      {{- include "vector-pgo-collector.config-mount" . | nindent 6 }}
+```
+
+#### Custom PGO sidecar
+
+```helm
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: sidecar-hippo
+spec:
+  postgresVersion: 16
+  instances:
+    - name: pgha1-with-sidecar
+      # ...other configuration
+      # ⬇️ logging sidecar containers
+      containers:
+      - name: vector-collector
+        image: {{ .Values.collector.image.repository}}:{{ .Values.collector.image.tag }}
+        restartPolicy: Always
+        args:
+          - '--config'
+          - '/etc/postgres/vector.yaml'
+        env:
+          - name: APP_NAME
+            value: pgha1
+          - name: VECTOR_SELF_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: VECTOR_SELF_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: VECTOR_SELF_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+        resources:
+          limits:
+            memory: 384Mi
+          requests:
+            cpu: 30m
+            memory: 64Mi
+        volumeMounts:
+          - name: postgres-data
+            readOnly: false
+            mountPath: /pgdata
+          - name: postgres-config
+            readOnly: false
+            mountPath: /etc/vector
+      # ⬆️ --------------------
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
+  # ⬇️ `spec.config` adds files to the `postgres-config` volume, which we can then mount with the sidecar's volumeMounts.
+  config:
+    files:
+      - configMap:
+        name: {{ .Release.Name }}-vector-pgo-collector-config
+  # ⬆️ --------------------
 ```
 
 ## Inputs
@@ -202,11 +306,11 @@ spec:
 
 These are set to sensible defaults.
 
-4The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output.
+The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output. `collector.gatewayServiceOverride` is used if the sidecar collectors are being deployed in a chart instance *without* a matching vector gateway in the same instance (**NOTE**: this must be set if `gateway.deploy` is set to `false`).
 
 For `logRotate`, it can also be kept very small, and only runs every 300 seconds (5 minutes). This rotation time is part of the run command in the logRotate sidecar container.
 
-The `gateway` values are used to add supplemental logging pipeline transforms to the gateway. By default, a transform is used to add timestamp data where it's missing (`add_missing_timestamp`), which is the default input for the elastic sink. `gateway.extraTransforms` and `gateway.sinkInputs` are used to change away from the default pipeline, see the [documentation on filters and transforms below](#vector-enrichment-filters-and-transforms). `gateway.debugLogsToConsole` allows for logs from input to be passed directly to the gateway's console without transforms, disabled by default.
+The `gateway` values are used to add supplemental values to the gateway. `gateway.deploy` determines if the gateway will deploy at all (using configs from `.Values.vector` to implement the Vector chart dependency), which should be disabled if multiple parent charts use `cas-logging-sidecar` in the same namespace. By default, a transform is used to add timestamp data where it's missing (`add_missing_timestamp`), which is the default input for the elastic sink. `gateway.extraTransforms` and `gateway.sinkInputs` are used to change away from the default pipeline, see the [documentation on filters and transforms below](#vector-enrichment-filters-and-transforms). `gateway.debugLogsToConsole` allows for logs from input to be passed directly to the gateway's console without transforms, disabled by default.
 
 The `vector` values cover configuration those specific to the aggregator gateway, as defined by the upstream Vector chart dependency. Our Elastic instance's details are added as volume secrets to the pods and used by `aggregator-configmap.yaml`.
 
@@ -234,6 +338,13 @@ The collector is configured as a Vector Agent to source from a log file at `/var
 `data>logrotate.conf`
 
 LogRotate handles rotating log files when they get large. It is configured to rotate when the file reaches 25 megabytes, by copying to a new file, then removing existing data from the existing file (which Vector can handle). It keeps 5 copies of old logs, compressing old logs after a certain amount of time.
+
+### CrunchyDB Postgres Operator Variant
+
+`templates/pgo-agent/pgo-agent-configmap.yaml`
+`data>vector-pgo.yaml`
+
+This is a variant of the base sidecar config. It's been modified to be used by a sidecar in a CrunchyDB Postgres Operator deployment. Similar to the base config map, this sinks it's data to a namespaced instance of a Vector (Aggregator) Gateway. Use `.Values.collector.gatewayServiceOverride` to set the target sink, if the chart instance deploying the sidecars differs from the gateway.
 
 ### Vector (Aggregator) Gateway
 
