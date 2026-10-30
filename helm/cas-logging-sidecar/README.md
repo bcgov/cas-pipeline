@@ -64,10 +64,10 @@ _This way is not recommended for production use_. It can cause issues with `PID1
 We can wrap them in Kubernete's `kube-log-runner` to capture console output and split them to console and file. Unlike `tee`, this handles SIGTERM/SIGKILL and process pruning. `kube-log-runner` also works with many distroless and hardened images that don't include a shell.
 
 Basic kube logger:
-https://dl.k8s.io/v1.29.0/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner
+https://dl.k8s.io/v1.37.0/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner
 Add links to https://kubernetes.io/docs/concepts/cluster-administration/system-logs/ when talking about `kube-log-runner`.
 
-1. Add the `kube-log-runner` binary to your Dockerfile: `https://dl.k8s.io/{version}/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner`, where `{version}` is the Kubernetes version you are using. For OpenShift 4.18, use `v1.31.0` (use `oc version` while logged in to see the Kubernetes Version). If using multi-stage builds, do this in the "builder" stage, and copy it to the final image.
+1. Add the `kube-log-runner` binary to your Dockerfile: `https://dl.k8s.io/{version}/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner`, where `{version}` is a pinned Kubernetes version. As of writing, latest stable is `v1.37.1` (see the [Kubernetes Binaries](https://dl.k8s.io/) page for versions). To use `kube-log-runner`'s inbuilt log rotation version `v1.34` or newer is required. **NOTE**: As this is a standalone package, it *does not* need to match OpenShift's Kubernetes version. If using multi-stage builds, do this in the "builder" stage, and copy it to the final image.
 1. Mark the `kube-log-runner` binary as executable: `RUN chmod +x /usr/local/bin/kube-log-runner`
 1. Use `kube-log-runner` as your `ENTRYPOINT`. To output logs to console and to the expected file, use the `-also-stdout` and `-log-file=/var/log/app/app.log` options. **Important:** `kube-log-runner` uses single dash (`-`) for its options!
 1. Use `CMD` to specify your application command. `kube-log-runner` will wrap this in the same way `dumb-init` does.
@@ -198,14 +198,17 @@ spec:
 | `prefix` | `fluent-bit-configmap.yaml` | The index name is composed using a prefix and the date. The last string appended belongs to the date when the data is being generated. | `cif-logs`                                     |
 | `tag`    | `fluent-bit-configmap.yaml` | Tag name associated to all records coming from this plugin.                                                                            | `oc-cif`                                       |
 
+#### `collector`, `logRotate`, `gateway`, `vector` values
 
-#### `collector`, `logRotate`, `vector`(gateway) values
+These are set to sensible defaults.
 
-These are set to sensible defaults. The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output.
+4The `collector` simply forwards logs to the aggregator and it is very efficient at doing so. Resources are set to "safe" amounts, but could likely be tuned lower for pods with less log output.
 
 For `logRotate`, it can also be kept very small, and only runs every 300 seconds (5 minutes). This rotation time is part of the run command in the logRotate sidecar container.
 
-The `vector` values cover those specific to the aggregator gateway. Our Elastic instance's details are added as volume secrets to the pods and used by `aggregator-configmap.yaml`.
+The `gateway` values are used to add supplemental logging pipeline transforms to the gateway. By default, a transform is used to add timestamp data where it's missing (`add_missing_timestamp`), which is the default input for the elastic sink. `gateway.extraTransforms` and `gateway.sinkInputs` are used to change away from the default pipeline, see the [documentation on filters and transforms below](#vector-enrichment-filters-and-transforms). `gateway.debugLogsToConsole` allows for logs from input to be passed directly to the gateway's console without transforms, disabled by default.
+
+The `vector` values cover configuration those specific to the aggregator gateway, as defined by the upstream Vector chart dependency. Our Elastic instance's details are added as volume secrets to the pods and used by `aggregator-configmap.yaml`.
 
 ##### Further documentation
 
@@ -224,7 +227,7 @@ The `vector` values cover those specific to the aggregator gateway. Our Elastic 
 
 `data>vector.yaml`
 
-The collector is configured as a Vector Agent to source from a log file at `/var/log/app/app.log` (as well as `app.log.*` to handle rotated logs). It is able to understand and keep track of files that are rotated by the `logRotate` container so no data is lost. It uses a pattern to handle multiline output from NextJS. It adds additional information from the environment (the app name) to the metadata, which is then sent to the Vector Gateway.
+The collector is configured as a Vector Agent to source from a log file at `/var/log/app/app.log` (as well as `app.log.*` to handle rotated logs). It is able to understand and keep track of files that are rotated by the `logRotate` container so no data is lost. It uses a pattern to handle multiline output from NextJS. It adds additional information from the environment (the app name) and a timestamp (if missing) to the metadata, which is then sent to the Vector Gateway.
 
 #### Log Rotate
 
@@ -236,7 +239,7 @@ LogRotate handles rotating log files when they get large. It is configured to ro
 
 `templates/aggregator/aggregator-configmap.yaml`:`data.'vector-aggregator.yaml'`
 
-The gateway is configured as a Vector Aggregator to source from other Vector instances (the collector agents), add a timestamp (if missing), then send to our common ElasticSearch instance (credentials and some config coming from secrets).
+The gateway is configured as a Vector Aggregator to source from other Vector instances (the collector agents), then send to our common ElasticSearch instance (credentials and some config coming from secrets).
 
 Additional configmaps could be added to the `vector.existingConfigMaps` array in the `values.yaml`. See the [multiple file configuration documentation in Vector](https://vector.dev/docs/reference/configuration/#multiple-files)
 
@@ -252,3 +255,97 @@ The aggregator config map configures the ElasticSearch sink with the following n
 - `buffer.{max_size,type}`: memory buffer for the Elasticsearch sink to improve throughput.
 
 These output settings are tuned to avoid HTTP client buffer overflow and to preserve log timestamps for correct indexing.
+
+## Vector enrichment, filters and transforms
+
+Vector being used allows us to use its langauge to add filters and transforms to our log pipeline. With our setup, filters and transforms should be applied at the _aggregator_ level, letting the _collector sidecar_ be as lightweight as possible. Enrichment can be done on the _collector_ which is as close to the log source as possible.
+
+Vectors `sources`, `transforms`, and `sinks` operate as a directed acyclic graph (DAG, just like Airflow). For our Vector Gateway, for inputs there is a common one for our sidecar collectors, and sink is always to our Elastic instance. Transforms are where we can remap the logs before they go to Elastic. Adding no configuration to `gateway` in the `values.yaml` file will result in the default flow below.
+
+```yaml
+gateway:
+    extraTransforms: {}
+    sinkInputs: []
+```
+
+```mermaid
+flowchart LR
+    subgraph inputs
+        sc[\Sidecar Collectors\]
+    end
+
+    subgraph transforms
+        none
+    end
+
+    subgraph sinks
+        sc --> es[/Send to Elastic/]
+    end
+```
+
+### Advanced filter and transform example
+
+The following is an exaggerated example of a series of transforms applied to the logs. More advanced transforms could potentially convert the filtered heartbeat logs into metrics. [Vector Remap Language (VRL)](https://vector.dev/docs/reference/vrl/) can be used in most cases to handle remapping, though other transformers/languages are available.
+
+```yaml
+gateway:
+    extraTransforms:
+        filter_heartbeats:
+            type: filter
+            inputs: ["vector"]
+            condition: '!match(.message, r"heartbeat") || .app_name != "verbose-app"'
+
+        split_django_gunicorn:
+            type: remap
+            inputs: ["filter_heartbeats"]
+            source: |
+                # VRL to add differentiate between Gunicorn and Django logs
+
+        prepend_app_name:
+            type: remap
+            inputs: ["vector"]
+            source: |
+                # VRL to prepend appname into node logs from metadata
+
+        multiline_node:
+            type: remap
+            inputs: ["prepend_app_name"]
+            source: |
+                # VRL matching legacy handling of multiline node log output
+
+    sinkInputs: ["filter_hearbeats", "split_django_gunicorn", "multiline_node"]
+```
+
+```mermaid
+flowchart LR
+    subgraph inputs
+        sc[\"`*vector*<br>Sidecar Collectors`"\]
+    end
+
+    subgraph transforms
+        sc --> ts["`*add_missing_timestamp*`"]
+        ts --> fh["`*filter_heartbeats*<br>Filter Heartbeats`"]
+        ts --> sd["`*split_django_gunicorn*<br>Split Django and Gunicorn errors distinctly`"]
+        ts --> an["`*prepend_app_name*<br>Prepend app to Node logs`"] --> nm["`*multiline_node*<br>Format multiline Node logs`"]
+    end
+
+    subgraph sinks
+        fh & sd & nm --> es[/"`*elasticsearch*<br>Send to Elastic`"/]
+    end
+```
+
+### Enrichment example
+
+https://vector.dev/docs/reference/configuration/pipeline-components/
+Adding app name to log data from cas-bciers-frontend nextjs.
+
+### Transforms
+
+Changing single line logs from nextjs to multi-line logs.
+
+#### Filters
+
+Filtering out heartbeat logs from cas-bciers-backend, postgres.
+
+> [!NOTE]
+> At this point, we won't keep the filtered heartbeats. But we could start using them for metrics/telemetry in the future, as Vector can process and understand that data. ElasticSearch _could_ be configured to handle it, but more research would be needed to determine the best approach.
