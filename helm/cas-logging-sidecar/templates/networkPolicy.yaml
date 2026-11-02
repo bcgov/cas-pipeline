@@ -1,0 +1,14 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+    name: {{ .Release.Name }}-vector-gateway-ingress
+spec:
+  podSelector:
+    matchLabels:
+        app.kubernetes.io/name: {{ .Values.vector.nameOverride }}
+  ingress:
+    - from:
+        - podSelector: {} # Allow all from Gateway's namespace
+      ports:
+        - protocol: TCP
+          port: 6000

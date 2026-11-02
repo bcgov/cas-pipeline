@@ -8,3 +8,6 @@ oc_secret_dump**
 
 # JetBrains
 .idea/
+
+# Ignore /charts helm directory
+helm/**/charts
