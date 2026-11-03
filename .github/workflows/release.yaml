@@ -23,6 +23,9 @@ jobs:
         with:
           version: v3.6.2
 
+      - name: Add dependency repository
+        run: helm repo add vector https://helm.vector.dev
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         with:
