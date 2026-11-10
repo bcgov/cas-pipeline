@@ -71,7 +71,7 @@ Add links to https://kubernetes.io/docs/concepts/cluster-administration/system-l
 
 1. Add the `kube-log-runner` binary to your Dockerfile: `https://dl.k8s.io/{version}/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner`, where `{version}` is a pinned Kubernetes version. As of writing, latest stable is `v1.37.1` (see the [Kubernetes Binaries](https://dl.k8s.io/) page for versions). To use `kube-log-runner`'s inbuilt log rotation version `v1.34` or newer is required. **NOTE**: As this is a standalone package, it *does not* need to match OpenShift's Kubernetes version. If using multi-stage builds, do this in the "builder" stage, and copy it to the final image.
 1. Mark the `kube-log-runner` binary as executable: `RUN chmod +x /usr/local/bin/kube-log-runner`
-1. Use `kube-log-runner` as your `ENTRYPOINT`. To output logs to console and to the expected file, use the `-also-stdout` and `-log-file=/var/log/app/app.log` options. **Important:** `kube-log-runner` uses single dash (`-`) for its options!
+1. Use `kube-log-runner` as your `ENTRYPOINT`. To output logs to console and to the expected file, add the `-also-stdout` and `-log-file=/var/log/app/app.log` options args to the `CMD`. **Important:** `kube-log-runner` uses single dash (`-`) for its options!
 1. Use `CMD` to specify your application command. `kube-log-runner` will wrap this in the same way `dumb-init` does.
 
 > [!TIP]
@@ -92,10 +92,11 @@ RUN chmod +x /usr/local/bin/kube-log-runner
 COPY --from=builder /usr/local/bin/kube-log-runner /usr/local/bin/kube-log-runner
 
 # 3. Use `kube-log-runner` as the `ENTRYPOINT`.
-ENTRYPOINT ["/usr/local/bin/kube-log-runner", "-also-stdout", "-log-file=/var/log/app/app.log"]
+ENTRYPOINT ["/usr/local/bin/kube-log-runner"]
 
 # 4. Use `CMD` to specify the default command to run, which `kube-log-runner` wraps.
-CMD ["node", "server.js"]
+#    Add `"-also-stdout", "-log-file=/var/log/app/app.log"` to split log between a file and stdout
+CMD ["-also-stdout", "-log-file=/var/log/app/app.log", "node", "server.js"]
 ```
 
 ### Example use
