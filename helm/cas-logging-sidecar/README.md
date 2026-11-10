@@ -38,7 +38,7 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
 1. The sidecar to collect the logs from an application pod's logfile is templated into three main pieces:
    1. Volumes to hold the logs and configsMaps: `{{- include "vector-collector.loggingVolumes" . }}`
    1. A volumeMount to mount the log storage to the application: `{{- include "vector-collector.applicationVolumeMounts" . }}`, which also mounts to the sidecar containers. Logs are to be written to `/var/log/app/app.log`.
-   1. initContainers to run the sidecar containers: `{{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "APPLICATION_NAME") | nindent 8 }}`. These use `initContainer[].restartPolicy: Always` [to run as a sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/).
+   1. initContainers to run the sidecar containers: `{{- include "vector-collector.container" (dict "values" (index .Values "cas-logging-sidecar") "appName" "APPLICATION_NAME") | nindent 8 }}`. These use `initContainer[].restartPolicy: Always` [to run as a sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/).
 
    > [!NOTE]
    > The `appName` parameter is used to create the index named in Elasticsearch. The name format used is `{{ .Values.prefix }}-{{ app_name }}-%Y.%m`. Unlike previous versions of this chart, it is the only parameter required in the templates.
@@ -119,7 +119,7 @@ spec:
           volumeMounts:
             {{- include "vector-collector.applicationVolumeMounts" . | nindent 12 }} # REQUIRED
       initContainers:
-        {{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "cas-frontend") | nindent 8 }} # REQUIRED
+        {{- include "vector-collector.container" (dict "values" (index .Values "cas-logging-sidecar") "appName" "cas-frontend") | nindent 8 }} # REQUIRED
       volumes:
         {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
 ```
@@ -172,7 +172,7 @@ spec:
           volumeMounts:
             {{- include "vector-collector.applicationVolumeMounts" . | nindent 12 }} # REQUIRED
       initContainers:
-        {{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "testgenerator") | nindent 8 }}  # REQUIRED
+        {{- include "vector-collector.container" (dict "values" (index .Values "cas-logging-sidecar") "appName" "testgenerator") | nindent 8 }}  # REQUIRED
       volumes:
         {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
 ```
@@ -200,7 +200,7 @@ spec:
       # ...other configuration
       # ⬇️ logging sidecar containers
       containers:
-        {{- include "vector-pgo-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "cas-postgres") | nindent 8 }}
+        {{- include "vector-pgo-collector.container" (dict "values" (index .Values "cas-logging-sidecar") "appName" "cas-postgres") | nindent 8 }}
       dataVolumeClaimSpec:
         accessModes:
         - "ReadWriteOnce"
