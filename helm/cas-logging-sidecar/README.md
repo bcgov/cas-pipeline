@@ -67,7 +67,6 @@ We can wrap them in Kubernete's `kube-log-runner` to capture console output and 
 
 Basic kube logger:
 https://dl.k8s.io/v1.37.0/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner
-Add links to https://kubernetes.io/docs/concepts/cluster-administration/system-logs/ when talking about `kube-log-runner`.
 
 1. Add the `kube-log-runner` binary to your Dockerfile: `https://dl.k8s.io/{version}/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner`, where `{version}` is a pinned Kubernetes version. As of writing, latest stable is `v1.37.1` (see the [Kubernetes Binaries](https://dl.k8s.io/) page for versions). To use `kube-log-runner`'s inbuilt log rotation version `v1.34` or newer is required. **NOTE**: As this is a standalone package, it *does not* need to match OpenShift's Kubernetes version. If using multi-stage builds, do this in the "builder" stage, and copy it to the final image.
 1. Mark the `kube-log-runner` binary as executable: `RUN chmod +x /usr/local/bin/kube-log-runner`
