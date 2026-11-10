@@ -1,4 +1,4 @@
-{{- $gatewayServiceName := .Values.collector.gatewayServiceOverride | default "{{ .Release.Name }}-vector-gateway" }}
+{{- $gatewayServiceName := .Values.collector.gatewayServiceOverride | default (printf "%s-vector-gateway" .Release.Name) }}
 
 apiVersion: v1
 kind: ConfigMap
