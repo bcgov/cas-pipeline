@@ -5,9 +5,14 @@ on:
     branches:
       - master
 
+permissions:
+
 jobs:
   docker-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - name: Set up Docker Buildx
