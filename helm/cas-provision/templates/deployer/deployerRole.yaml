@@ -91,6 +91,7 @@ rules:
       - update
       - patch
       - watch
+      - list
   - apiGroups:
       - apps
     attributeRestrictions: null
