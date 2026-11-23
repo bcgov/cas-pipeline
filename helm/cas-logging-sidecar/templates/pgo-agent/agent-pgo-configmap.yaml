@@ -6,10 +6,8 @@ metadata:
   name: {{ .Release.Name }}-vector-pgo-collector-config
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/component: Agent
-    app.kubernetes.io/instance: vector
-    app.kubernetes.io/name: vector
-    app.kubernetes.io/version: 0.26.0-distroless-libc
+    app.kubernetes.io/component: logging-agent
+    {{- include "cas-logging-sidecar.labels" . | nindent 4 }}
 data:
   vector-pgo.yaml: |
     data_dir: /pgdata
