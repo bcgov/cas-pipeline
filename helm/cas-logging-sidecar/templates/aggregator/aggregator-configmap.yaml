@@ -41,8 +41,8 @@ data:
       {{- end }}
       elasticsearch:
         type: elasticsearch
-          inputs:
-          {{ $activeSinkInputs | toYaml | nindent 12 }}
+        inputs:
+        {{- $activeSinkInputs | toYaml | nindent 10 }}
         endpoints:
           - "http://{{ .Values.host }}:9200"
         auth:
