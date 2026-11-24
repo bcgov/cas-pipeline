@@ -48,6 +48,7 @@ data:
         auth:
           user: "SECRET[elastic_credentials.username]"
           password: "SECRET[elastic_credentials.password]"
+          strategy: basic
         bulk:
           # prefix comes from the parent helm chart values.
           # app_name is Vector Template syntax enclosed in backticks to avoid helm template interpolation.
