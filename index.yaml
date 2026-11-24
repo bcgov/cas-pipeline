@@ -24,6 +24,23 @@ entries:
   cas-logging-sidecar:
   - apiVersion: v2
     appVersion: 0.60.0
+    created: "2026-11-24T22:00:57.284502881Z"
+    dependencies:
+    - condition: gateway.deploy
+      name: vector
+      repository: https://helm.vector.dev
+      version: 0.60.0
+    description: A Helm chart to deploy Vector for CAS applications. Provisions a
+      single Vector Gateway and provides templates for Vector collector sidecars to
+      connect to the Gatway.
+    digest: 42910c3a33eb5b19e233e9acad5e939b9aeea5bacaecee668549db61b6ee5e29
+    name: cas-logging-sidecar
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-pipeline/releases/download/cas-logging-sidecar-0.7.4/cas-logging-sidecar-0.7.4.tgz
+    version: 0.7.4
+  - apiVersion: v2
+    appVersion: 0.60.0
     created: "2026-11-24T16:04:10.502157275Z"
     dependencies:
     - condition: gateway.deploy
@@ -302,4 +319,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-pipeline/releases/download/terraform-bucket-provision-0.1.3/terraform-bucket-provision-0.1.3.tgz
     version: 0.1.3
-generated: "2026-11-24T16:04:10.502301945Z"
+generated: "2026-11-24T22:00:57.45179129Z"
