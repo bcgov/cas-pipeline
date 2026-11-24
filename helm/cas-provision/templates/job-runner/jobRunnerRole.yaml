@@ -42,3 +42,12 @@ rules:
       - "create"
       - "delete"
       - "watch"
+  - apiGroups:
+      - batch
+    resources:
+      - jobs/status
+    verbs:
+      - get
+      - list
+      - watch
+      
