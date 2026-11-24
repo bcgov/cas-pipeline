@@ -48,6 +48,6 @@ app.kubernetes.io/part-of: logging
 Selector labels
 */}}
 {{- define "cas-logging-sidecar.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "cas-bciers.fullname" . }}
+app.kubernetes.io/name: {{ include "cas-logging-sidecar.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
