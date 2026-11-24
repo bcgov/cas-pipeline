@@ -1,7 +1,10 @@
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
-    name: {{ .Release.Name }}-vector-gateway-ingress
+  name: {{ .Release.Name }}-vector-gateway-ingress
+  labels:
+    app.kubernetes.io/component: logging-aggregator
+    {{- include "cas-logging-sidecar.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:

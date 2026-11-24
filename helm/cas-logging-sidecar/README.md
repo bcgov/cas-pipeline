@@ -16,7 +16,7 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
    dependencies:
      - name: cas-logging-sidecar
        repository: https://bcgov.github.io/cas-pipeline/
-       version: 0.7.1
+       version: 0.7.3
    ```
 
 1. You will need to determine the following parameters and add them into your values.yaml file (These will be under the `cas-logging-sidecar` or whatever you named the subchart in your file):
@@ -38,7 +38,7 @@ See [https://github.com/bcgov/cas-efk](https://github.com/bcgov/cas-efk) for mor
 1. The sidecar to collect the logs from an application pod's logfile is templated into three main pieces:
    1. Volumes to hold the logs and configsMaps: `{{- include "vector-collector.loggingVolumes" . }}`
    1. A volumeMount to mount the log storage to the application: `{{- include "vector-collector.applicationVolumeMounts" . }}`, which also mounts to the sidecar containers. Logs are to be written to `/var/log/app/app.log`.
-   1. initContainers to run the sidecar containers: `{{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "APPLICATION_NAME") | nindent 8 }}`. These use `initContainer[].restartPolicy: Always` [to run as a sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/).
+   1. initContainers to run the sidecar containers: `{{- include "vector-collector.container" (dict "values" (index .Values "cas-logging-sidecar") "appName" "APPLICATION_NAME") | nindent 8 }}`. These use `initContainer[].restartPolicy: Always` [to run as a sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/).
 
    > [!NOTE]
    > The `appName` parameter is used to create the index named in Elasticsearch. The name format used is `{{ .Values.prefix }}-{{ app_name }}-%Y.%m`. Unlike previous versions of this chart, it is the only parameter required in the templates.
@@ -67,11 +67,10 @@ We can wrap them in Kubernete's `kube-log-runner` to capture console output and 
 
 Basic kube logger:
 https://dl.k8s.io/v1.37.0/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner
-Add links to https://kubernetes.io/docs/concepts/cluster-administration/system-logs/ when talking about `kube-log-runner`.
 
 1. Add the `kube-log-runner` binary to your Dockerfile: `https://dl.k8s.io/{version}/bin/linux/amd64/kube-log-runner /usr/local/bin/kube-log-runner`, where `{version}` is a pinned Kubernetes version. As of writing, latest stable is `v1.37.1` (see the [Kubernetes Binaries](https://dl.k8s.io/) page for versions). To use `kube-log-runner`'s inbuilt log rotation version `v1.34` or newer is required. **NOTE**: As this is a standalone package, it *does not* need to match OpenShift's Kubernetes version. If using multi-stage builds, do this in the "builder" stage, and copy it to the final image.
 1. Mark the `kube-log-runner` binary as executable: `RUN chmod +x /usr/local/bin/kube-log-runner`
-1. Use `kube-log-runner` as your `ENTRYPOINT`. To output logs to console and to the expected file, use the `-also-stdout` and `-log-file=/var/log/app/app.log` options. **Important:** `kube-log-runner` uses single dash (`-`) for its options!
+1. Use `kube-log-runner` as your `ENTRYPOINT`. To output logs to console and to the expected file, add the `-also-stdout` and `-log-file=/var/log/app/app.log` options args to the `CMD`. **Important:** `kube-log-runner` uses single dash (`-`) for its options!
 1. Use `CMD` to specify your application command. `kube-log-runner` will wrap this in the same way `dumb-init` does.
 
 > [!TIP]
@@ -92,10 +91,11 @@ RUN chmod +x /usr/local/bin/kube-log-runner
 COPY --from=builder /usr/local/bin/kube-log-runner /usr/local/bin/kube-log-runner
 
 # 3. Use `kube-log-runner` as the `ENTRYPOINT`.
-ENTRYPOINT ["/usr/local/bin/kube-log-runner", "-also-stdout", "-log-file=/var/log/app/app.log"]
+ENTRYPOINT ["/usr/local/bin/kube-log-runner"]
 
 # 4. Use `CMD` to specify the default command to run, which `kube-log-runner` wraps.
-CMD ["node", "server.js"]
+#    Add `"-also-stdout", "-log-file=/var/log/app/app.log"` to split log between a file and stdout
+CMD ["-also-stdout", "-log-file=/var/log/app/app.log", "node", "server.js"]
 ```
 
 ### Example use
@@ -119,7 +119,7 @@ spec:
           volumeMounts:
             {{- include "vector-collector.applicationVolumeMounts" . | nindent 12 }} # REQUIRED
       initContainers:
-        {{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "cas-frontend") | nindent 8 }} # REQUIRED
+        {{- include "vector-collector.container" (dict "values" (index .Values "cas-logging-sidecar") "appName" "cas-frontend") | nindent 8 }} # REQUIRED
       volumes:
         {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
 ```
@@ -172,7 +172,7 @@ spec:
           volumeMounts:
             {{- include "vector-collector.applicationVolumeMounts" . | nindent 12 }} # REQUIRED
       initContainers:
-        {{- include "vector-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "testgenerator") | nindent 8 }}  # REQUIRED
+        {{- include "vector-collector.container" (dict "values" (index .Values "cas-logging-sidecar") "appName" "testgenerator") | nindent 8 }}  # REQUIRED
       volumes:
         {{- include "vector-collector.loggingVolumes" . | nindent 8 }} # REQUIRED
 ```
@@ -200,7 +200,7 @@ spec:
       # ...other configuration
       # ⬇️ logging sidecar containers
       containers:
-        {{- include "vector-pgo-collector.container" (dict "values" {{ index .Values "cas-logging-sidecar" }} "appName" "cas-postgres") | nindent 8 }}
+        {{- include "vector-pgo-collector.container" (dict "values" (index .Values "cas-logging-sidecar") "appName" "cas-postgres") | nindent 8 }}
       dataVolumeClaimSpec:
         accessModes:
         - "ReadWriteOnce"

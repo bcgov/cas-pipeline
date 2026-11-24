@@ -8,6 +8,9 @@ metadata:
   # This is currently a static in order to match with `.Values.vector.existingConfigMaps`
   name: vector-aggregator-logging-config
   namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: logging-aggregator
+    {{- include "cas-logging-sidecar.labels" . | nindent 4 }}
 data:
   vector-aggregator.yaml: |
     secret:
@@ -38,13 +41,14 @@ data:
       {{- end }}
       elasticsearch:
         type: elasticsearch
-          inputs:
-          {{ $activeSinkInputs | toYaml | nindent 12 }}
+        inputs:
+        {{- $activeSinkInputs | toYaml | nindent 10 }}
         endpoints:
           - "http://{{ .Values.host }}:9200"
         auth:
           user: "SECRET[elastic_credentials.username]"
           password: "SECRET[elastic_credentials.password]"
+          strategy: basic
         bulk:
           # prefix comes from the parent helm chart values.
           # app_name is Vector Template syntax enclosed in backticks to avoid helm template interpolation.

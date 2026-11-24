@@ -15,7 +15,6 @@ Adds configMaps from collector-configmap.yaml.
   readOnly: true
 - name: shared-logs
   mountPath: /var/log/app
-  readOnly: true
 {{- end -}}
 
 {{/*
@@ -38,7 +37,7 @@ Context needed for this templated, passed as a dict:
   command:
     - "/bin/sh"
     - "-c"
-    - "while true; do logrotate -s /var/log/logrotate.status -f /etc/sidecar/logrotate.conf; sleep 300; done"
+    - "while true; do logrotate -s /var/log/app/logrotate.status -f /etc/sidecar/logrotate.conf; sleep 300; done"
   volumeMounts:
     {{- include "vector-collector.sidecarVolumeMounts" . | nindent 4 }}
 - name: vector-collector
