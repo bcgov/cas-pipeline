@@ -40,6 +40,6 @@ data:
         inputs: ["add_app_metadata"]
         routing:
           endpoints:
-            - "{{ $gatewayServiceName }}.{{ .Release.Namespace }}.svc.cluster.local:6000"
+            - "http://{{ $gatewayServiceName }}.{{ .Release.Namespace }}.svc.cluster.local:6000"
         acknowledgements:
           enabled: true
