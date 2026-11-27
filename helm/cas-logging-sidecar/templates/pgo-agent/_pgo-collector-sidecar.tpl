@@ -43,5 +43,5 @@ Context needed for this templated, passed as a dict:
 
 {{- define "vector-pgo-collector.config-mount" -}}
 - configMap:
-  name: {{ .Release.Name }}-vector-pgo-collector-config
+    name: {{ .Release.Name }}-vector-pgo-collector-config
 {{- end -}}
